@@ -1,0 +1,410 @@
+% Function to match a LC-IMS-MS dataset to a target DB
+%
+% Two files are the main input
+%               - dLCMS : matirx of UMC features with LC-MS information
+%               - dDrifts : matrix of UMC features with drifts information
+%
+% Output is a an excel file containing output results and a bunch of images
+% depicting mass error, alignment and such (similar to VIPER)
+%**************************************************************************
+%**************************************************************************
+
+function PkMatchDataset(dLCMS,dDrifts);
+
+global DBMassTags ;
+%global dLCMS ;
+%global dDrifts ;
+%load data_modified_features
+%load data_1800_alternate
+
+
+% init stuff
+standard_pressure = 4 ;
+h = actxserver('MassMatchCOM.MassMatchWrapper') ;
+
+dbMassTagsMain = DBMassTags{1} ;
+dbMassTagInfo = dbMassTagsMain(:, [1:5]) ;
+dbPepList = DBMassTags{2} ;
+%dbProteinList = DBMassTags{3} ;
+
+%db Cols
+dbNetCol =  1 ;
+dbMassCol = 2 ;
+dbNumObservationsCol = 3 ;
+dbIdCol = 4 ;
+dbXcorrCol = 5 ;
+dbConfId = 6;
+dbDtCol = 7 ;
+
+%UMC cols
+mz_col = 1 ;
+mass_col = 2 ;
+scan_col = 3 ;
+intensity_col = 4 ;
+pair_col = 5 ;
+tag_id_col = 6 ;
+umc_col = 7 ;
+
+% For LCMSWarp
+%NET options
+num_ms_sections = 100 ;
+contraction_factor = 3 ;
+max_discontinuity = 10 ;
+max_promiscuity = 2 ;
+%mass options
+mass_window_for_cal = 50 ;
+mass_jump = 50 ;
+num_mass_delta_bins = 100 ;
+num_slices_for_mass_cal = 20 ;
+%tolerances
+warp_mass_tolerance = 25;
+warp_net_tolerance = 0.025 ;
+%calibration
+recalibration_type = 2 ; %mass correction: 0 is mz based, 1 is scan based and 2 is hybrid
+%advanced
+regression_order = 2 ;
+use_lsq = 1 ;
+ztolerance = 3 ;
+%plots
+min_net = -1 ;
+max_net = 1 ;
+%alignment
+alignment_type = 1 ; % 0 is for mswarp on net only, 1 is mswarp on mass and net.
+
+% Misc.
+numFeatures = size(dLCMS,1) ;
+numMassTags = size(dbMassTagInfo) ;
+
+h.SetNetOptions(int32(num_ms_sections), int16(contraction_factor), int16(max_discontinuity), warp_net_tolerance, min_net, max_net, int32(max_promiscuity)) ;
+h.SetRegressionOrder(int16(regression_order)) ;
+h.SetRecalibrationType(int16(recalibration_type)) ;
+h.SetAlignmentType(int16(alignment_type)) ;
+h.SetMassOptions(warp_mass_tolerance, num_mass_delta_bins, mass_window_for_cal, mass_jump, num_slices_for_mass_cal, ztolerance, use_lsq);
+
+% % % Choosing intensities - a rather haphazard way, basically just keeping all
+% % % intensity value greater than 0.25 quantile
+% % display('Removing noise from data') ; 
+% % dataIntensities = dLCMS(:, intensity_col) ; 
+% % intensityLowerQuantile  = quantile(dataIntensities, 0.25) ; 
+% % intensityUpperQuantile = quantile(dataIntensities, 0.75) ; 
+% % realIntensityIndex = find(dataIntensities > intensityLowerQuantile & dataIntensities < intensityUpperQuantile) ; 
+% % newdLCMS = dLCMS(realIntensityIndex, :) ; 
+% % newdDrifts = dDrifts(realIntensityIndex, :) ; 
+% % numFeatures = size(newdLCMS) ; 
+% % dDrifts = newdDrifts ; 
+% % dDrifts(:, 1) = [1:numFeatures] ; 
+% % dLCMS = newdLCMS ; 
+% % dLCMS(:, umc_col) = [1:numFeatures] ; 
+
+
+% Align with msFeatures
+display('Performing LC-MS Warp') ;
+[MatchScores,AlignmentFunc,Matches,PepTransformedRT,TransformedRT,MassErrorHist,NetErrorHist] = h.MS2MSMSDBAlignPeptides(dLCMS, dbMassTagInfo) ;
+% cols for Matches
+% 1:umc_index 2:mtid 3:net_error 4:mass_error
+mswarp_identified_mtids = Matches(:, 2) ;
+num_umcs_identified = size(mswarp_identified_mtids, 1) ;
+
+% Regress
+% display('Performing Drift Time Regression') ;
+% confirmed_drifts = [] ;
+% observed_drifts = [];
+% drift_umc_col = 1 ;
+% drift_confidx_col = 2;
+% drift_col = 3;  % ignoring conformer info in col 2 for the time being
+% for i = 1:num_umcs_identified
+%     Iindex = find(dbMassTagsMain(:, dbIdCol) == mswarp_identified_mtids(i)) ;
+%     for j = 1: size(Iindex,1)
+%         confirmed_drifts = [confirmed_drifts; [mswarp_identified_mtids(i) dbMassTagsMain(Iindex(j), dbConfId) dbMassTagsMain(Iindex(j), dbDtCol)]] ;
+%     end;
+% end
+% observed_drifts = dDrifts(Matches(:,1), :);
+% minConfIdObs = min(confirmed_drifts(:,2));
+% maxConfIdObs = max(confirmed_drifts(:,2));
+% 
+% 
+% %%for the time being we're just aligning the first conformers for all ids
+% %for i = minConfIdsObs:maxConfIdsObs
+%     index = confirmed_drifts(:,2) == 1;
+%     exp_drift_times = confirmed_drifts(index,3);
+%     index = observed_drifts(:,2)==1;
+%     db_drift_times = observed_drifts(index,3);
+%     
+%     [b, bint] = regress(exp_drift_times, db_drift_times) ; 
+%     figure ;
+%     scatter(exp_drift_times, db_drift_times) ;
+%     hold on ;
+% %end;
+% 
+% %%[b, bint] = regress(confirmed_drifts(:,2), observed_drifts(:,2)) ; 
+% 
+% %= polyfit(observed_drifts(:,2), confirmed_drifts(:,2), 1) ;
+% 
+% 
+% Xev = linspace(min(exp_drift_times), max(exp_drift_times));
+% if (length(b) == 1)
+%     Yev = b* Xev ;
+%     calibrated_observed_drifts = b* exp_drift_times; 
+% else
+%     Yev = b(1)*Xev + b(2) ; 
+%     calibrated_observed_drifts = b(1) * exp_drift_times + b(2) ; 
+% end
+
+% plot(Xev, Yev, 'r') ;
+% xlabel('Observed UMC Drift Time') ; ylabel('Confirmed Mass Tag Drift Time') ;
+% title('Drift Time Regression') ;
+
+% Calibrate
+display('Performing mass, net and drift_time calibration') ;
+calibratedUMCFeatures = [] ;
+max_mass_shift_ppm = 10000;
+for featureNum = 1:numFeatures
+    massShiftPPM = -1 *h.GetPPMShift(dLCMS(featureNum, mz_col), dLCMS(featureNum, scan_col));
+    if (massShiftPPM < max_mass_shift_ppm)
+        massShiftDa = massShiftPPM/1000000 * dLCMS(featureNum, mass_col) ; 
+        calibratedMass = dLCMS(featureNum, mass_col) + massShiftDa ;
+        indexFeature = find(PepTransformedRT(:,1) == featureNum) ; 
+        calibratedNET  = PepTransformedRT(indexFeature, 2) ;
+        umcIntensity = dLCMS(featureNum, intensity_col) ; 
+%         if (length(b) == 1)
+%             calibratedDT = b*dDrifts(featureNum, 3);
+%         else
+%             calibratedDT = b(1) * dDrifts(featureNum, 3) + b(2) ;
+%         end
+        calibratedUMCFeatures = [calibratedUMCFeatures ; featureNum calibratedMass calibratedNET umcIntensity] ;
+    end
+end
+
+% Search
+display('Searching DB using mass/net tolerances') ;
+search_mass_tol  = 20 ;
+search_net_tol = 0.025 ;
+search_dt_tol = 100 ;
+dbMTMassNetDt = [dbMassTagInfo(:, dbIdCol) dbMassTagInfo(:, dbMassCol) dbMassTagInfo(:, dbNetCol) dbMassTagsMain(:, dbDtCol)] ;
+[TrueMatches] = SearchForMTIDs(dbMTMassNetDt, calibratedUMCFeatures, search_mass_tol, search_net_tol, search_dt_tol) ;
+num_identified_mtids = size(unique(TrueMatches(:,2)), 1) ;
+sprintf('Number of unique identifications without drift time=  %d', num_identified_mtids)
+
+% FDR search
+display('Performing 11Da shift and searching') ;
+shiftedMTMassNetDt = [dbMassTagInfo(:, dbIdCol) dbMassTagInfo(:, dbMassCol)+11 dbMassTagInfo(:, dbNetCol) dbMassTagsMain(:, dbDtCol)] ;
+[FalseMatches] = SearchForMTIDs(shiftedMTMassNetDt, calibratedUMCFeatures, search_mass_tol, search_net_tol, search_dt_tol) ;
+num_false = size(unique(FalseMatches(:,2)), 1) ;
+sprintf('Number of unique false identifications without drift time  =  %d',num_false)
+
+% % Re-searching using drift time
+% display('Searching DB using mass/net/dt tolerances') ;
+% dt_error = confirmed_drifts(:,2) - calibrated_observed_drifts ; 
+% [mu_dt_tol sigma_dt_tol] = EM_1D(dt_error', 0) ; 
+% search_dt_tol = max(abs([mu_dt_tol+sigma_dt_tol mu_dt_tol-sigma_dt_tol])) ; 
+% [TrueDTMatches] = SearchForMTIDs(dbMTMassNetDt, calibratedUMCFeatures, search_mass_tol, search_net_tol, search_dt_tol) ;
+% num_tol_mtids = size(unique(TrueDTMatches(:,2)), 1) ;
+% sprintf('Number of unique identifications using drift time=  %d', num_tol_mtids)
+% 
+% % FDR search
+% display('Performing 11Da shift and searching') ;
+% [FalseDTMatches] = SearchForMTIDs(shiftedMTMassNetDt, calibratedUMCFeatures, search_mass_tol, search_net_tol, search_dt_tol) ;
+% num_tol_false = size(unique(FalseDTMatches(:,2)), 1) ;
+% sprintf('Number of unique false identifications using drift time  =  %d',num_tol_false)
+% 
+
+display('Performing tolerance refinement using EM algorithm')
+mass_err = TrueMatches(:, 3)';
+net_err = TrueMatches(:, 4)' ; 
+dt_err = TrueMatches(:, 5)' ; 
+[sigma_mass mu_mass] = EM_1D(mass_err,0) ; 
+[sigma_net mu_net] = EM_1D(net_err,0) ; 
+[sigma_dt mu_dt] = EM_1D(dt_err,0) ;
+
+% massErrorRangeToConsider = [mu_mass-2*sigma_mass mu_mass+2*sigma_mass] ; 
+% netErrorRangeToConsider = [mu_net-2*sigma_net mu_net+2*sigma_net] ; 
+% dtErrorRangeToConsider = [mu_dt-sigma_dt mu_dt+sigma_dt] ; 
+% [TolMatches] = SearchForMTIDsUsingRange(dbMTMassNetDt, calibratedUMCFeatures, massErrorRangeToConsider, netErrorRangeToConsider, dtErrorRangeToConsider) ; 
+
+search_mass_tol = max(abs([mu_mass-2*sigma_mass mu_mass+2*sigma_mass])) ; 
+search_net_tol = max(abs([mu_net-2*sigma_net mu_net+2*sigma_net])) ; 
+[TolMatches] = SearchForMTIDs(dbMTMassNetDt, calibratedUMCFeatures, search_mass_tol, search_net_tol, search_dt_tol) ;
+sprintf('Number of unique identifications after tolerance refinement =  %d',length(unique(TolMatches(:,2))))
+ 
+ 
+% % FDR search
+% display('Performing 11Da shift and searching') ;
+% %[TolFalseMatches] = SearchForMTIDsUsingRange(shiftedMTMassNetDt, calibratedUMCFeatures, massErrorRangeToConsider, netErrorRangeToConsider, dtErrorRangeToConsider) ; 
+% [TolFalseMatches] = SearchForMTIDs(shiftedMTMassNetDt, calibratedUMCFeatures, search_mass_tol, search_net_tol, search_dt_tol) ;
+% sprintf('Number of unique false identifications after tolerance refinement =  %d', length(unique(TolFalseMatches(:,2)))) 
+
+%%searching with tolerance refinements on mass and net and no refinement on
+%%dt
+[TolMatches] = SearchForMTIDs(dbMTMassNetDt, calibratedUMCFeatures, search_mass_tol, search_net_tol, 100) ;
+sprintf('Number of unique identifications after tolerance refinement only on mass and NET =  %d',length(unique(TolMatches(:,2))))
+ 
+ 
+% FDR search
+display('Performing 11Da shift and searching') ;
+%[TolFalseMatches] = SearchForMTIDsUsingRange(shiftedMTMassNetDt, calibratedUMCFeatures, massErrorRangeToConsider, netErrorRangeToConsider, dtErrorRangeToConsider) ; 
+[TolFalseMatches] = SearchForMTIDs(shiftedMTMassNetDt, calibratedUMCFeatures, search_mass_tol, search_net_tol, 100) ;
+sprintf('Number of unique false identifications after tolerance refinement only on mass and NET =  %d', length(unique(TolFalseMatches(:,2)))) 
+
+
+
+% %Tolerance Refinement
+% display('Performing tolerance refinement using EM algorithm')
+% 
+% %Get mean of errors
+% mean_mass_err = mean(TrueMatches(:,3)) ; 
+% mean_dt_err = mean(TrueMatches(:,5)) ;
+% mean_net_err = mean(TrueMatches(:,4)) ; 
+% centered_mass_err = (TrueMatches(:,3) - mean_mass_err)' ; 
+% centered_drift_err = (TrueMatches(:,5) - mean_dt_err)' ; 
+% centered_net_err = (TrueMatches(:,4) - mean_net_err)' ; 
+% 
+% max_mass_tol  = 100 ;
+% min_mass_tol = 0.75 ;
+% max_net_tol = 0.2 ;
+% min_net_tol = 0.0075 ;
+% max_dt_tol = 1 ;
+% min_dt_tol = 0.005 ;
+% 
+% % cols for o/p matrix from SearchForMTIDs
+% % 1:umc_index 2:mtid 3:mass_error 4:net_error 5:dt_error
+% 
+% % mass tolerance refinement
+% [sigma_mass, mu_mass] = EM_1D(centered_mass_err, 0) ;
+% new_search_mass_tol = 2*sigma_mass ;
+% if (new_search_mass_tol > max_mass_tol)
+%     new_search_mass_tol = max_mass_tol ;
+% else if (new_search_mass_tol < min_mass_tol)
+%         new_search_mass_tol = min_mass_tol ;
+%     end
+% end
+% sprintf('Search mass tolerance after refinement =  %d', new_search_mass_tol)
+% %Net tolerance refinement
+% [sigma_net, mu_net] = EM_1D(centered_net_err, 0) ;
+% new_search_net_tol = 2*sigma_net ;
+% if (new_search_net_tol > max_net_tol)
+%     new_search_net_tol = max_net_tol ;
+% else if (new_search_net_tol < min_net_tol)
+%         new_search_net_tol = min_net_tol ;
+%     end
+% end
+% sprintf('Search net tolerance after refinement =  %d', new_search_net_tol)
+% % Drift_time tolerance refinement
+% [sigma_dt, mu_dt] = EM_1D(centered_drift_err, 0) ;
+% new_search_dt_tol = 2*sigma_dt ;
+% if (new_search_dt_tol > max_dt_tol)
+%     new_search_dt_tol = max_dt_tol ;
+% else if (new_search_dt_tol < min_dt_tol)
+%         new_search_dt_tol = min_dt_tol ;
+%     end
+% end
+% sprintf('Search drift_time tolerance after refinement =  %d', new_search_dt_tol)
+% 
+% 
+% %Re-search
+% display('Re-searching DB using updated tolerances') ;
+% massErrorDa = mean_mass_err/1000000 * calibratedUMCFeatures(:, 1) ;        
+% calibratedUMCFeatures(:,1) = calibratedUMCFeatures(:, 1) - massErrorDa ; 
+% calibratedUMCFeatures(:,2) = calibratedUMCFeatures(:, 2) - mean_net_err ; 
+% calibratedUMCFeatures(:,3) = calibratedUMCFeatures(:, 3) - mean_dt_err ; 
+% [RefinedMatches] = SearchForMTIDs(dbMTMassNetDt, calibratedUMCFeatures, new_search_mass_tol, new_search_net_tol, new_search_dt_tol) ;
+% sprintf('Number of identifications after tolerance refinement =  %d', size(RefinedMatches, 1))
+% 
+% % FDR re-search
+% display('Performing 11Da shift and re-searching') ;
+% [RefinedFalseMatches] = SearchForMTIDs(shiftedMTMassNetDt, calibratedUMCFeatures, new_search_mass_tol, new_search_net_tol, new_search_dt_tol) ;
+% sprintf('Number of false identifications after tolerance refinement =  %d', size(RefinedFalseMatches, 1))
+
+
+% figure ;
+% scatter(confirmed_drifts(:,2), observed_drifts(:,2)) ;
+% hold on;
+% plot(Xev, Yev, 'r') ;
+% xlabel('Confirmed Mass Tag Drift Time') ; ylabel('Observed Drift Time') ;
+% title('Drift Time Regression') ;
+% driftTimeAlignFig = strcat(datasetName, '_ID_Drift_Time_Regression.jpg') ;
+% saveas(1, driftTimeAlignFig, 'jpg') ;
+
+
+
+% % figure;
+% % plot(linspace(min(idDelFit), max(idDelFit), num_bins), hist(idDelFit, num_bins)) ;
+% % title('Drift Time Error Histogram (after tol. refinement)') ;
+% % driftErrorHist = strcat(datasetName, '_ID_Drift_Time_Error_Histogram.jpg') ;
+% % saveas(2, driftErrorHist, 'jpg') ;
+
+
+% %Starting creating the output
+%% output header and dataset name
+% output_cells = {'UMC_Index', 'Mass_Tag_ID', 'Peptide_Name', 'Protein_Name', 'Abundance', 'Mass_Tag_Mass', 'Mass_Tag_NET', 'Mass_Tag_Dt_calculated', 'Observed_mass', 'Observed_Scan', 'Observed Drift_time', 'MassError', 'NetError', 'DriftError'} ;
+% TIndex = findstr(fileName, '_all_drifts.csv') ;
+% datasetName = fileName(1:TIndex) ;
+%
+% for i = 1:num_identified
+%     this_umc = identified_umcs(i) ;
+%     this_mass_tag = identified_mass_tags(i) ;
+%
+%     %MT stuff
+%     iIndex = find(dbMassTagsMain(:, dbIdCol) == this_mass_tag) ;
+%     this_mass_tag_peptide = dbPepList(iIndex) ;
+%     this_mass_tag_protein = dbProteinList(iIndex) ;
+%     this_mass_tag_mass = dbMassTagsMain(iIndex, dbMassCol) ;
+%     this_mass_tag_net = dbMassTagsMain(iIndex, dbNetCol) ;
+%     this_mass_tag_drift = dbMassTagsMain(iIndex, dbDtCol) ;
+%
+%     %observed stuff%
+%     this_obs_mass = ms_features(this_umc, mass_col) ;
+%     this_obs_scan = ms_features(this_umc, scan_col) ;
+%     this_obs_drift = drift_features(this_umc, drift_col) ;
+%     this_abundance = ms_features(this_umc, intensity_col) ;
+%
+%     %error_stuff
+%     this_mass_error = Matches(i, 4) ;
+%     this_net_error = Matches(i, 3) ;
+%     this_drift_error = this_mass_tag_drift - this_obs_drift ;
+%
+%    row = {this_umc, this_mass_tag, this_mass_tag_peptide{1}, this_mass_tag_protein{1}, this_abundance, this_mass_tag_mass, this_mass_tag_net, this_mass_tag_drift, this_obs_mass, this_obs_scan, this_obs_drift, this_mass_error, this_net_error, this_drift_error} ;
+%    output_cells = [output_cells; row] ;
+%  end
+
+
+% %write out results
+% outputFileName = strcat(datasetName, '_ID_UMCS.xls') ;
+% fid = fopen(outputFileName, 'r') ;
+% if (fid > -1)
+%    fclose(fid);
+%    delete(outputFileName) ; % so as to overwrite the damn thing
+% end
+% clear fid ;
+% s = xlswrite(outputFileName, output_cells) ;
+
+
+% % Matches columns: umc_index_column = 1 mass_tag_id_column = 2 net_error_column = 3 mass_diff_ppm_column = 4
+% % MatchScores columns: ms section column = 1 msms_section_column = 2
+% figure ; surf(MatchScores') ;
+% hold on ;
+% plot3(AlignmentFunc(:,1)+1, AlignmentFunc(:,2)+1, MatchScores(AlignmentFunc(:,1)+1, AlignmentFunc(:,2)+1), '*') ;
+% view(2) ;
+% colormap('hot') ;
+% alignFig = strcat(datasetName, '_ID_UMCS_Alignment.jpg') ;
+% % saveas(3, alignFig, 'jpg') ;
+%
+%
+% figure ; scatter(ms_features(Matches(:,1),scan_col), Matches(:,4), 'r.') ; title('Mass Errors vs  Scan') ;
+% mError1 = strcat(datasetName, '_ID_UMCS_MassErrorVsScan.jpg') ;
+% % saveas(4, mError1, 'jpg') ;
+%
+% figure ; plot(ms_features(Matches(:,1),scan_col), Matches(:,3), 'r.') ; title('NET Errors vs Scan') ;
+% netError1 = strcat(datasetName, '_ID_UMCS_NETErrorVsScan.jpg') ;
+% % saveas(5, netError1, 'jpg') ;
+%
+%
+% figure ; plot(MassErrorHist(:,1), MassErrorHist(:,2)); title('Mass Error Histogram')  ;
+% mErrorHist = strcat(datasetName, 'ID_UMCS_MassErrorHistogram.jpg') ;
+% % saveas(6, mErrorHist, 'jpg') ;
+%
+% figure ; plot(NetErrorHist(:,1), NetErrorHist(:,2)); title('NET Error Histogram')  ;
+% nErrorHist = strcat(datasetName, 'ID_UMCS_NETErrorHistogram.jpg') ;
+% % saveas(7, nErrorHist, 'jpg') ;
+
+%close all
+%end

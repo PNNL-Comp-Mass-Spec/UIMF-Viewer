@@ -1,0 +1,1 @@
+Work done to interpret IMS-MS/MS data.  Two methods were developed to create dtas, one based on a Partial Least Square solution and the other based on Matched filtering.  After creating Dtas, the file were run through SEQUEST. Didnt get too far with this work.

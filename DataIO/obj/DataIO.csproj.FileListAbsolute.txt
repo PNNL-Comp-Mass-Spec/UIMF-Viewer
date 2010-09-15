@@ -1,0 +1,40 @@
+C:\Development\Shared\DataIO\bin\Debug\DataIO.dll
+C:\Development\Shared\DataIO\bin\Debug\DataIO.pdb
+C:\Development\Shared\DataIO\bin\Debug\IDLTools.dll
+C:\Development\Shared\DataIO\bin\Debug\IDLTools.pdb
+C:\Development\Shared\DataIO\obj\Debug\ResolveAssemblyReference.cache
+C:\Development\Shared\DataIO\obj\Debug\DataIO.ctlMessageViewer.resources
+C:\Development\Shared\DataIO\obj\Debug\DataIO.csproj.GenerateResource.Cache
+C:\Development\Shared\DataIO\obj\Debug\DataIO.dll.licenses
+C:\Development\Shared\DataIO\obj\Debug\DataIO.dll
+C:\Development\Shared\DataIO\obj\Debug\DataIO.pdb
+C:\Development\Copy of Shared\DataIO\bin\Debug\DataIO.dll
+C:\Development\Copy of Shared\DataIO\bin\Debug\DataIO.pdb
+C:\Development\Copy of Shared\DataIO\bin\Debug\IDLTools.dll
+C:\Development\Copy of Shared\DataIO\bin\Debug\IDLTools.pdb
+C:\Development\Copy of Shared\DataIO\obj\Debug\ResolveAssemblyReference.cache
+C:\Development\Copy of Shared\DataIO\obj\Debug\DataIO.ctlMessageViewer.resources
+C:\Development\Copy of Shared\DataIO\obj\Debug\DataIO.csproj.GenerateResource.Cache
+C:\Development\Copy of Shared\DataIO\obj\Debug\DataIO.dll.licenses
+C:\Development\Copy of Shared\DataIO\obj\Debug\DataIO.dll
+C:\Development\Copy of Shared\DataIO\obj\Debug\DataIO.pdb
+Z:\FromDerek\Copy of Shared\DataIO\bin\Debug\DataIO.dll
+Z:\FromDerek\Copy of Shared\DataIO\bin\Debug\DataIO.pdb
+Z:\FromDerek\Copy of Shared\DataIO\bin\Debug\IDLTools.dll
+Z:\FromDerek\Copy of Shared\DataIO\bin\Debug\IDLTools.pdb
+Z:\FromDerek\Copy of Shared\DataIO\obj\Debug\ResolveAssemblyReference.cache
+Z:\FromDerek\Copy of Shared\DataIO\obj\Debug\DataIO.ctlMessageViewer.resources
+Z:\FromDerek\Copy of Shared\DataIO\obj\Debug\DataIO.csproj.GenerateResource.Cache
+Z:\FromDerek\Copy of Shared\DataIO\obj\Debug\DataIO.dll.licenses
+Z:\FromDerek\Copy of Shared\DataIO\obj\Debug\DataIO.dll
+Z:\FromDerek\Copy of Shared\DataIO\obj\Debug\DataIO.pdb
+C:\Documents and Settings\d3p793\Desktop\Copy of Shared\DataIO\bin\Debug\DataIO.dll
+C:\Documents and Settings\d3p793\Desktop\Copy of Shared\DataIO\bin\Debug\DataIO.pdb
+C:\Documents and Settings\d3p793\Desktop\Copy of Shared\DataIO\bin\Debug\IDLTools.dll
+C:\Documents and Settings\d3p793\Desktop\Copy of Shared\DataIO\bin\Debug\IDLTools.pdb
+C:\Documents and Settings\d3p793\Desktop\Copy of Shared\DataIO\obj\Debug\ResolveAssemblyReference.cache
+C:\Documents and Settings\d3p793\Desktop\Copy of Shared\DataIO\obj\Debug\DataIO.ctlMessageViewer.resources
+C:\Documents and Settings\d3p793\Desktop\Copy of Shared\DataIO\obj\Debug\DataIO.csproj.GenerateResource.Cache
+C:\Documents and Settings\d3p793\Desktop\Copy of Shared\DataIO\obj\Debug\DataIO.dll.licenses
+C:\Documents and Settings\d3p793\Desktop\Copy of Shared\DataIO\obj\Debug\DataIO.dll
+C:\Documents and Settings\d3p793\Desktop\Copy of Shared\DataIO\obj\Debug\DataIO.pdb
