@@ -1,8 +1,0 @@
-bin\Release\IDLTools.dll
-obj\Release\ResolveAssemblyReference.cache
-obj\Release\IDLTools.dll
-..\..\WINDOWS\system32\IDLTools.dll
-..\..\WINDOWS\system32\IDLTools.pdb
-obj\Debug\ResolveAssemblyReference.cache
-obj\Debug\IDLTools.dll
-obj\Debug\IDLTools.pdb

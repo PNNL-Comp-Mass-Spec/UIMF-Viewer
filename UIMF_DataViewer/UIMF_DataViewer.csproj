@@ -1,0 +1,178 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0ACEC402-1936-4664-9524-100052613ECE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>UIMF_DataViewer</RootNamespace>
+    <AssemblyName>UIMF_DataViewer</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="NationalInstruments.Common, Version=8.9.20.302, Culture=neutral, PublicKeyToken=4544464cdeaab541, processorArchitecture=MSIL" />
+    <Reference Include="NationalInstruments.UI, Version=8.9.20.246, Culture=neutral, PublicKeyToken=4544464cdeaab541, processorArchitecture=x86" />
+    <Reference Include="NationalInstruments.UI.WindowsForms, Version=8.9.20.246, Culture=neutral, PublicKeyToken=4544464cdeaab541, processorArchitecture=x86">
+      <HintPath>..\..\..\..\..\Program Files (x86)\National Instruments\MeasurementStudioVS2005\DotNET\Assemblies\8.9.20.246\NationalInstruments.UI.WindowsForms.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.SQLite, Version=1.0.65.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dlls\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="InternalCalibration.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="InternalCalibration.designer.cs">
+      <DependentUpon>InternalCalibration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="UIMFLibrary\ClassDefinitions.cs" />
+    <Compile Include="UIMFLibrary\UIMFDataReader.cs" />
+    <Compile Include="UIMFLibrary\UIMFDataWriter.cs" />
+    <Compile Include="DataViewer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Utilities\Calibrator.cs" />
+    <Compile Include="Utilities\ExportExperiment.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Utilities\ExportExperiment.designer.cs">
+      <DependentUpon>ExportExperiment.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Utilities\Intensity_ColorMap.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Utilities\PointAnnotationGraph.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Utilities\ProgressBar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Utilities\Slider.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Utilities\TextExport.cs" />
+    <Compile Include="Utilities\VerticalLabel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="InternalCalibration.resx">
+      <DependentUpon>InternalCalibration.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\licenses.licx" />
+    <EmbeddedResource Include="DataViewer.resx">
+      <DependentUpon>DataViewer.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <SubType>Designer</SubType>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Utilities\ExportExperiment.resx">
+      <DependentUpon>ExportExperiment.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Utilities\Intensity_ColorMap.resx">
+      <DependentUpon>Intensity_ColorMap.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Utilities\PointAnnotationGraph.resx">
+      <DependentUpon>PointAnnotationGraph.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Utilities\ProgressBar.resx">
+      <DependentUpon>ProgressBar.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Utilities\VerticalLabel.resx">
+      <DependentUpon>VerticalLabel.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\triangle_left_in.GIF" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\triangle_left_out.GIF" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\triangle_right_out.GIF" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\triangle_right_in.GIF" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\triangle_up_out.GIF" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\triangle_down_out.GIF" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\triangle_up_in.GIF" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Images\triangle_down_in.GIF" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PreBuildEvent>IF EXIST C:\WINDOWS\Microsoft.NET\Framework64\v2.0.50727\ldr64.exe C:\WINDOWS\Microsoft.NET\Framework64\v2.0.50727\ldr64.exe setwow</PreBuildEvent>
+    <PostBuildEvent>IF EXIST C:\WINDOWS\Microsoft.NET\Framework64\v2.0.50727\ldr64.exe C:\WINDOWS\Microsoft.NET\Framework64\v2.0.50727\ldr64.exe set64</PostBuildEvent>
+  </PropertyGroup>
+</Project>

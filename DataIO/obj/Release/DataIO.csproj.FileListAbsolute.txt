@@ -1,9 +1,0 @@
-C:\Development\Shared\DataIO\bin\Release\DataIO.dll
-C:\Development\Shared\DataIO\bin\Release\DataIO.pdb
-C:\Development\Shared\DataIO\bin\Release\IDLTools.dll
-C:\Development\Shared\DataIO\obj\Release\ResolveAssemblyReference.cache
-C:\Development\Shared\DataIO\obj\Release\DataIO.ctlMessageViewer.resources
-C:\Development\Shared\DataIO\obj\Release\DataIO.csproj.GenerateResource.Cache
-C:\Development\Shared\DataIO\obj\Release\DataIO.dll.licenses
-C:\Development\Shared\DataIO\obj\Release\DataIO.dll
-C:\Development\Shared\DataIO\obj\Release\DataIO.pdb

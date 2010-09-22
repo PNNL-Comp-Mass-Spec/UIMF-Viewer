@@ -1,0 +1,143 @@
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Release\UIMF_Viewer.exe
+C:\Develop\UIMF_Viewer\UIMF_Viewer\bin\Release\UIMF_Viewer.exe.manifest
+C:\Develop\UIMF_Viewer\UIMF_Viewer\bin\Release\UIMF_Viewer.application
+C:\Develop\UIMF_Viewer\UIMF_Viewer\bin\Release\UIMF_Viewer.exe
+C:\Develop\UIMF_Viewer\UIMF_Viewer\bin\Release\Interop.CWUIControlsLib.dll
+C:\Develop\UIMF_Viewer\UIMF_Viewer\bin\Release\Interop.CWDAQControlsLib.dll
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Release\ResolveAssemblyReference.cache
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Release\IonMobility.Form_About.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Release\IonMobility.IonMobilityMain.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Release\IonMobility.Properties.Resources.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Release\UIMF_Viewer.csproj.GenerateResource.Cache
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Release\UIMF_Viewer.exe.licenses
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Release\UIMF_Viewer.exe.manifest
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Release\UIMF_Viewer.application
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\obj\Release\UIMF_Viewer.exe
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\bin\Release\UIMF_Viewer.exe.manifest
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\bin\Release\UIMF_Viewer.application
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\bin\Release\UIMF_Viewer.exe
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\bin\Release\Interop.CWUIControlsLib.dll
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\bin\Release\Interop.CWDAQControlsLib.dll
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\obj\Release\ResolveAssemblyReference.cache
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\obj\Release\IonMobilityProperties.Calibration_Properties.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\obj\Release\IonMobility.Form_About.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\obj\Release\IonMobility.IonMobilityMain.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\obj\Release\IonMobility.IonMobilityDataView.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\obj\Release\IonMobility.Properties.Resources.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\obj\Release\IonMobility.Utilities.ExportExperiment.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\obj\Release\IonMobility.Utilities.Intensity_ColorMap.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\obj\Release\IonMobility.PointAnnotationGraph.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\obj\Release\IonMobility.progress_Processing.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\obj\Release\IonMobility.VerticalLabel.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\obj\Release\UIMF_Viewer.csproj.GenerateResource.Cache
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\obj\Release\UIMF_Viewer.exe.licenses
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\obj\Release\UIMF_Viewer.exe.manifest
+C:\Develop\UIMF_Viewer\UIMF_Viewer 100510 Calibration\obj\Release\UIMF_Viewer.application
+C:\Develop\UIMF_Viewer\obj\Release\UIMF_Viewer.exe
+C:\Develop\UIMF_Viewer\bin\Release\UIMF_Viewer.exe.manifest
+C:\Develop\UIMF_Viewer\bin\Release\UIMF_Viewer.application
+C:\Develop\UIMF_Viewer\bin\Release\UIMF_Viewer.exe
+C:\Develop\UIMF_Viewer\bin\Release\System.Data.SQLite.dll
+C:\Develop\UIMF_Viewer\bin\Release\Interop.CWUIControlsLib.dll
+C:\Develop\UIMF_Viewer\bin\Release\Interop.CWDAQControlsLib.dll
+C:\Develop\UIMF_Viewer\obj\Release\ResolveAssemblyReference.cache
+C:\Develop\UIMF_Viewer\obj\Release\IonMobilityProperties.Calibration_Properties.resources
+C:\Develop\UIMF_Viewer\obj\Release\IonMobility.InternalCalibration.resources
+C:\Develop\UIMF_Viewer\obj\Release\IonMobility.Form_About.resources
+C:\Develop\UIMF_Viewer\obj\Release\IonMobility.IonMobilityMain.resources
+C:\Develop\UIMF_Viewer\obj\Release\IonMobility.IonMobilityDataView.resources
+C:\Develop\UIMF_Viewer\obj\Release\IonMobility.Properties.Resources.resources
+C:\Develop\UIMF_Viewer\obj\Release\IonMobility.Utilities.ExportExperiment.resources
+C:\Develop\UIMF_Viewer\obj\Release\IonMobility.Utilities.Intensity_ColorMap.resources
+C:\Develop\UIMF_Viewer\obj\Release\IonMobility.PointAnnotationGraph.resources
+C:\Develop\UIMF_Viewer\obj\Release\IonMobility.progress_Processing.resources
+C:\Develop\UIMF_Viewer\obj\Release\IonMobility.VerticalLabel.resources
+C:\Develop\UIMF_Viewer\obj\Release\UIMF_Viewer.csproj.GenerateResource.Cache
+C:\Develop\UIMF_Viewer\obj\Release\UIMF_Viewer.exe.licenses
+C:\Develop\UIMF_Viewer\obj\Release\UIMF_Viewer.exe.manifest
+C:\Develop\UIMF_Viewer\obj\Release\UIMF_Viewer.application
+C:\Develop\UIMF_Viewer\UIMF_Viewer\bin\Debug\UIMF_Viewer.exe.manifest
+C:\Develop\UIMF_Viewer\UIMF_Viewer\bin\Debug\UIMF_Viewer.application
+C:\Develop\UIMF_Viewer\UIMF_Viewer\bin\Debug\UIMF_Viewer.exe
+C:\Develop\UIMF_Viewer\UIMF_Viewer\bin\Debug\UIMF_Viewer.pdb
+C:\Develop\UIMF_Viewer\UIMF_Viewer\bin\Debug\AxInterop.CWDAQControlsLib.dll
+C:\Develop\UIMF_Viewer\UIMF_Viewer\bin\Debug\System.Data.SQLite.dll
+C:\Develop\UIMF_Viewer\UIMF_Viewer\bin\Debug\Interop.CWDAQControlsLib.dll
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\ResolveAssemblyReference.cache
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\IonMobility.InternalCalibration.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\IonMobility.Form_About.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\IonMobility.IonMobilityMain.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\IonMobility.IonMobilityDataView.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\IonMobility.Properties.Resources.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\IonMobility.Utilities.ExportExperiment.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\IonMobility.Utilities.Intensity_ColorMap.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\IonMobility.PointAnnotationGraph.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\IonMobility.progress_Processing.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\IonMobility.VerticalLabel.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\UIMF_Viewer.csproj.GenerateResource.Cache
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\UIMF_Viewer.exe.licenses
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\UIMF_Viewer.exe.manifest
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\UIMF_Viewer.application
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\UIMF_Viewer.exe
+C:\Develop\UIMF_Viewer\UIMF_Viewer\obj\Debug\UIMF_Viewer.pdb
+C:\Develop\UIMF_Viewer\UIMF_Viewer\bin\Release\UIMF_Viewer.exe.config
+C:\Develop\UIMF_Viewer\UIMF_Viewer\bin\Debug\UIMF_Viewer.exe.config
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\bin\Release\UIMF_Viewer.exe.config
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\obj\Release\UIMF_Viewer.exe
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\bin\Release\UIMF_Viewer.exe.manifest
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\bin\Release\UIMF_Viewer.application
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\bin\Release\UIMF_Viewer.exe
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\bin\Release\System.Data.SQLite.dll
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\bin\Release\Interop.CWUIControlsLib.dll
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\bin\Release\Interop.CWDAQControlsLib.dll
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\obj\Release\ResolveAssemblyReference.cache
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\obj\Release\IonMobility.InternalCalibration.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\obj\Release\IonMobility.Form_About.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\obj\Release\IonMobility.IonMobilityMain.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\obj\Release\IonMobility.IonMobilityDataView.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\obj\Release\IonMobility.Properties.Resources.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\obj\Release\IonMobility.Utilities.ExportExperiment.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\obj\Release\IonMobility.Utilities.Intensity_ColorMap.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\obj\Release\IonMobility.PointAnnotationGraph.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\obj\Release\IonMobility.progress_Processing.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\obj\Release\IonMobility.VerticalLabel.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\obj\Release\UIMF_Viewer.csproj.GenerateResource.Cache
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\obj\Release\UIMF_Viewer.exe.licenses
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\obj\Release\UIMF_Viewer.exe.manifest
+C:\Develop\UIMF_Viewer\UIMF_Viewer COMPRESSION\obj\Release\UIMF_Viewer.application
+C:\Develop\UIMF_Viewer\UIMF_Viewer\bin\Release\UIMF_DataViewer.dll
+C:\Develop\UIMF_Viewer\UIMF_Viewer\bin\Release\UIMF_DataViewer.pdb
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\bin\Release\UIMF_Viewer.exe.config
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\obj\Release\UIMF_Viewer.exe
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\obj\Release\ResolveAssemblyReference.cache
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\obj\Release\IonMobility.Form_About.resources
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\obj\Release\IonMobility.IonMobilityMain.resources
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\obj\Release\IonMobility.Properties.Resources.resources
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\obj\Release\UIMF_Viewer.csproj.GenerateResource.Cache
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\obj\Release\UIMF_Viewer.exe.licenses
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\bin\Release\UIMF_Viewer.exe.manifest
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\bin\Release\UIMF_Viewer.application
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\bin\Release\UIMF_Viewer.exe
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\bin\Release\UIMF_DataViewer.dll
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\bin\Release\Interop.CWUIControlsLib.dll
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\bin\Release\Interop.CWDAQControlsLib.dll
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\bin\Release\UIMF_DataViewer.pdb
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\obj\Release\UIMF_Viewer.exe.manifest
+C:\Develop\UIMF_Viewer\UIMF_Desktop\UIMF_Viewer\obj\Release\UIMF_Viewer.application
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\bin\Release\UIMF_Viewer.exe.config
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\obj\Release\UIMF_Viewer.exe
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\bin\Release\UIMF_Viewer.exe.manifest
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\bin\Release\UIMF_Viewer.application
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\bin\Release\UIMF_Viewer.exe
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\bin\Release\UIMF_DataViewer.dll
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\bin\Release\Interop.CWUIControlsLib.dll
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\bin\Release\Interop.CWDAQControlsLib.dll
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\bin\Release\UIMF_DataViewer.pdb
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\obj\Release\ResolveAssemblyReference.cache
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\obj\Release\IonMobility.Form_About.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\obj\Release\IonMobility.IonMobilityMain.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\obj\Release\IonMobility.Properties.Resources.resources
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\obj\Release\UIMF_Viewer.csproj.GenerateResource.Cache
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\obj\Release\UIMF_Viewer.exe.licenses
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\obj\Release\UIMF_Viewer.exe.manifest
+C:\Develop\UIMF_Viewer\UIMF_Viewer\UIMF_Viewer\obj\Release\UIMF_Viewer.application
