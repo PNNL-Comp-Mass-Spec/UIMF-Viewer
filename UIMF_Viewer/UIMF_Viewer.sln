@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UIMF_Viewer", "UIMF_Viewer.csproj", "{7D1D311C-564F-480F-A8BF-CF648D93DF65}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UIMF_DataViewer", "..\UIMF_DataViewer\UIMF_DataViewer.csproj", "{0ACEC402-1936-4664-9524-100052613ECE}"
