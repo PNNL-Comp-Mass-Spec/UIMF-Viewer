@@ -63,6 +63,11 @@
     </dependentAssembly>
   </dependency>
   <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="System.Core" version="3.5.0.0" publicKeyToken="B77A5C561934E089" language="neutral" processorArchitecture="msil" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="AxInterop.CWDAQControlsLib.dll" size="86016">
       <assemblyIdentity name="AxInterop.CWDAQControlsLib" version="1.4.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
@@ -71,6 +76,42 @@
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
         <dsig:DigestValue>44dlQaBR14tyGyWmsB26dH5lRj0=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="DeconEngine.dll" size="1196032">
+      <assemblyIdentity name="DeconEngine" version="1.0.3165.35432" language="neutral" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>87rZRl17GZF+6Af7rlbCFsKirwE=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="DeconEngineV2.dll" size="1273856">
+      <assemblyIdentity name="DeconEngineV2" version="1.0.3458.31952" language="neutral" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>QWkNUDC0KdK7qBPTrKTmaOKDkz0=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="DeconTools.Backend.dll" size="158720">
+      <assemblyIdentity name="DeconTools.Backend" version="1.0.3614.26340" language="neutral" processorArchitecture="x86" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>Pfu/5OSRaHh6z2KT5qWRx2GAws8=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -99,14 +140,26 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="UIMF_Viewer.exe" size="888832">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="UIMF_DataViewer.dll" size="241664">
+      <assemblyIdentity name="UIMF_DataViewer" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>EjJjwHwoIAa7lEC+8mdWmECMqb8=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="UIMF_Viewer.exe" size="692224">
       <assemblyIdentity name="UIMF_Viewer" version="1.3.0.0" language="neutral" processorArchitecture="x86" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>UBLfyZ9ioxdLghn1Nn8hiVejh/8=</dsig:DigestValue>
+        <dsig:DigestValue>6JuUcEdcP6N+zX26ua2dhdxm8cM=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -117,69 +170,6 @@
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
       <dsig:DigestValue>3iSf0pXR4L+cCunPFLrX73aTl44=</dsig:DigestValue>
-    </hash>
-  </file>
-  <file name="Experiment\IMSDataAndScripts\Code\IMS_DtaCreator\ReadMe.txt" size="262">
-    <hash>
-      <dsig:Transforms>
-        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-      </dsig:Transforms>
-      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-      <dsig:DigestValue>UVxraoN3GcagyAZR+GypLZde3jo=</dsig:DigestValue>
-    </hash>
-  </file>
-  <file name="Experiment\IMSDataAndScripts\Code\MatchDatasets\LCMSFeatureFinder.exe" size="53248">
-    <hash>
-      <dsig:Transforms>
-        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-      </dsig:Transforms>
-      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-      <dsig:DigestValue>SswT/O1Ftv2eqIyktDQJuAZ1Uoo=</dsig:DigestValue>
-    </hash>
-  </file>
-  <file name="Experiment\IMSDataAndScripts\Code\MatchDatasets\UMCCreation.dll" size="151552">
-    <hash>
-      <dsig:Transforms>
-        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-      </dsig:Transforms>
-      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-      <dsig:DigestValue>gfRvRQVh/bKMYbE4GwZlmcMCXX8=</dsig:DigestValue>
-    </hash>
-  </file>
-  <file name="Experiment\IMSDataAndScripts\Code\MatchDatasets\UMCManipulation.dll" size="24576">
-    <hash>
-      <dsig:Transforms>
-        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-      </dsig:Transforms>
-      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-      <dsig:DigestValue>/S5r6rWojJzCK37J7IC60b52W/Q=</dsig:DigestValue>
-    </hash>
-  </file>
-  <file name="Experiment\IMSDataAndScripts\QC_Shew_0.25mg_4T_1.6_600_335_50ms_fr2400_adc_0000\Acquire_Log.txt" size="106555">
-    <hash>
-      <dsig:Transforms>
-        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-      </dsig:Transforms>
-      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-      <dsig:DigestValue>CIqfEZOV2/TJz4ZDGgBi9DuhgRs=</dsig:DigestValue>
-    </hash>
-  </file>
-  <file name="Experiment\IMSDataAndScripts\QC_Shew_0.25mg_4T_1.6_600_335_50ms_fr2400_adc_0000\ADC_Errors.txt" size="105285">
-    <hash>
-      <dsig:Transforms>
-        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-      </dsig:Transforms>
-      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-      <dsig:DigestValue>m1JtXse+Ym5Fk24HIvifCs9AEWc=</dsig:DigestValue>
-    </hash>
-  </file>
-  <file name="Experiment\IMSDataAndScripts\QC_Shew_0.25mg_4T_1.6_600_335_50ms_fr2400_adc_0000\Multiplexing_Profile.txt" size="46">
-    <hash>
-      <dsig:Transforms>
-        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-      </dsig:Transforms>
-      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-      <dsig:DigestValue>Afd/2/ZEC0k8JWficLfQhqfa8TE=</dsig:DigestValue>
     </hash>
   </file>
   <file name="UIMF_Viewer.exe.config" size="1135">

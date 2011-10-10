@@ -143,10 +143,23 @@ namespace UIMF_File.Utilities
             this.Invalidate();
         }
 
+#if false
+        public void set_Colors(  float one, float two, float three, float four, float five, float six)
+        {
+            this.color_positions[0] = one;
+            this.color_positions[1] = two;
+            this.color_positions[2] = three;
+            this.color_positions[3] = four;
+            this.color_positions[4] = five;
+            this.color_positions[5] = six;
+        }
+#endif
+
         public void lbl_MaxIntensity_MouseEnter(object obj, System.EventArgs e)
         {
             this.lbl_MaxIntensity.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
         }
+
         public void lbl_MaxIntensity_MouseLeave(object obj, System.EventArgs e)
         {
             this.lbl_MaxIntensity.BorderStyle = System.Windows.Forms.BorderStyle.None;
@@ -218,6 +231,7 @@ namespace UIMF_File.Utilities
             this.color_positions[moved_button.TabIndex] = (float) (moved_button.Top + (moved_button.Height/2)) / (float) this.rect_colors.Height;
             return new_position;
         }
+
         private int bump_Color_Up(int top_position, System.Windows.Forms.Button moved_button)
         {
             int new_position = top_position;

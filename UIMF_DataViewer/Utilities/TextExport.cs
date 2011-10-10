@@ -13,7 +13,7 @@ namespace UIMF_File.Utilities
         {
         }
 
-        public void Export(string file_path, string col_header, int[][] Array2D, double[] drift_axis, float[] tof_axis)
+        public void Export(string file_path, string col_header, int[][] Array2D, double[] drift_axis, double[] tof_axis)
         {
             int i;
             int j;
@@ -57,7 +57,7 @@ namespace UIMF_File.Utilities
             }
         }
 
-        public void Export(string file_path, string col_header, double[][] Array2D, double[] drift_axis, float[] tof_axis)
+        public void Export(string file_path, string col_header, double[][] Array2D, double[] drift_axis, double[] tof_axis)
         {
             int i;
             int j;

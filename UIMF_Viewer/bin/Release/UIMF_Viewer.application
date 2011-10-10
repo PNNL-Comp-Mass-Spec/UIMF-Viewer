@@ -4,14 +4,14 @@
   <description asmv2:publisher="Microsoft" asmv2:product="UIMF_Viewer" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <deployment install="true" mapFileExtensions="true" />
   <dependency>
-    <dependentAssembly dependencyType="install" codebase="UIMF_Viewer.exe.manifest" size="8980">
+    <dependentAssembly dependencyType="install" codebase="UIMF_Viewer.exe.manifest" size="12029">
       <assemblyIdentity name="UIMF_Viewer.exe" version="1.0.0.0" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="x86" type="win32" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>L8H067ab/wdIwXS+P9cCd7AQzm4=</dsig:DigestValue>
+        <dsig:DigestValue>2X5oel0Gv/gOIzoHP7gufeDNC8k=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

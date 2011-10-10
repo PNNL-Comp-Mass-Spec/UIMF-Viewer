@@ -34,12 +34,27 @@
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="NationalInstruments.Common" version="9.0.20.610" publicKeyToken="4544464CDEAAB541" language="neutral" processorArchitecture="msil" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
       <assemblyIdentity name="NationalInstruments.Common.Native" version="8.9.20.302" publicKeyToken="4544464CDEAAB541" language="neutral" processorArchitecture="x86" />
     </dependentAssembly>
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
-      <assemblyIdentity name="NationalInstruments.DAQmx" version="9.2.20.32" publicKeyToken="4544464CDEAAB541" language="neutral" processorArchitecture="x86" />
+      <assemblyIdentity name="NationalInstruments.Common.Native" version="9.0.20.610" publicKeyToken="4544464CDEAAB541" language="neutral" processorArchitecture="x86" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="NationalInstruments.DAQmx" version="9.3.20.219" publicKeyToken="4544464CDEAAB541" language="neutral" processorArchitecture="x86" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="NationalInstruments.NiLmClientDLL" version="9.0.20.610" publicKeyToken="4544464CDEAAB541" language="neutral" processorArchitecture="x86" />
     </dependentAssembly>
   </dependency>
   <dependency>
@@ -60,6 +75,11 @@
   <dependency>
     <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
       <assemblyIdentity name="stdole" version="7.0.3300.0" publicKeyToken="B03F5F7F11D50A3A" language="neutral" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="System.Core" version="3.5.0.0" publicKeyToken="B77A5C561934E089" language="neutral" processorArchitecture="msil" />
     </dependentAssembly>
   </dependency>
   <dependency>
@@ -87,26 +107,62 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Interop.CWDAQControlsLib.dll" size="135168">
-      <assemblyIdentity name="Interop.CWDAQControlsLib" version="1.4.0.0" language="neutral" processorArchitecture="msil" />
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Belov_Transform.dll" size="36864">
+      <assemblyIdentity name="Belov_Transform" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>MUeDhEtpCFTY2XXUGy1QuaS3HbE=</dsig:DigestValue>
+        <dsig:DigestValue>9P/mGhoi4hbpW1H97jiWR587ro8=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Interop.CWUIControlsLib.dll" size="176128">
-      <assemblyIdentity name="Interop.CWUIControlsLib" version="1.6.0.0" language="neutral" processorArchitecture="msil" />
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="DeconEngine.dll" size="1196032">
+      <assemblyIdentity name="DeconEngine" version="1.0.3165.35432" language="neutral" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>zTTzzRUXHmfdOSE5Y5A+KIIFuKg=</dsig:DigestValue>
+        <dsig:DigestValue>87rZRl17GZF+6Af7rlbCFsKirwE=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="DeconEngineV2.dll" size="1273856">
+      <assemblyIdentity name="DeconEngineV2" version="1.0.3458.31952" language="neutral" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>QWkNUDC0KdK7qBPTrKTmaOKDkz0=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="DeconTools.Backend.dll" size="158720">
+      <assemblyIdentity name="DeconTools.Backend" version="1.0.3614.26340" language="neutral" processorArchitecture="x86" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>Pfu/5OSRaHh6z2KT5qWRx2GAws8=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Interop.MSFileReaderLib.dll" size="57344">
+      <assemblyIdentity name="Interop.MSFileReaderLib" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>scPw+aFfNmNeOMj+gjQkOvkWRdM=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -123,14 +179,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="UIMF_DataViewer.dll" size="229376">
-      <assemblyIdentity name="UIMF_DataViewer" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="UIMF_DataViewer.dll" size="561152">
+      <assemblyIdentity name="UIMF_DataViewer" version="1.0.0.0" language="neutral" processorArchitecture="x86" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>9zjfoXeXVQmXmtBGoLZX1Kbv564=</dsig:DigestValue>
+        <dsig:DigestValue>SeASbAk44Djxo9xK7aF2HxWmEYU=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -142,7 +198,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>tf4EbtS6EIF5gHEaxnlPcrWvirc=</dsig:DigestValue>
+        <dsig:DigestValue>A3E5ckCZvjg0kRo/Fwj3ZL3znDg=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

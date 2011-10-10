@@ -118,28 +118,31 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="triangle_up_out" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\triangle_up_out.GIF;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="triangle_right_in" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\triangle_right_in.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Exit_IMS4" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Exit_IMS4.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="triangle_left_in" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\triangle_left_in.GIF;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="triangle_up_in" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\triangle_up_in.GIF;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="triangle_down_out" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\triangle_down_out.GIF;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="triangle_right_in" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\triangle_right_in.GIF;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="triangle_right_out" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\triangle_right_out.GIF;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+    <value>..\Images\triangle_left_in.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="triangle_left_out" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\triangle_left_out.GIF;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+    <value>..\Images\triangle_left_out.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="triangle_down_in" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Images\triangle_down_in.GIF;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="triangle_right_out" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\triangle_right_out.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Entrance_IMS4" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Entrance_IMS4.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Entrance_IMS41" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\Entrance_IMS4.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="IMS4a" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\IMS4a.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ripple21" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\ripple21.gif;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

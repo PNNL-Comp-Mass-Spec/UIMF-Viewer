@@ -1,3 +1,4 @@
+#if false
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Design;
@@ -600,3 +601,4 @@ namespace UIMF_File.Utilities
 		//private float A, B;
 	}
 }
+#endif

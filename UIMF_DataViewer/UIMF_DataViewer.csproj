@@ -19,23 +19,22 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;THERMO</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NationalInstruments.Common, Version=8.9.20.302, Culture=neutral, PublicKeyToken=4544464cdeaab541, processorArchitecture=MSIL" />
+    <Reference Include="NationalInstruments.Common, Version=9.0.20.610, Culture=neutral, PublicKeyToken=4544464cdeaab541, processorArchitecture=MSIL" />
     <Reference Include="NationalInstruments.UI, Version=8.9.20.246, Culture=neutral, PublicKeyToken=4544464cdeaab541, processorArchitecture=x86" />
-    <Reference Include="NationalInstruments.UI.WindowsForms, Version=8.9.20.246, Culture=neutral, PublicKeyToken=4544464cdeaab541, processorArchitecture=x86">
-      <HintPath>..\..\..\..\..\Program Files (x86)\National Instruments\MeasurementStudioVS2005\DotNET\Assemblies\8.9.20.246\NationalInstruments.UI.WindowsForms.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
+    <Reference Include="NationalInstruments.UI.WindowsForms, Version=8.9.20.246, Culture=neutral, PublicKeyToken=4544464cdeaab541, processorArchitecture=x86" />
     <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -50,12 +49,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="InternalCalibration.cs">
+    <Compile Include="BinViewer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InstrumentSettings.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="InternalCalibration.designer.cs">
-      <DependentUpon>InternalCalibration.cs</DependentUpon>
+    <Compile Include="InstrumentSettings.Designer.cs">
+      <DependentUpon>InstrumentSettings.cs</DependentUpon>
     </Compile>
+    <Compile Include="PostProcessing.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PostProcessing.designer.cs">
+      <DependentUpon>PostProcessing.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Memory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -67,6 +76,10 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="ThermoViewer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UIMF_Demultiplexer.cs" />
     <Compile Include="UIMFLibrary\ClassDefinitions.cs" />
     <Compile Include="UIMFLibrary\UIMFDataReader.cs" />
     <Compile Include="UIMFLibrary\UIMFDataWriter.cs" />
@@ -89,6 +102,7 @@
     <Compile Include="Utilities\ProgressBar.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Utilities\Savior.cs" />
     <Compile Include="Utilities\Slider.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -98,8 +112,12 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="InternalCalibration.resx">
-      <DependentUpon>InternalCalibration.cs</DependentUpon>
+    <EmbeddedResource Include="InstrumentSettings.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>InstrumentSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PostProcessing.resx">
+      <DependentUpon>PostProcessing.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\licenses.licx" />
@@ -140,28 +158,42 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Images\triangle_left_in.GIF" />
+    <None Include="Resources\triangle_left_out.GIF" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Images\triangle_left_out.GIF" />
+    <None Include="Resources\triangle_left_in.GIF" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Images\triangle_right_out.GIF" />
+    <None Include="Resources\triangle_right_in.GIF" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Images\triangle_right_in.GIF" />
+    <None Include="Resources\triangle_right_out.GIF" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Images\triangle_up_out.GIF" />
+    <Content Include="Images\Entrance_IMS4.png" />
+    <Content Include="Images\Exit_IMS4.png" />
+    <Content Include="Images\IMS4a.png" />
+    <None Include="Images\ripple21.gif" />
+    <Content Include="Images\triangle_left_in.png" />
+    <Content Include="Images\triangle_left_out.png" />
+    <Content Include="Images\triangle_right_in.png" />
+    <Content Include="Images\triangle_right_out.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Images\triangle_down_out.GIF" />
+    <COMReference Include="MSFileReaderLib">
+      <Guid>{F0C5F3E3-4F2A-443E-A74D-0AABE3237494}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Images\triangle_up_in.GIF" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Images\triangle_down_in.GIF" />
+    <ProjectReference Include="..\Belov_Transform\Belov_Transform.csproj">
+      <Project>{C08242B4-4790-4BB8-B3E7-D614E07B96A1}</Project>
+      <Name>Belov_Transform</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -172,7 +204,17 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>IF EXIST C:\WINDOWS\Microsoft.NET\Framework64\v2.0.50727\ldr64.exe C:\WINDOWS\Microsoft.NET\Framework64\v2.0.50727\ldr64.exe setwow</PreBuildEvent>
-    <PostBuildEvent>IF EXIST C:\WINDOWS\Microsoft.NET\Framework64\v2.0.50727\ldr64.exe C:\WINDOWS\Microsoft.NET\Framework64\v2.0.50727\ldr64.exe set64</PostBuildEvent>
+    <PreBuildEvent>IF EXIST C:\WINDOWS\Microsoft.NET\Framework64\v2.0.50727\ld​r64.exe C:\WINDOWS\Microsoft.NET\Framework64\v2.0.50727\ld​r64.exe setwow
+rem Begin Measurement Studio Licensing for x64
+rem Do NOT modify contents between 'Begin Measurement Studio Licensing for x64' and 'End Measurement Studio Licensing for x64'
+rem For more information, refer to Protecting Your Project from LC0000 Build Error (ms-help://MS.VSCC.v80/MS.VSIPCC.v80/NI.MeasurementStudio.2005/MStudioIntegration/XML/Protect_LC0000_Error.html) in the NI Measurement Studio Help.
+if exist %25WINDIR%25\Microsoft.NET\Framework64\v2.0.50727\ %25WINDIR%25\Microsoft.NET\Framework64\v2.0.50727\ldr64.exe setwow
+rem End Measurement Studio Licensing for x64</PreBuildEvent>
+    <PostBuildEvent>IF EXIST C:\WINDOWS\Microsoft.NET\Framework64\v2.0.50727\ld​r64.exe C:\WINDOWS\Microsoft.NET\Framework64\v2.0.50727\ld​r64.exe set64
+rem Begin Measurement Studio Licensing for x64
+rem Do NOT modify contents between 'Begin Measurement Studio Licensing for x64' and 'End Measurement Studio Licensing for x64'
+rem For more information, refer to Protecting Your Project from LC0000 Build Error (ms-help://MS.VSCC.v80/MS.VSIPCC.v80/NI.MeasurementStudio.2005/MStudioIntegration/XML/Protect_LC0000_Error.html) in the NI Measurement Studio Help.
+if exist %25WINDIR%25\Microsoft.NET\Framework64\v2.0.50727\ %25WINDIR%25\Microsoft.NET\Framework64\v2.0.50727\ldr64.exe set64
+rem End Measurement Studio Licensing for x64</PostBuildEvent>
   </PropertyGroup>
 </Project>

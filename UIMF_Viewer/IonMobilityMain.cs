@@ -1,3 +1,5 @@
+//#define THERMO
+
 using System;
 using System.Drawing;
 using System.Collections;
@@ -37,7 +39,7 @@ namespace IonMobility
         private System.Windows.Forms.MenuItem menuProcess_SelectExperiment;
         #endregion
 
-        private UIMF_File.DataViewer frame_dataViewer;
+        private UIMF_File.DataViewer frame_dataViewer; 
 
         private const string SETTINGS_FILE = @"settings.xml";
  
@@ -301,7 +303,7 @@ namespace IonMobility
 
             try
             {
-                this.frame_dataViewer = new UIMF_File.DataViewer(path);
+                this.frame_dataViewer = new UIMF_File.DataViewer(path, true);
                 this.frame_dataViewer.num_TICThreshold.Value = 300;
 
                 this.open_Experiments.Add(this.frame_dataViewer);
@@ -312,8 +314,11 @@ namespace IonMobility
             }
         }
 
+
+        string raw_filename = "";
         private void IonMobilityAcqMain_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
         {
+          // MessageBox.Show(this, "here");
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (files.Length > 1)
             {
@@ -334,9 +339,17 @@ namespace IonMobility
                     return;
                 } 
             }
-
+#if THERMO
+            if (Path.GetExtension(files[0]).ToLower() == ".raw")
+            {
+                MessageBox.Show(this, "raw");
+                this.raw_filename = files[0];
+                Invoke(new ThreadStart(invoke_RAWFile));
+                return;
+            }
+#endif
             // Load the DataViewer
-            this.frame_dataViewer = new UIMF_File.DataViewer(files[0]);
+            this.frame_dataViewer = new UIMF_File.DataViewer(files[0], true);
 
             this.frame_dataViewer.num_TICThreshold.Value = 300;
 
@@ -345,6 +358,33 @@ namespace IonMobility
             // this.frame_dataViewerInt.Disposed += new EventHandler(frame_dataViewer_Disposed);
             this.open_Experiments.Add(this.frame_dataViewer);
         }
+
+#if THERMO
+        public void invoke_RAWFile()
+        {
+            MessageBox.Show("invoke");
+            try
+            {
+                UIMF_File.RAW_Data rawData = new UIMF_File.RAW_Data();
+                MessageBox.Show("hmm:  " + this.raw_filename);
+                rawData.OpenFile(this.raw_filename);
+                if (rawData.isOpen())
+                {
+                    MessageBox.Show("success");
+                }
+                else
+                    MessageBox.Show("fail");
+
+//                clsRawData rawData = new clsRawData();
+             //   rawData.LoadFile(this.raw_filename, DeconToolsV2.Readers.FileType.FINNIGAN);
+              //  MessageBox.Show(rawData.GetScanSize().ToString());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+        }
+#endif
 
         private void IonMobilityAcqMain_DragEnter(object sender, System.Windows.Forms.DragEventArgs e)
         {

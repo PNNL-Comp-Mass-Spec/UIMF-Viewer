@@ -106,6 +106,14 @@
       <HintPath>bin\Release\AxInterop.CWDAQControlsLib.dll</HintPath>
     </Reference>
     <Reference Include="AxInterop.CWUIControlsLib, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="DeconEngineV2, Version=1.0.3458.31952, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\UIMF_DataViewer\dlls\DeconEngineV2.dll</HintPath>
+    </Reference>
+    <Reference Include="DeconTools.Backend, Version=1.0.3614.26340, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\UIMF_DataViewer\dlls\DeconTools.Backend.dll</HintPath>
+    </Reference>
     <Reference Include="NationalInstruments.Common, Version=8.1.20.618, Culture=neutral, PublicKeyToken=4544464cdeaab541, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>

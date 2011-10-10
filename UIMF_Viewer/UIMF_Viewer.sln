@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UIMF_Viewer", "UIMF_Viewer.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UIMF_DataViewer", "..\UIMF_DataViewer\UIMF_DataViewer.csproj", "{0ACEC402-1936-4664-9524-100052613ECE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Belov_Transform", "..\Belov_Transform\Belov_Transform.csproj", "{C08242B4-4790-4BB8-B3E7-D614E07B96A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{0ACEC402-1936-4664-9524-100052613ECE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0ACEC402-1936-4664-9524-100052613ECE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0ACEC402-1936-4664-9524-100052613ECE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C08242B4-4790-4BB8-B3E7-D614E07B96A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C08242B4-4790-4BB8-B3E7-D614E07B96A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C08242B4-4790-4BB8-B3E7-D614E07B96A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C08242B4-4790-4BB8-B3E7-D614E07B96A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
