@@ -26,15 +26,6 @@ namespace UIMF_File
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
             this.btn_AttemptCalibration = new System.Windows.Forms.Button();
             this.dg_Calibrants = new System.Windows.Forms.DataGridView();
-            this.col0_Enable = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.col1_Calibrant = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.col2_MZ = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.col3_Charge = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Col4_TOF = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.col5_Bins = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.col7_ErrorPPM = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.col8_MZExp = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.col9_TOFExperimental = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.btn_ExperimentCalibration = new System.Windows.Forms.Button();
@@ -71,6 +62,15 @@ namespace UIMF_File
             this.btn_CompressDirectoryBrowse = new System.Windows.Forms.Button();
             this.tb_SaveCompressDirectory = new System.Windows.Forms.TextBox();
             this.btn_Compress1GHz = new System.Windows.Forms.Button();
+            this.col0_Enable = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.col1_Calibrant = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.col2_MZ = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.col3_Charge = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Col4_TOF = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.col5_Bins = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.col7_ErrorPPM = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.col8_MZExp = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.col9_TOFExperimental = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.dg_Calibrants)).BeginInit();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.num_ion2_MZValue)).BeginInit();
@@ -95,11 +95,12 @@ namespace UIMF_File
             // 
             // dg_Calibrants
             // 
+            this.dg_Calibrants.AllowUserToDeleteRows = false;
             this.dg_Calibrants.AllowUserToResizeColumns = false;
             this.dg_Calibrants.AllowUserToResizeRows = false;
             this.dg_Calibrants.BackgroundColor = System.Drawing.Color.DimGray;
             this.dg_Calibrants.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.dg_Calibrants.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.Sunken;
+            this.dg_Calibrants.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle1.BackColor = System.Drawing.Color.SteelBlue;
             dataGridViewCellStyle1.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -127,120 +128,24 @@ namespace UIMF_File
             dataGridViewCellStyle10.SelectionForeColor = System.Drawing.Color.Black;
             dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.dg_Calibrants.DefaultCellStyle = dataGridViewCellStyle10;
+            this.dg_Calibrants.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
             this.dg_Calibrants.GridColor = System.Drawing.Color.DimGray;
             this.dg_Calibrants.Location = new System.Drawing.Point(12, 16);
             this.dg_Calibrants.MultiSelect = false;
             this.dg_Calibrants.Name = "dg_Calibrants";
+            this.dg_Calibrants.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
             this.dg_Calibrants.RowHeadersVisible = false;
             this.dg_Calibrants.RowHeadersWidth = 25;
+            this.dg_Calibrants.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+            this.dg_Calibrants.RowTemplate.DividerHeight = 1;
             this.dg_Calibrants.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.dg_Calibrants.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dg_Calibrants.ShowCellErrors = false;
+            this.dg_Calibrants.ShowCellToolTips = false;
+            this.dg_Calibrants.ShowEditingIcon = false;
+            this.dg_Calibrants.ShowRowErrors = false;
             this.dg_Calibrants.Size = new System.Drawing.Size(932, 396);
             this.dg_Calibrants.TabIndex = 87;
-            // 
-            // col0_Enable
-            // 
-            this.col0_Enable.HeaderText = "";
-            this.col0_Enable.Name = "col0_Enable";
-            this.col0_Enable.Width = 20;
-            // 
-            // col1_Calibrant
-            // 
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.col1_Calibrant.DefaultCellStyle = dataGridViewCellStyle2;
-            this.col1_Calibrant.HeaderText = "Calibrant Name";
-            this.col1_Calibrant.Name = "col1_Calibrant";
-            this.col1_Calibrant.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
-            this.col1_Calibrant.Width = 175;
-            // 
-            // col2_MZ
-            // 
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle3.Format = "N5";
-            dataGridViewCellStyle3.NullValue = null;
-            this.col2_MZ.DefaultCellStyle = dataGridViewCellStyle3;
-            this.col2_MZ.HeaderText = "M/Z";
-            this.col2_MZ.Name = "col2_MZ";
-            this.col2_MZ.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.col2_MZ.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
-            this.col2_MZ.Width = 110;
-            // 
-            // col3_Charge
-            // 
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.col3_Charge.DefaultCellStyle = dataGridViewCellStyle4;
-            this.col3_Charge.HeaderText = "Charge";
-            this.col3_Charge.Name = "col3_Charge";
-            this.col3_Charge.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
-            this.col3_Charge.Width = 70;
-            // 
-            // Col4_TOF
-            // 
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle5.BackColor = System.Drawing.Color.Gainsboro;
-            dataGridViewCellStyle5.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle5.Format = "N4";
-            dataGridViewCellStyle5.NullValue = null;
-            this.Col4_TOF.DefaultCellStyle = dataGridViewCellStyle5;
-            this.Col4_TOF.HeaderText = "TOF (usec)";
-            this.Col4_TOF.Name = "Col4_TOF";
-            this.Col4_TOF.ReadOnly = true;
-            this.Col4_TOF.Width = 110;
-            // 
-            // col5_Bins
-            // 
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle6.BackColor = System.Drawing.Color.Gainsboro;
-            dataGridViewCellStyle6.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle6.Format = "N2";
-            dataGridViewCellStyle6.NullValue = null;
-            this.col5_Bins.DefaultCellStyle = dataGridViewCellStyle6;
-            this.col5_Bins.DividerWidth = 25;
-            this.col5_Bins.HeaderText = "Bins";
-            this.col5_Bins.Name = "col5_Bins";
-            this.col5_Bins.ReadOnly = true;
-            this.col5_Bins.Width = 110;
-            // 
-            // col7_ErrorPPM
-            // 
-            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle7.BackColor = System.Drawing.Color.Gainsboro;
-            dataGridViewCellStyle7.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle7.Format = "N2";
-            dataGridViewCellStyle7.NullValue = null;
-            this.col7_ErrorPPM.DefaultCellStyle = dataGridViewCellStyle7;
-            this.col7_ErrorPPM.HeaderText = "Error PPM";
-            this.col7_ErrorPPM.Name = "col7_ErrorPPM";
-            this.col7_ErrorPPM.ReadOnly = true;
-            this.col7_ErrorPPM.Width = 75;
-            // 
-            // col8_MZExp
-            // 
-            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle8.BackColor = System.Drawing.Color.Gainsboro;
-            dataGridViewCellStyle8.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle8.Format = "N5";
-            dataGridViewCellStyle8.NullValue = null;
-            this.col8_MZExp.DefaultCellStyle = dataGridViewCellStyle8;
-            this.col8_MZExp.HeaderText = "M/Z Experimental";
-            this.col8_MZExp.Name = "col8_MZExp";
-            this.col8_MZExp.ReadOnly = true;
-            this.col8_MZExp.Width = 120;
-            // 
-            // col9_TOFExperimental
-            // 
-            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle9.BackColor = System.Drawing.Color.Gainsboro;
-            dataGridViewCellStyle9.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle9.Format = "N4";
-            dataGridViewCellStyle9.NullValue = null;
-            this.col9_TOFExperimental.DefaultCellStyle = dataGridViewCellStyle9;
-            this.col9_TOFExperimental.HeaderText = "TOF (usec) Experimental";
-            this.col9_TOFExperimental.Name = "col9_TOFExperimental";
-            this.col9_TOFExperimental.ReadOnly = true;
-            this.col9_TOFExperimental.Width = 120;
             // 
             // label1
             // 
@@ -723,6 +628,118 @@ namespace UIMF_File
             this.btn_Compress1GHz.Text = "Compress Experiment";
             this.btn_Compress1GHz.UseVisualStyleBackColor = false;
             // 
+            // col0_Enable
+            // 
+            this.col0_Enable.DividerWidth = 1;
+            this.col0_Enable.HeaderText = "";
+            this.col0_Enable.Name = "col0_Enable";
+            this.col0_Enable.Width = 20;
+            // 
+            // col1_Calibrant
+            // 
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.col1_Calibrant.DefaultCellStyle = dataGridViewCellStyle2;
+            this.col1_Calibrant.DividerWidth = 1;
+            this.col1_Calibrant.HeaderText = "Calibrant Name";
+            this.col1_Calibrant.Name = "col1_Calibrant";
+            this.col1_Calibrant.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            this.col1_Calibrant.Width = 175;
+            // 
+            // col2_MZ
+            // 
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.Format = "N5";
+            dataGridViewCellStyle3.NullValue = null;
+            this.col2_MZ.DefaultCellStyle = dataGridViewCellStyle3;
+            this.col2_MZ.DividerWidth = 1;
+            this.col2_MZ.HeaderText = "M/Z";
+            this.col2_MZ.Name = "col2_MZ";
+            this.col2_MZ.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.col2_MZ.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            this.col2_MZ.Width = 110;
+            // 
+            // col3_Charge
+            // 
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.col3_Charge.DefaultCellStyle = dataGridViewCellStyle4;
+            this.col3_Charge.DividerWidth = 1;
+            this.col3_Charge.HeaderText = "Charge";
+            this.col3_Charge.Name = "col3_Charge";
+            this.col3_Charge.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Programmatic;
+            this.col3_Charge.Width = 70;
+            // 
+            // Col4_TOF
+            // 
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle5.BackColor = System.Drawing.Color.Gainsboro;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle5.Format = "N4";
+            dataGridViewCellStyle5.NullValue = null;
+            this.Col4_TOF.DefaultCellStyle = dataGridViewCellStyle5;
+            this.Col4_TOF.DividerWidth = 1;
+            this.Col4_TOF.HeaderText = "TOF (usec)";
+            this.Col4_TOF.Name = "Col4_TOF";
+            this.Col4_TOF.ReadOnly = true;
+            this.Col4_TOF.Width = 110;
+            // 
+            // col5_Bins
+            // 
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle6.BackColor = System.Drawing.Color.Gainsboro;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle6.Format = "N2";
+            dataGridViewCellStyle6.NullValue = null;
+            this.col5_Bins.DefaultCellStyle = dataGridViewCellStyle6;
+            this.col5_Bins.DividerWidth = 25;
+            this.col5_Bins.HeaderText = "Bins";
+            this.col5_Bins.Name = "col5_Bins";
+            this.col5_Bins.ReadOnly = true;
+            this.col5_Bins.Width = 110;
+            // 
+            // col7_ErrorPPM
+            // 
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle7.BackColor = System.Drawing.Color.Gainsboro;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle7.Format = "N2";
+            dataGridViewCellStyle7.NullValue = null;
+            this.col7_ErrorPPM.DefaultCellStyle = dataGridViewCellStyle7;
+            this.col7_ErrorPPM.DividerWidth = 1;
+            this.col7_ErrorPPM.HeaderText = "Error PPM";
+            this.col7_ErrorPPM.Name = "col7_ErrorPPM";
+            this.col7_ErrorPPM.ReadOnly = true;
+            this.col7_ErrorPPM.Width = 75;
+            // 
+            // col8_MZExp
+            // 
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle8.BackColor = System.Drawing.Color.Gainsboro;
+            dataGridViewCellStyle8.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle8.Format = "N5";
+            dataGridViewCellStyle8.NullValue = null;
+            this.col8_MZExp.DefaultCellStyle = dataGridViewCellStyle8;
+            this.col8_MZExp.DividerWidth = 1;
+            this.col8_MZExp.HeaderText = "M/Z Experimental";
+            this.col8_MZExp.Name = "col8_MZExp";
+            this.col8_MZExp.ReadOnly = true;
+            this.col8_MZExp.Width = 120;
+            // 
+            // col9_TOFExperimental
+            // 
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle9.BackColor = System.Drawing.Color.Gainsboro;
+            dataGridViewCellStyle9.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle9.Format = "N4";
+            dataGridViewCellStyle9.NullValue = null;
+            this.col9_TOFExperimental.DefaultCellStyle = dataGridViewCellStyle9;
+            this.col9_TOFExperimental.DividerWidth = 1;
+            this.col9_TOFExperimental.HeaderText = "TOF (usec) Experimental";
+            this.col9_TOFExperimental.Name = "col9_TOFExperimental";
+            this.col9_TOFExperimental.ReadOnly = true;
+            this.col9_TOFExperimental.Width = 120;
+            // 
             // PostProcessing
             // 
             this.BackColor = System.Drawing.Color.Silver;
@@ -755,15 +772,6 @@ namespace UIMF_File
         public System.Windows.Forms.DataGridView dg_Calibrants;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn col0_Enable;
-        private System.Windows.Forms.DataGridViewTextBoxColumn col1_Calibrant;
-        private System.Windows.Forms.DataGridViewTextBoxColumn col2_MZ;
-        private System.Windows.Forms.DataGridViewTextBoxColumn col3_Charge;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Col4_TOF;
-        private System.Windows.Forms.DataGridViewTextBoxColumn col5_Bins;
-        private System.Windows.Forms.DataGridViewTextBoxColumn col7_ErrorPPM;
-        private System.Windows.Forms.DataGridViewTextBoxColumn col8_MZExp;
-        private System.Windows.Forms.DataGridViewTextBoxColumn col9_TOFExperimental;
         public System.Windows.Forms.Button btn_ExperimentCalibration;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Label label5;
@@ -798,5 +806,14 @@ namespace UIMF_File
         public System.Windows.Forms.TextBox tb_SaveCompressDirectory;
         public System.Windows.Forms.Button btn_Compress1GHz;
         public System.Windows.Forms.GroupBox gb_Compress4GHz;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn col0_Enable;
+        private System.Windows.Forms.DataGridViewTextBoxColumn col1_Calibrant;
+        private System.Windows.Forms.DataGridViewTextBoxColumn col2_MZ;
+        private System.Windows.Forms.DataGridViewTextBoxColumn col3_Charge;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Col4_TOF;
+        private System.Windows.Forms.DataGridViewTextBoxColumn col5_Bins;
+        private System.Windows.Forms.DataGridViewTextBoxColumn col7_ErrorPPM;
+        private System.Windows.Forms.DataGridViewTextBoxColumn col8_MZExp;
+        private System.Windows.Forms.DataGridViewTextBoxColumn col9_TOFExperimental;
     }
 }

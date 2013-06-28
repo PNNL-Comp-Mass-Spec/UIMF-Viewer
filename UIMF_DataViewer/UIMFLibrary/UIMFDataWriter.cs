@@ -46,7 +46,8 @@ namespace UIMFLibrary
 				PrepareInsertScan();
 
                 m_FrameParameterColumnsVerified = false;
-				
+
+
 			}
 			catch (Exception ex)
 			{
@@ -465,7 +466,7 @@ namespace UIMFLibrary
             m_dbCommandPrepareInsertFrame.Parameters.Add(new SQLiteParameter(":Duration", frameParameters.Duration));                       // 2, Duration of frame, in seconds 
             m_dbCommandPrepareInsertFrame.Parameters.Add(new SQLiteParameter(":Accumulations", frameParameters.Accumulations));             // 3, Number of collected and summed acquisitions in a frame 
 
-            m_dbCommandPrepareInsertFrame.Parameters.Add(new SQLiteParameter(":FrameType", frameParameters.FrameType));                     // 4, Bitmap: 0=MS (Legacy); 1=MS (Regular); 2=MS/MS (Frag); 3=Calibration; 4=Prescan
+            m_dbCommandPrepareInsertFrame.Parameters.Add(new SQLiteParameter(":FrameType", (int)frameParameters.FrameType));                     // 4, Bitmap: 0=MS (Legacy); 1=MS (Regular); 2=MS/MS (Frag); 3=Calibration; 4=Prescan
             m_dbCommandPrepareInsertFrame.Parameters.Add(new SQLiteParameter(":Scans", frameParameters.Scans));                             // 5, Number of TOF scans  
             m_dbCommandPrepareInsertFrame.Parameters.Add(new SQLiteParameter(":IMFProfile", frameParameters.IMFProfile));                   // 6, IMFProfile Name; this stores the name of the sequence used to encode the data when acquiring data multiplexed
             m_dbCommandPrepareInsertFrame.Parameters.Add(new SQLiteParameter(":TOFLosses", frameParameters.TOFLosses));                     // 7, Number of TOF Losses
@@ -651,67 +652,80 @@ namespace UIMFLibrary
 
         public int InsertScan(FrameParameters fp, int scanNum, System.Collections.Generic.List<int> bins, System.Collections.Generic.List<int> intensities, double binWidth, int timeOffset)
         {
-            int nonZeroCount = 0;
+			try
+			{
+				int nonZeroCount = 0;
 
-            if (m_globalParameters == null)
-                m_globalParameters = DataReader.GetGlobalParametersFromTable(m_dbConnection);
+				if (m_globalParameters == null)
+				{
+					m_globalParameters = DataReader.GetGlobalParametersFromTable(m_dbConnection);
+				}
 
-            if (fp != null)
-            {
-                if (bins != null && intensities != null && bins.Count != 0 && intensities.Count != 0 && bins.Count == intensities.Count)
-                {
-                    //that is the total number of data points that are to be encoded
-                    nonZeroCount = bins.Count;
+				if (fp != null)
+				{
+					if (bins != null && intensities != null && bins.Count != 0 && intensities.Count != 0 &&
+					    bins.Count == intensities.Count)
+					{
+						//that is the total number of data points that are to be encoded
+						nonZeroCount = bins.Count;
 
-                    int[] rlze = new int[bins.Count * 2]; //this is the maximum length required assuming that there are no continuous values
+						//this is the maximum length required assuming that there are no continuous values
+						int[] rlze = new int[bins.Count*2];
 
-                    //now iterate through both arrays and attempt to run length zero encode the values
-                    int tic = 0;
-                    int bpi = 0;
-                    int index = 0;
-                    double bpiMz = 0;
-                    int datatypeSize = 4;
+						//now iterate through both arrays and attempt to run length zero encode the values
+						int tic = 0;
+						int bpi = 0;
+						int index = 0;
+						double bpiMz = 0;
+						int datatypeSize = 4;
 
-                    rlze[index++] = -(timeOffset + bins[0]);
-                    for (int i = 0; i < bins.Count ; i++)
-                    {
-                        //the intensities will always be positive integers
-                        tic += intensities[i];
-                        if (bpi < intensities[i])
-                        {
-                            bpi = intensities[i];
-                            bpiMz = convertBinToMz(bins[i], binWidth, fp);
-                        }
+						rlze[index++] = -(timeOffset + bins[0]);
+						for (int i = 0; i < bins.Count; i++)
+						{
+							//the intensities will always be positive integers
+							tic += intensities[i];
+							if (bpi < intensities[i])
+							{
+								bpi = intensities[i];
+								bpiMz = convertBinToMz(bins[i], binWidth, fp);
+							}
 
-                        if (i != 0 && bins[i] != bins[i - 1] + 1)
-                        {
-                            //since the bin numbers are not continuous, add a negative index to the array
-                            //and in some cases we have to add the offset from the previous index
-                            rlze[index++] = bins[i - 1] - bins[i] + 1;
-                        }
+							if (i != 0 && bins[i] != bins[i - 1] + 1)
+							{
+								//since the bin numbers are not continuous, add a negative index to the array
+								//and in some cases we have to add the offset from the previous index
+								rlze[index++] = bins[i - 1] - bins[i] + 1;
+							}
 
-                        //copy the intensity value and increment the index.
-                        rlze[index++] = intensities[i];
-                    }
+							//copy the intensity value and increment the index.
+							rlze[index++] = intensities[i];
+						}
 
-                    //so now we have a run length zero encoded array
-                    byte[] compresedRecord = new byte[index * datatypeSize * 5];
-                    byte[] byteBuffer = new byte[index * datatypeSize];
-                    Buffer.BlockCopy(rlze, 0, byteBuffer, 0, index * datatypeSize);
-                    int nlzf = IMSCOMP_wrapper.compress_lzf(ref byteBuffer, index * datatypeSize, ref compresedRecord, compresedRecord.Length);
-                    byte[] spectra = new byte[nlzf];
+						//so now we have a run length zero encoded array
+						byte[] compresedRecord = new byte[index*datatypeSize*5];
+						byte[] byteBuffer = new byte[index*datatypeSize];
+						Buffer.BlockCopy(rlze, 0, byteBuffer, 0, index*datatypeSize);
+						int nlzf = IMSCOMP_wrapper.compress_lzf(ref byteBuffer, index*datatypeSize, ref compresedRecord, compresedRecord.Length);
+						byte[] spectra = new byte[nlzf];
 
-                    Array.Copy(compresedRecord, spectra, nlzf);
-                    //Insert records
-                    if (true)
-                    {
-                        insertScanAddParameters(fp.FrameNum, scanNum, bins.Count, bpi, bpiMz, tic, spectra);
-                        m_dbCommandPrepareInsertScan.ExecuteNonQuery();
-                        m_dbCommandPrepareInsertScan.Parameters.Clear();
-                    }
-                }
-            }
-            return nonZeroCount;
+						Array.Copy(compresedRecord, spectra, nlzf);
+						//Insert records
+						if (true)
+						{
+							insertScanAddParameters(fp.FrameNum, scanNum, bins.Count, bpi, bpiMz, tic, spectra);
+							m_dbCommandPrepareInsertScan.ExecuteNonQuery();
+							m_dbCommandPrepareInsertScan.Parameters.Clear();
+						}
+					}
+				}
+				return nonZeroCount;
+			} catch (Exception e)
+			{
+				Console.WriteLine("Error writing scan: " + scanNum);
+				Console.WriteLine(e);
+				Console.WriteLine(e.StackTrace);
+				return 0;
+			}
         }
 
 

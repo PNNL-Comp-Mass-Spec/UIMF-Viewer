@@ -318,7 +318,60 @@ namespace IonMobility
         string raw_filename = "";
         private void IonMobilityAcqMain_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
         {
-          // MessageBox.Show(this, "here");
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if (files.Length > 1)
+            {
+                MessageBox.Show("Just one file please.");
+                return;
+            }
+
+            if (this.open_Experiments.Count > 4)
+            {
+                int total_experiments = this.open_Experiments.Count;
+                for (int i = total_experiments - 1; i >= 0; i--)
+                    if (((System.Windows.Forms.Form)this.open_Experiments[i]).IsDisposed)
+                        this.open_Experiments.RemoveAt(i);
+
+                if (this.open_Experiments.Count > 4)
+                {
+                    MessageBox.Show("You can have 5 experiments open at a time.  Please close an experiment before opening another.");
+                    return;
+                }
+            }
+
+            if (Path.GetExtension(files[0]).ToUpper() == ".UIMF")
+            {
+                try
+                {
+                    this.frame_dataViewer = new UIMF_File.DataViewer(files[0], true);
+                    this.open_Experiments.Add(this.frame_dataViewer);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString());
+                }
+            }
+#if THERMO
+            else if (Path.GetExtension(files[0]).ToUpper() == ".RAW")
+            {
+                UIMF_DataViewer.ThermoViewer frame_RAW = new UIMF_DataViewer.ThermoViewer(files[0]);
+                this.open_Experiments.Add(frame_RAW);
+            }
+            else if (Path.GetExtension(files[0]).ToUpper() == ".BIN")
+            {
+                try
+                {
+                    UIMF_DataViewer.BinViewer frame_BIN = new UIMF_DataViewer.BinViewer(files[0]);
+                    this.open_Experiments.Add(frame_BIN);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString());
+                }
+            }
+#endif
+#if false
+   // MessageBox.Show(this, "here");
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (files.Length > 1)
             {
@@ -357,9 +410,10 @@ namespace IonMobility
             //           set the current_frame_number to -1
             // this.frame_dataViewerInt.Disposed += new EventHandler(frame_dataViewer_Disposed);
             this.open_Experiments.Add(this.frame_dataViewer);
+#endif
         }
 
-#if THERMO
+#if false
         public void invoke_RAWFile()
         {
             MessageBox.Show("invoke");

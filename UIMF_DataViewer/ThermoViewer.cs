@@ -25,7 +25,7 @@ namespace UIMF_DataViewer
 
     public class ThermoViewer : UIMF_File.DataViewer
     {
-        private MSFileReader_XRawfileClass rawData;
+        private  MSFileReader_XRawfile rawData;
         private bool flag_FileOpen = false;
         private string file_RAW;
 
@@ -56,7 +56,7 @@ namespace UIMF_DataViewer
 
         private const double MIN_GRAPHED_MZ = .5;
         private const int MIN_GRAPHED_SPECTRA = 10;
-        private const int MAX_GRAPHED_SPECTRA = 1500;
+        private const int MAX_GRAPHED_SPECTRA = 1000;
 
         public ThermoViewer(string filename)
             : base()
@@ -66,8 +66,11 @@ namespace UIMF_DataViewer
 
             this.xAxis_Mobility.MajorDivisions.LabelFormat = new NationalInstruments.UI.FormatString(NationalInstruments.UI.FormatStringMode.Numeric, "F0");
 
-            Generate2DIntensityArray(0);
+            Generate2DIntensityArray();
+            this.plot_TOF.Anchor = AnchorStyles.Left;
             this.GraphFrame(this.data_2D);
+
+            this.num_PPM.Value = 2500;
 
             // this.slider_ColorMap.set_Colors((float).2, (float).3, (float).4, (float).5, (float).6, (float).7);
 
@@ -82,13 +85,16 @@ namespace UIMF_DataViewer
             this.label5.Visible = false;
             this.lbl_TOForMZ.Visible = false;
             this.num_FrameIndex.Visible = false;
-            this.cb_EnableMZRange.Visible = false;
-            this.gb_MZRange.Visible = false;
+            // this.cb_EnableMZRange.Visible = false;
+            // this.gb_MZRange.Visible = false;
 
             this.label4.Top = this.lbl_CursorMobility.Top + this.lbl_CursorMobility.Height + 6;
             this.lbl_CursorMZ.Top = this.label4.Top;
             this.tabpages_FrameInfo.TabPages.Remove(this.tabPage_Calibration);
             this.tabpages_FrameInfo.Height = 100;
+
+            this.Resize += new EventHandler(ThermoViewer_Resize);
+            ThermoViewer_Resize((object) null, (EventArgs) null);
         }
 
         /// <summary>
@@ -107,6 +113,7 @@ namespace UIMF_DataViewer
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
             }
+
 
             this.rawData.Close();
 
@@ -132,18 +139,29 @@ namespace UIMF_DataViewer
 
             base.Dispose(disposing);
         }
-#if false
-        protected virtual void tabpages_Main_Resize(object obj, System.EventArgs e)
-        {
-            if (this.flag_Resizing)
-                return;
-            this.flag_Resizing = true;
 
-            this.pnl_internalCalibration.Width = this.tab_Calibration.Width + 50;
-            this.pnl_internalCalibration.Height = this.tab_Calibration.Height + 50;
+        private void ThermoViewer_Resize(object obj, EventArgs e)
+        {
+            this.tabpages_Main.Width = this.Width;
+            this.tabpages_Main.Height = this.Height - 32;
+
+            this.flag_update2DGraph = true;
+        }
+
+        protected override void ResizeThis()
+        {
+            this.tabpages_Main.Left = 0;
+
+            this.pnl_postProcessing.Width = this.tab_PostProcessing.Width + 50;
+            this.pnl_postProcessing.Height = this.tab_PostProcessing.Height + 50;
+
+           // 
+           // this.tabpages_Main.Width = this.Width;
+           // this.flag_ResizeThis = true;
 
             // Start at the top!
             //
+            // --------------------------------------------------------------------------------------------------
             // Far left column
             this.btn_Refresh.Top = 4;
             this.btn_Refresh.Left = 4;
@@ -151,30 +169,87 @@ namespace UIMF_DataViewer
             this.lbl_ExperimentDate.Top = 4;
             this.lbl_ExperimentDate.Left = this.btn_Refresh.Left + this.btn_Refresh.Width + 10; // this.pb_2DMap.Left + this.pb_2DMap.Width - this.lbl_ExperimentDate.Width;
 
-            this.num_maxBin.Top = this.btn_Refresh.Top + this.btn_Refresh.Height + 6;
-
-            this.tabpages_FrameInfo.Top = this.tab_DataViewer.Height - this.tabpages_FrameInfo.Height - 6;
-            this.pnl_Chromatogram.Top = this.tabpages_FrameInfo.Top - this.pnl_Chromatogram.Height - 6;
-            //   this.btn_ShowChromatogram.Top = this.tabpages_FrameInfo.Top - this.cb_Chromatogram.Height - 48;
-            //   this.cb_Chromatogram.Top = this.btn_ShowChromatogram.Top + 4;
-
-            // this.num_minBin.Top = this.cb_Chromatogram.Top - this.num_minBin.Height - 10;
+            this.num_maxBin.Top = this.pnl_FrameControl.Top + this.pnl_FrameControl.Height - this.num_maxBin.Height - 6;
 
             this.num_minBin.Left = this.num_maxBin.Left = 20;
             this.plot_TOF.Left = 20;
+#if false
+            if (this.current_valuesPerPixelY > 0)
+            {
+                this.plot_TOF.Height = this.pb_2DMap.Height + this.plot_TOF.Height - this.plot_TOF.PlotAreaBounds.Height;
+                this.plot_TOF.Top = this.num_maxBin.Top + this.num_maxBin.Height + 4;
+            }
+            else
+#endif
+            {
+                this.plot_TOF.Height = this.pb_2DMap.Height + this.plot_TOF.Height - this.plot_TOF.PlotAreaBounds.Height + this.current_valuesPerPixelY;
+                this.plot_TOF.Top = this.num_maxBin.Top + this.num_maxBin.Height + 4 - this.current_valuesPerPixelY / 2;
+            }
+            this.num_minBin.Top = this.plot_TOF.Top + this.plot_TOF.Height + 4;
 
+            this.tabpages_FrameInfo.Top = this.num_minBin.Top + this.num_minBin.Height + 20;
             this.tabpages_FrameInfo.Left = 5;
             this.pnl_Chromatogram.Left = 5;
 
             // max_plot_height ************************************************
-            this.max_plot_height = this.tab_DataViewer.Height - 370;
+            this.max_plot_height = this.tab_DataViewer.Height - 420;
 
+            // --------------------------------------------------------------------------------------------------
+            // middle top
+            this.pnl_FrameControl.Left = this.pb_2DMap.Left;
+            this.pnl_FrameControl.Width = this.ClientSize.Width - this.pnl_FrameControl.Left - 40;
+
+            // pnl_FrameControl
+            this.cb_ExperimentControlled.Top = 4;
+            this.cb_ExperimentControlled.Left = 4;
+            this.cb_ExperimentControlled.Width = this.pnl_FrameControl.Width - 10;
+
+            this.cb_FrameType.Top = this.lbl_Chromatogram.Top = this.cb_ExperimentControlled.Top + 30;
+
+            this.lbl_Chromatogram.Left = 30;
+            this.cb_FrameType.Left = 4;
+
+            this.pnl_FrameControl.Height = this.cb_FrameType.Top + this.cb_FrameType.Height + 6;
+
+            // -----------------------------------------------------------------------------------------------
+            // Middle
+            this.pb_2DMap.Top = this.num_maxBin.Top + this.num_maxBin.Height + 4 + this.plot_TOF.PlotAreaBounds.Top;
+            this.hsb_2DMap.Top = this.pb_2DMap.Top - this.hsb_2DMap.Height;
+            this.vsb_2DMap.Top = this.pb_2DMap.Top;
+
+            this.hsb_2DMap.Width = this.pb_2DMap.Width;
+            this.vsb_2DMap.Left = this.pb_2DMap.Left + this.pb_2DMap.Width;
+
+            // -----------------------------------------------------------------------------------------------
+            // Bottom
+            this.plot_Mobility.Top = this.plot_TOF.Top + this.plot_TOF.Height;
+            if (this.current_MZPerPixelX == 1)
+            {
+                this.plot_Mobility.Left = this.plot_TOF.Left + this.plot_TOF.Width;
+                this.plot_Mobility.Width = this.pb_2DMap.Width + this.plot_Mobility.Width - this.plot_Mobility.PlotAreaBounds.Width;
+            }
+            else
+            {
+               // MessageBox.Show("plot mobility left here: "+this.current_MZPerPixelX.ToString());
+                this.plot_Mobility.Width = this.pb_2DMap.Width + this.plot_Mobility.Width - this.plot_Mobility.PlotAreaBounds.Width - this.current_MZPerPixelX;
+                this.plot_Mobility.Left = this.plot_TOF.Left + this.plot_TOF.Width + this.current_MZPerPixelX / 2;
+            }
+            this.num_maxMobility.Top = this.num_minMobility.Top = this.plot_Mobility.Top + plot_Mobility_HEIGHT + 5;
+            this.num_minMobility.Left = this.plot_Mobility.Left;
+            this.num_maxMobility.Left = this.plot_Mobility.Left + this.plot_Mobility.Width - this.num_maxMobility.Width; //- (this.plot_Mobility.PlotAreaBounds.Width - this.pb_2DMap.Width)
+
+            this.gb_MZRange.Left = this.tabpages_Main.Left + this.tabpages_Main.Width - this.gb_MZRange.Width - 75;
+            this.gb_MZRange.Top = this.num_maxMobility.Top + this.num_maxMobility.Height + 5;
+
+           // this.tabpages_MainHeight = this.gb_MZRange.Top + this.gb_MZRange.Height + 10;
+
+            // --------------------------------------------------------------------------------------------------
             // Right 
-            this.slider_PlotBackground.Height = (this.max_plot_height / 3) + 5;
-            this.slider_PlotBackground.Top = this.num_FrameRange.Top + this.num_FrameRange.Height + 10;
+            this.slider_PlotBackground.Height = (this.pb_2DMap.Height / 3) + 5;
+            this.slider_PlotBackground.Top = this.pb_2DMap.Top - 5; //.pnl_FrameControl.Top + this.pnl_FrameControl.Height + 10;
 
-            this.slide_Threshold.Height = this.max_plot_height - this.btn_Reset.Height - this.slider_PlotBackground.Height;
             this.slide_Threshold.Top = this.slider_PlotBackground.Top + this.slider_PlotBackground.Height;
+            this.slide_Threshold.Height = this.pb_2DMap.Height - this.btn_Reset.Height - this.slider_PlotBackground.Height;
 
             this.btn_Reset.Top = this.slide_Threshold.Top + this.slide_Threshold.Height;
 
@@ -186,51 +261,11 @@ namespace UIMF_DataViewer
             this.slider_ColorMap.Left = this.slide_Threshold.Left - this.slider_ColorMap.Width - 10;
             this.btn_Reset.Left = this.slider_ColorMap.Left + 12;
 
-            // Middle Top
-            this.slide_FrameSelect.Top = 2;
-
-            this.cb_FrameType.Top = this.lbl_Chromatogram.Top = this.pb_PlayLeftIn.Top - 4;
-            this.num_FrameIndex.Top = this.lbl_Chromatogram.Top;
-            this.lbl_Chromatogram.Left = this.plot_TOF.Left + this.plot_TOF.Width + 30;
-            this.cb_FrameType.Left = this.lbl_Chromatogram.Left - 30;
-            this.num_FrameIndex.Left = this.cb_FrameType.Left + this.cb_FrameType.Width + 4; // this.lbl_Frame.Width + 10;
-
-            this.pb_PlayLeftIn.Top = this.pb_PlayLeftOut.Top = this.pb_PlayRightIn.Top = this.pb_PlayRightOut.Top = this.slide_FrameSelect.Top + 23;
-            this.pb_PlayLeftIn.Left = this.pb_PlayLeftOut.Left = this.num_FrameIndex.Left + this.num_FrameIndex.Width + 6;
-            this.pb_PlayRightIn.Left = this.pb_PlayRightOut.Left = this.Width - 80;// this.slide_FrameSelect.Left + this.slide_FrameSelect.Width - 4;
-            this.slide_FrameSelect.Left = this.pb_PlayLeftIn.Left + this.pb_PlayLeftIn.Width - 10;
-            this.slide_FrameSelect.Width = this.pb_PlayRightIn.Left - (this.pb_PlayLeftIn.Left + this.pb_PlayLeftIn.Width) + 20;
-
-            this.lbl_FramesShown.Left = this.pb_2DMap.Left;
-            this.lbl_FramesShown.Top = this.hsb_2DMap.Top - this.lbl_FramesShown.Height - 4;
-
-            // Middle Bottom 
-            this.num_minMobility.Top = this.plot_Mobility.Top + plot_Mobility_HEIGHT + 5;
-            this.num_maxMobility.Top = this.num_minMobility.Top;
-
             // pb_2DMap Size
             // max_plot_width *********************************************
             this.max_plot_width = this.slider_ColorMap.Left - this.pb_2DMap.Left - 20;
 
-            // selection corners
-            if (this.menuItem_SelectionCorners.Checked)
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    if (this.corner_2DMap[i].X < 0)
-                        this.corner_2DMap[i].X = (int)((double)this.pb_2DMap.Width * .05);
-                    else if (this.corner_2DMap[i].X > this.pb_2DMap.Width)
-                        this.corner_2DMap[i].X = (int)((double)this.pb_2DMap.Width * .95);
-
-                    if (this.corner_2DMap[i].Y < 0)
-                        this.corner_2DMap[i].Y = (int)((double)this.pb_2DMap.Height * .05);
-                    else if (this.corner_2DMap[i].Y > this.pb_2DMap.Height)
-                        this.corner_2DMap[i].Y = (int)((double)this.pb_2DMap.Height * .95);
-                }
-                this.pb_2DMap.Invalidate();
-                return;
-            }
-
+            // --------------------------------------------------------------------------------------------------
             // make sure the frame is on the screen.
             if (this.Left + this.Width > Screen.PrimaryScreen.Bounds.Width)
             {
@@ -251,21 +286,29 @@ namespace UIMF_DataViewer
                     this.Top = (Screen.PrimaryScreen.Bounds.Height - this.Height) / 2;
             }
 
+
 #if TRACK_RESIZE_EVENTS
             this.lbl_ExperimentDate.Text = (count_resizes++).ToString();
 #endif
-
-            this.gb_MZRange.Left = this.tabpages_Main.Left + this.tabpages_Main.Width - this.gb_MZRange.Width - 45;
-            this.gb_MZRange.Top = this.tabpages_Main.Top + this.tabpages_Main.Height - this.gb_MZRange.Height - 15;
 
             this.cb_EnableMZRange.Left = this.gb_MZRange.Left + 6;
             this.cb_EnableMZRange.Top = this.gb_MZRange.Top;
             this.cb_EnableMZRange.BringToFront();
 
-            this.flag_update2DGraph = true;
+            // bottom drag drop items
+            this.cb_Exclusive.Top = this.num_maxMobility.Top + 8;
+            this.cb_Exclusive.Left = this.pb_2DMap.Left + ((this.pb_2DMap.Width - this.cb_Exclusive.Width) / 2);
+            this.cb_Exclusive.Width = this.pb_2DMap.Width - 50;
+
+            this.lb_DragDropFiles.Top = this.cb_Exclusive.Top + this.cb_Exclusive.Height - 2;
+            this.lb_DragDropFiles.Height = this.ClientSize.Height - this.lb_DragDropFiles.Top - 6;
+            this.lb_DragDropFiles.Left = this.pb_2DMap.Left + 30;
+            this.lb_DragDropFiles.Width = this.gb_MZRange.Left - this.lb_DragDropFiles.Left - 20;
+
+            // redraw
             this.flag_Resizing = false;
+            //this.flag_update2DGraph = true;
         }
-#endif
 
         // ///////////////////////////////////////////////////////////////////////////////////
         // RAW FILE
@@ -276,7 +319,7 @@ namespace UIMF_DataViewer
             {
                 if ((this.rawData == null) && !this.flag_FileOpen)
                 {
-                    this.rawData = new MSFileReader_XRawfileClass();
+                    this.rawData = new MSFileReader_XRawfile();
                     this.rawData.Open(filename);
 
                     this.rawData.SetCurrentController(0, 1); //Mass spec device, first MS device.
@@ -328,9 +371,17 @@ namespace UIMF_DataViewer
             this.current_MZPerPixelX = 1;
 
             this.new_minMZ = this.raw_minMZ;
-            this.new_minSpectrum = this.raw_minSpectrum;
             this.new_maxMZ = this.raw_maxMZ;
-            this.new_maxSpectrum = this.raw_maxSpectrum;
+
+            this.new_minSpectrum = Convert.ToInt32(this.hsb_2DMap.Value);
+            this.new_maxSpectrum = this.new_minSpectrum + MAX_GRAPHED_SPECTRA;
+            if (this.new_maxSpectrum > this.raw_maxSpectrum)
+            {
+                this.new_maxSpectrum = this.raw_maxSpectrum;
+                this.new_minSpectrum = this.new_maxSpectrum - MAX_GRAPHED_SPECTRA;
+                if (this.new_minSpectrum < 0)
+                    this.new_minSpectrum = 0;
+            }
 
             this.flag_selection_drift = false;
             this.plot_Mobility.ClearRange();
@@ -385,8 +436,8 @@ namespace UIMF_DataViewer
                 if (this.new_maxMZ > this.maximum_Bins)
                     this.new_maxMZ = this.maximum_Bins - 1;
 
-                _zoomX.Add(new Point(this.new_minSpectrum, this.new_maxSpectrum));
-                _zoomBin.Add(new dPoint(this.new_minMZ, this.new_maxMZ));
+               // _zoomX.Add(new Point(this.new_minSpectrum, this.new_maxSpectrum));
+               // _zoomBin.Add(new dPoint(this.new_minMZ, this.new_maxMZ));
 
                 this.flag_update2DGraph = true;
 
@@ -436,8 +487,8 @@ namespace UIMF_DataViewer
                // MessageBox.Show(this.current_minSpectrum.ToString()+"(" + this.new_minSpectrum.ToString() + ", " + this.new_minMZ.ToString() + ")(" + this.new_maxSpectrum.ToString() + ", " + this.new_maxMZ.ToString() + ")");
 
                 // save new zoom...
-                _zoomX.Add(new Point(new_minSpectrum, new_maxSpectrum));
-                _zoomBin.Add(new dPoint(this.new_minMZ, this.new_maxMZ));
+              //  _zoomX.Add(new Point(new_minSpectrum, new_maxSpectrum));
+              //  _zoomBin.Add(new dPoint(this.new_minMZ, this.new_maxMZ));
 
                // this.current_maxBin = this.new_maxBin;
               //  this.current_minBin = this.new_minBin;
@@ -512,11 +563,13 @@ namespace UIMF_DataViewer
 #endif
 
                 this.num_minMobility.Maximum = this.num_maxMobility.Maximum = this.raw_maxSpectrum;
+                /*
                 if (this.current_maxSpectrum > this.frame_maxSpectrum)
                 {
                     this.current_maxSpectrum = this.frame_maxSpectrum;
                     this.flag_update2DGraph = true;
                 }
+                 */
                 this.num_maxMobility.Value = Convert.ToDecimal(this.current_maxSpectrum);
                 this.num_minMobility.Increment = this.num_maxMobility.Increment = Convert.ToDecimal((this.current_maxSpectrum - this.current_minSpectrum) / 3);
 
@@ -607,7 +660,6 @@ namespace UIMF_DataViewer
                 }
 #endif
                 this.Show();
-
                 if (this.thread_GraphFrame == null)
                 {
                     // thread GraphFrame
@@ -615,11 +667,13 @@ namespace UIMF_DataViewer
                     this.thread_GraphFrame.Priority = System.Threading.ThreadPriority.Normal;
                     this.thread_GraphFrame.Start();
                 }
+                this.ResizeThis();
+                this.flag_ResizeThis = true;
             }
         }
 
 
-        protected override void Generate2DIntensityArray(int frame_index)
+        protected override void Generate2DIntensityArray()
         {
             // Determine the frame size
             this.get_ViewableIntensities();
@@ -628,14 +682,13 @@ namespace UIMF_DataViewer
                 return;
 
             this.xAxis_Mobility.Caption = "Spectra";
-
             this.yAxis_TOF.Caption = "m/z";
 
             GC.WaitForPendingFinalizers();
             GC.Collect();
         }
 
-        private void get_ViewableIntensities()
+        protected override void get_ViewableIntensities()
         {
             if (this.flag_collecting_data || this.flag_Closing)
                 return;
@@ -645,12 +698,12 @@ namespace UIMF_DataViewer
             double x1 = 0, x2 = 0;
             double y1 = 0, y2 = 0;
             int pixel;
-            int data_width = this.current_maxSpectrum - this.current_minSpectrum + 1;
+            int data_width;
             int data_height;
             int index_raw;
             int data_index;
 
-            data_height = this.tabpages_Main.Height - 300;
+            data_height = this.tabpages_Main.Height - 390;
 
             // double current_minMZ = Convert.ToDouble(this.num_minBin.Value);
             // ouble current_maxMZ = Convert.ToDouble(this.num_maxBin.Value);
@@ -665,26 +718,66 @@ namespace UIMF_DataViewer
             double max_datapoint = 0.0;
             double interpolated_intensity = 0;
 
+            double max_MZRange;
+            double min_MZRange;
+            double select_MZ = Convert.ToDouble(this.num_MZ.Value);
+            double select_PPM = (select_MZ * Convert.ToDouble(this.num_PPM.Value) / 1000000.0);
+
+            if (this.cb_EnableMZRange.Checked)
+            {
+                min_MZRange = select_MZ - select_PPM;
+                max_MZRange = select_MZ + select_PPM;
+
+                //MessageBox.Show(min_MZRange.ToString() + ", " + max_MZRange.ToString() + "  " + select_PPM.ToString());
+
+                this.current_minMZ = (select_MZ - (select_PPM * 1.5));
+                this.current_maxMZ = (select_MZ + (select_PPM * 1.5));
+            }
+            else
+            {
+                min_MZRange = this.current_minMZ;
+                max_MZRange = this.current_maxMZ;
+            }
+
             this.current_MZPerPixelY = (this.current_maxMZ - this.current_minMZ) / (double)data_height;
+
             lookup_table = new double[data_height];
             for (i = 0; i < data_height; i++)
             {
                 lookup_table[i] = this.current_minMZ + (((double)i) * this.current_MZPerPixelY);
             }
 
-            if (data_width > num_spectra)
+            data_width = this.current_maxSpectrum - this.current_minSpectrum + 1;
+            if (data_width < num_spectra)
             {
-                if (num_spectra > MAX_GRAPHED_SPECTRA)
-                    data_width = MAX_GRAPHED_SPECTRA;
-                else
-                    data_width = num_spectra;
+                this.hsb_2DMap.Visible = true;
+               // this.hsb_2DMap.Value = this.current_minSpectrum;
+                this.hsb_2DMap.Maximum = num_spectra - MAX_GRAPHED_SPECTRA;
             }
+
+            // MessageBox.Show("before: "+data_width.ToString() + " > " + MAX_GRAPHED_SPECTRA.ToString());
+            if (data_width > MAX_GRAPHED_SPECTRA)
+            {
+                data_width = MAX_GRAPHED_SPECTRA;
+            }
+                /*
             else
             {
-                this.current_MZPerPixelX = (int)((this.slider_ColorMap.Left - this.pb_2DMap.Left - 30) / data_width);
+                this.hsb_2DMap.Visible = false;
+                data_width = num_spectra;
+            }
+                 */
+           // MessageBox.Show("after: " + data_width.ToString() + " > " + MAX_GRAPHED_SPECTRA.ToString());
+
+          //  if (data_width == 0)
+          //      MessageBox.Show(data_width.ToString());
+            
+            {
+                this.current_MZPerPixelX = (int)(this.Width - this.pb_2DMap.Left - 170) / data_width; // ((this.slider_ColorMap.Left - this.pb_2DMap.Left - 30) / data_width);
                 if (this.current_MZPerPixelX == 0)
                     this.current_MZPerPixelX = 1;
             }
+            
 
             // since we don't have bins, we are going to plot based on pixel.
             this.data_2D = new int[(int)data_width][];
@@ -712,6 +805,8 @@ namespace UIMF_DataViewer
 
             //MessageBox.Show(data_width.ToString() + "  " + this.pb_2DMap.Width + " = " + this.current_minSpectrum.ToString() + " < " + this.current_maxSpectrum.ToString());
             string mass_list = this.current_minMZ.ToString("0.0000") + "-" + this.current_maxMZ.ToString("0.0000");
+
+            // MessageBox.Show("1 " + this.current_minSpectrum.ToString() + ", "+this.current_maxSpectrum.ToString());
             for (i = this.current_minSpectrum; i < this.current_maxSpectrum + 1; i++)
             {
                 data_index = i - this.current_minSpectrum;
@@ -747,7 +842,7 @@ namespace UIMF_DataViewer
                 x1 = 0.0;
                 y1 = 0.0;
                 this.data_maxIntensity = 0;
-                for (pixel = 1; pixel < data_height-1; pixel++)
+                for (pixel = 1; pixel < data_height - 1; pixel++)
                 {
                     flag_maxdatapoint = false;
                     max_datapoint = 0;
@@ -791,6 +886,28 @@ namespace UIMF_DataViewer
                 }
             }
 
+            int min_pixel, max_pixel;
+            for (i = this.current_minSpectrum; i < this.current_maxSpectrum + 1; i++)
+            {
+                data_index = i - this.current_minSpectrum;
+
+                for (min_pixel = 0; min_pixel < data_height; min_pixel++)
+                {
+                    if (lookup_table[min_pixel] < min_MZRange)
+                        this.data_2D[data_index][min_pixel] = 0;
+                    else
+                        break;
+                }
+
+                for (max_pixel = min_pixel; max_pixel < data_height; max_pixel++)
+                {
+                    if (lookup_table[max_pixel] > max_MZRange)
+                        this.data_2D[data_index][max_pixel] = 0;
+                }
+            }
+
+           // MessageBox.Show("2 " + data_height.ToString());
+
 
             try
             {
@@ -831,47 +948,7 @@ namespace UIMF_DataViewer
                 MessageBox.Show("4: " + ex.ToString());
             }
             // this.data_maxIntensity = 800;
-#if false
 
-            MessageBox.Show("test");
-
-            FileStream fs = new FileStream(@"C:\IonMobilityData\test.csv", FileMode.Create);
-            StreamWriter sw = new StreamWriter(fs);
-            try
-            {
-                i = 0;
-                rawData.GetMassListFromScanNum(
-                  ref i,
-                  noFilter,
-                  effective_CutOff_Type,
-                  effective_CutOff,
-                  allPeaksReturned,
-                  doNotCentroid,
-                  ref outCentroidWidth,
-                  ref outRawData,
-                  ref outPeakFlags,
-                  ref outArraySize);
-
-                dp = (System.Double[,])outRawData;
-
-                for (int j = 0; j < data_height; j++)
-                {
-                    sw.WriteLine(lookup_table[j] + ", " + this.data_2D[0][j]);
-                }
-                for (int j = 0; j < dp.GetLength(1); j++)
-                {
-                    sw.WriteLine(dp[0, j].ToString() + ", " + dp[1, j].ToString());
-                }
-                sw.Flush();
-                sw.Close();
-                fs.Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-            }
-            MessageBox.Show("test done");
-#endif
             try
             {
                 this.pb_2DMap.Width = (this.data_2D.Length * this.current_MZPerPixelX) + 1;
@@ -893,54 +970,10 @@ namespace UIMF_DataViewer
                 MessageBox.Show(ex.ToString());
             }
 
-            // align everything
-            if (this.current_valuesPerPixelY > 0)
-            {
-                this.plot_TOF.Height = this.pb_2DMap.Height + this.plot_TOF.Height - this.plot_TOF.PlotAreaBounds.Height;
-                this.plot_TOF.Top = this.num_maxBin.Top + this.num_maxBin.Height + 4;
-            }
-            else
-            {
-                this.plot_TOF.Height = this.pb_2DMap.Height + this.plot_TOF.Height - this.plot_TOF.PlotAreaBounds.Height + this.current_valuesPerPixelY;
-                this.plot_TOF.Top = this.num_maxBin.Top + this.num_maxBin.Height + 4 - this.current_valuesPerPixelY / 2;
-            }
+            this.plot_TOF.Left = 20;
 
-            this.num_minBin.Top = this.plot_TOF.Top + this.plot_TOF.Height + 4;
-            this.vsb_2DMap.Height = this.pb_2DMap.Height;
-
-            this.pb_2DMap.Top = this.num_maxBin.Top + this.num_maxBin.Height + 4 + this.plot_TOF.PlotAreaBounds.Top;
-            this.hsb_2DMap.Top = this.pb_2DMap.Top - this.hsb_2DMap.Height;
-            this.vsb_2DMap.Top = this.pb_2DMap.Top;
-
-            if ((this.plot_TOF.Top + this.plot_TOF.Height) < (this.pb_2DMap.Top + this.pb_2DMap.Height + 16))
-                this.plot_Mobility.Top = this.pb_2DMap.Top + this.pb_2DMap.Height + 16;
-            else
-                this.plot_Mobility.Top = this.plot_TOF.Top + this.plot_TOF.Height;
-            this.num_minMobility.Top = this.num_maxMobility.Top = this.plot_Mobility.Top + this.plot_Mobility.Height + 4;
-            this.cb_MaxScanValue.Top = this.plot_Mobility.Top + this.plot_Mobility.Height - this.cb_MaxScanValue.Height - 2;
-
-            if (this.current_MZPerPixelX == 1)
-            {
-                this.plot_Mobility.Left = this.plot_TOF.Left + this.plot_TOF.Width;
-                this.plot_Mobility.Width = this.pb_2DMap.Width + this.plot_Mobility.Width - this.plot_Mobility.PlotAreaBounds.Width;
-            }
-            else
-            {
-                this.plot_Mobility.Width = this.pb_2DMap.Width + this.plot_Mobility.Width - this.plot_Mobility.PlotAreaBounds.Width - this.current_MZPerPixelX;
-                this.plot_Mobility.Left = this.plot_Mobility.Left = this.plot_TOF.Left + this.plot_TOF.Width + this.current_MZPerPixelX / 2;
-            }
-
-            this.num_minMobility.Left = this.plot_Mobility.Left;
-            this.num_maxMobility.Left = this.plot_Mobility.Left + this.plot_Mobility.Width - this.num_maxMobility.Width; //- (this.plot_Mobility.PlotAreaBounds.Width - this.pb_2DMap.Width)
-            this.cb_MaxScanValue.Left = this.plot_Mobility.Left + this.plot_Mobility.Width - this.cb_MaxScanValue.Width - 3;
-
-            this.pb_2DMap.Left = this.plot_TOF.Left + this.plot_TOF.Width + this.plot_Mobility.PlotAreaBounds.Left;
-            this.hsb_2DMap.Left = this.pb_2DMap.Left;
-
-            this.hsb_2DMap.Width = this.pb_2DMap.Width;
-            this.vsb_2DMap.Left = this.pb_2DMap.Left + this.pb_2DMap.Width;
-
-            this.tabpages_FrameInfo.Top = this.tab_DataViewer.Height - this.tabpages_FrameInfo.Height - 6;
+            this.plot_axisMobility(this.data_driftTIC);
+            this.plot_axisTOF(this.data_tofTIC);
 
             this.flag_collecting_data = false;
         }
@@ -1097,6 +1130,8 @@ namespace UIMF_DataViewer
                                 this.current_maxSpectrum = this.raw_maxSpectrum;
                             else
                                 this.current_maxSpectrum = this.new_maxSpectrum;
+                            if (this.current_maxSpectrum > this.current_minSpectrum + MAX_GRAPHED_SPECTRA - 1)
+                                this.current_maxSpectrum = this.current_minSpectrum + MAX_GRAPHED_SPECTRA - 1;
 
                             if (this.new_maxMZ > this.raw_maxMZ)
                                 this.current_maxMZ = this.raw_maxMZ;
@@ -1106,6 +1141,9 @@ namespace UIMF_DataViewer
                                 this.current_minMZ = this.raw_minMZ;
                             else
                                 this.current_minMZ = this.new_minMZ;
+
+                            _zoomX.Add(new Point(this.current_minSpectrum, this.current_maxSpectrum));
+                            _zoomBin.Add(new dPoint(this.current_minMZ, this.current_maxMZ));
                         }
 
                         try
@@ -1143,8 +1181,8 @@ namespace UIMF_DataViewer
             int old_min = this.current_minMobility;
             int old_max = this.current_maxMobility;
 
-            this.current_minSpectrum = this.new_minSpectrum = this.hsb_2DMap.Value;
-            this.current_maxSpectrum = this.new_maxSpectrum = (old_max + (this.new_minSpectrum - old_min));
+            this.new_minSpectrum = this.hsb_2DMap.Value;
+            this.new_maxSpectrum = (old_max + (this.new_minSpectrum - old_min));
 
             this.flag_update2DGraph = true;
         }
@@ -1163,7 +1201,7 @@ namespace UIMF_DataViewer
         // ///////////////////////////////////////////////////////////////
         // Graph_2DPlot()
         //
-        private void Graph_2DPlot()
+        private new void Graph_2DPlot()
         {
             if (this.WindowState == FormWindowState.Minimized)
                 return;
@@ -1182,7 +1220,7 @@ namespace UIMF_DataViewer
                 {
                     try
                     {
-                        Generate2DIntensityArray(0);
+                        Generate2DIntensityArray();
                     }
                     catch (Exception ex)
                     {
@@ -1210,6 +1248,7 @@ namespace UIMF_DataViewer
 
                     // Spit out the data to screen
                     this.DrawBitmap(this.data_2D, this.data_maxIntensity);
+                    this.ResizeThis();
                 }
                 catch (Exception ex)
                 {
@@ -1217,12 +1256,6 @@ namespace UIMF_DataViewer
                     Console.WriteLine(ex.ToString());
                     this.flag_update2DGraph = true;
                 }
-            }
-
-            if (this.pb_2DMap.Left + this.pb_2DMap.Width + 170 > this.Width)
-            {
-                this.Width = this.pb_2DMap.Left + this.pb_2DMap.Width + 170;
-                this.IonMobilityDataView_Resize((object)null, (EventArgs)null);
             }
 
             this.slider_ColorMap.Invalidate();
@@ -1257,8 +1290,8 @@ namespace UIMF_DataViewer
                 else
                     this.new_maxMZ = max;
 
-                _zoomX.Add(new Point(new_minSpectrum, new_maxSpectrum));
-                _zoomBin.Add(new dPoint(new_minMZ, new_maxMZ));
+              //  _zoomX.Add(new Point(new_minSpectrum, new_maxSpectrum));
+             //   _zoomBin.Add(new dPoint(new_minMZ, new_maxMZ));
 
                 this.flag_update2DGraph = true;
 
@@ -1296,8 +1329,8 @@ namespace UIMF_DataViewer
                 else
                     this.new_minMZ = min;
 
-                _zoomX.Add(new Point(new_minSpectrum, new_maxSpectrum));
-                _zoomBin.Add(new dPoint(new_minMZ, new_maxMZ));
+               // _zoomX.Add(new Point(new_minSpectrum, new_maxSpectrum));
+              //  _zoomBin.Add(new dPoint(new_minMZ, new_maxMZ));
 
 
                 this.flag_update2DGraph = true;
@@ -1328,8 +1361,8 @@ namespace UIMF_DataViewer
             new_maxSpectrum = max;
             new_minSpectrum = min;
 
-            _zoomX.Add(new Point(min, max));
-            _zoomBin.Add(new dPoint(new_minMZ, new_maxMZ));
+           // _zoomX.Add(new Point(min, max));
+           // _zoomBin.Add(new dPoint(new_minMZ, new_maxMZ));
 
             this.flag_update2DGraph = true;
 
@@ -1365,6 +1398,63 @@ namespace UIMF_DataViewer
             g.DrawEllipse(p1, topX, topY, widthX, widthY);
             Pen p2 = new Pen(new SolidBrush(Color.White), 1);
             g.DrawEllipse(p2, topX, topY, widthX, widthY);
+        }
+
+        private void InitializeComponent()
+        {
+            ((System.ComponentModel.ISupportInitialize)(this.pb_2DMap)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.plot_TOF)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.plot_Mobility)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.num_minMobility)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.num_maxMobility)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.num_minBin)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.num_maxBin)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.slide_Threshold)).BeginInit();
+            this.tabpages_FrameInfo.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.num_TICThreshold)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.num_FrameCompression)).BeginInit();
+            this.pnl_Chromatogram.SuspendLayout();
+            this.tabpages_Main.SuspendLayout();
+            this.tab_DataViewer.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.num_FrameIndex)).BeginInit();
+            this.SuspendLayout();
+            // 
+            // plot_TOF
+            // 
+            this.plot_TOF.Anchor = System.Windows.Forms.AnchorStyles.None;
+            // 
+            // xAxis_Mobility
+            // 
+            this.xAxis_Mobility.MajorDivisions.LabelFormat = new NationalInstruments.UI.FormatString(NationalInstruments.UI.FormatStringMode.Numeric, "F2");
+            // 
+            // lb_DragDropFiles
+            // 
+            this.lb_DragDropFiles.Size = new System.Drawing.Size(493, 121);
+            // 
+            // ThermoViewer
+            // 
+            this.ClientSize = new System.Drawing.Size(1040, 887);
+            this.Location = new System.Drawing.Point(0, 0);
+            this.Name = "ThermoViewer";
+            ((System.ComponentModel.ISupportInitialize)(this.pb_2DMap)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.plot_TOF)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.plot_Mobility)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.num_minMobility)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.num_maxMobility)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.num_minBin)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.num_maxBin)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.slide_Threshold)).EndInit();
+            this.tabpages_FrameInfo.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.num_TICThreshold)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.num_FrameCompression)).EndInit();
+            this.pnl_Chromatogram.ResumeLayout(false);
+            this.pnl_Chromatogram.PerformLayout();
+            this.tabpages_Main.ResumeLayout(false);
+            this.tab_DataViewer.ResumeLayout(false);
+            this.tab_DataViewer.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.num_FrameIndex)).EndInit();
+            this.ResumeLayout(false);
+
         }
 
 #if false

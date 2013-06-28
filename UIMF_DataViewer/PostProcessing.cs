@@ -64,8 +64,10 @@ namespace UIMF_File
     //    private Peptide current_Peptide;
         private Peptide current_Calibrant;
 
+        private const int MIN_NUM_CALIBRANTS = 4;
         private const int NUM_CALIBRANTS = 25;
         private const int N_PRS_BINS = 511;
+        private const double MAX_ERROR_ACCEPTABLE = 5.0;
 
         private const double T = 298;            // ambient temperature, K
         private const double pressure_IMS = 4;   // pressure in the IMS drift tube, torr
@@ -188,27 +190,110 @@ namespace UIMF_File
             return this.Experimental_Slope; // coef_Internal.Experimental_Slope;
         }
 
-        public void CreateArrays(double[] summed_spectrum, double[] sum_intensities, double[] bin_arrival_time, double bin_width, int total_bins, double mz_Experimental_Slope, double mz_Experimental_Intercept)
+        public void CalibrateFrame(double[] summed_spectrum, double[] sum_intensities, double[] bin_arrival_time, double bin_width, int total_bins, int total_scans, double mz_Experimental_Slope, double mz_Experimental_Intercept)
         {
+            int i;
             int bins_per_frame = total_bins;
-            this.spectra_with_nonzeroentries = sum_intensities.Length;
+            int NumEnabledCalibrants = 0;
 
-            this.set_ExperimentalCoefficients(mz_Experimental_Slope, mz_Experimental_Intercept);
+            int max_error_index = 0;
 
-            this.sum_intensity2 = new double[spectra_with_nonzeroentries];
-            this.arrival_time_TOF2 = new double[spectra_with_nonzeroentries]; //arrival time in bins
-            
-            Array.Copy(sum_intensities, sum_intensity2, sum_intensities.Length);
-            Array.Copy(bin_arrival_time, arrival_time_TOF2, bin_arrival_time.Length);
+            this.dg_Calibrants.ClearSelection();
 
-            this.mz2 = new double[spectra_with_nonzeroentries];
-            for (int i = 0; i < spectra_with_nonzeroentries; i++)
+            for (i = 0; i < this.dg_Calibrants.Rows.Count - 1; ++i)
             {
-               // this.arrival_time_TOF2[i] *= bin_width;
-                mz2[i] = Math.Pow((this.arrival_time_TOF2[i] / 1000.0) - this.Experimental_Intercept, 2) * this.Experimental_Slope * this.Experimental_Slope;
-            }
-            // mz_LIST2[i][k] = (float)pow((double)(arrival_time_LIST2[i][k] - *(TOF_offset_buffer + i) + TimeOffset) / 1000 - Experimental_Intercept, 2) * (float)pow((double)Experimental_Slope, 2);
+                this.Calibrants[i].bins = 0;
+                this.Calibrants[i].new_tof = 0;
+                this.Calibrants[i].new_mz = 0;
+                this.Calibrants[i].error_ppm = 0;
 
+                this.dg_Calibrants.Rows[i].Cells[6].Value = "";
+                this.dg_Calibrants.Rows[i].Cells[7].Value = "";
+                this.dg_Calibrants.Rows[i].Cells[8].Value = "";
+                this.dg_Calibrants.Rows[max_error_index].Cells[7].Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+
+                if ((this.dg_Calibrants.Rows[i].Cells[0].Value != null) &&
+                    (Convert.ToBoolean(this.dg_Calibrants.Rows[i].Cells[0].Value)))
+                {
+                    this.Calibrants[i].enabled = true;
+
+                    this.Calibrants[i].tof = (double)((Math.Sqrt(this.Calibrants[i].mz) / this.Experimental_Slope) + this.Experimental_Intercept);
+                    this.Calibrants[i].bins = this.Calibrants[i].tof / this.bin_Width;
+
+                    NumEnabledCalibrants++;
+
+                    this.dg_Calibrants.Rows[i].Cells[6].Style.BackColor = Color.White;
+                    this.dg_Calibrants.Rows[i].Cells[7].Style.BackColor = Color.White;
+                    this.dg_Calibrants.Rows[i].Cells[8].Style.BackColor = Color.White;
+                }
+                else
+                {
+                    this.Calibrants[i].enabled = false;
+
+                    this.dg_Calibrants.Rows[i].Cells[6].Style.BackColor = Color.Silver;
+                    this.dg_Calibrants.Rows[i].Cells[7].Style.BackColor = Color.Silver;
+                    this.dg_Calibrants.Rows[i].Cells[8].Style.BackColor = Color.Silver;
+                }
+            }
+
+            while (NumEnabledCalibrants >= MIN_NUM_CALIBRANTS)
+            {
+                this.spectra_with_nonzeroentries = sum_intensities.Length;
+
+                this.set_ExperimentalCoefficients(mz_Experimental_Slope, mz_Experimental_Intercept);
+
+                this.sum_intensity2 = new double[spectra_with_nonzeroentries];
+                this.arrival_time_TOF2 = new double[spectra_with_nonzeroentries]; //arrival time in bins
+
+                Array.Copy(sum_intensities, sum_intensity2, sum_intensities.Length);
+                Array.Copy(bin_arrival_time, arrival_time_TOF2, bin_arrival_time.Length);
+
+                this.mz2 = new double[spectra_with_nonzeroentries];
+                for (i = 0; i < spectra_with_nonzeroentries; i++)
+                {
+                    // this.arrival_time_TOF2[i] *= bin_width;
+                    mz2[i] = Math.Pow((this.arrival_time_TOF2[i] / 1000.0) - this.Experimental_Intercept, 2) * this.Experimental_Slope * this.Experimental_Slope;
+                }
+                // mz_LIST2[i][k] = (float)pow((double)(arrival_time_LIST2[i][k] - *(TOF_offset_buffer + i) + TimeOffset) / 1000 - Experimental_Intercept, 2) * (float)pow((double)Experimental_Slope, 2);
+
+                max_error_index = this.OnInternalCalibration(CalibrationType.STANDARD, Instrument.AGILENT_TDC, total_scans, NumEnabledCalibrants);
+
+                if (Math.Abs(this.Calibrants[max_error_index].error_ppm) < MAX_ERROR_ACCEPTABLE)
+                {
+                    this.set_ExperimentalCoefficients(coef_Internal.Experimental_Slope, coef_Internal.Experimental_Intercept);
+                    break;
+                }
+                else
+                {
+                    this.lbl_CalculatedIntercept.Text = "";
+                    this.lbl_CalculatedSlope.Text = "";
+
+                    this.set_ExperimentalCoefficients(this.Experimental_Slope, this.Experimental_Intercept);
+                    coef_Internal.Experimental_Slope = this.Experimental_Slope;
+                    coef_Internal.Experimental_Intercept = this.Experimental_Intercept;
+
+                    this.Calibrants[max_error_index].enabled = false;
+
+                    this.dg_Calibrants.Rows[max_error_index].Cells[7].Value = "FAILED";
+                    this.dg_Calibrants.Rows[max_error_index].Cells[8].Value = "";
+                    this.dg_Calibrants.Rows[max_error_index].Cells[7].Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
+                    this.dg_Calibrants.Rows[max_error_index].Cells[6].Style.BackColor = Color.Plum;
+                    this.dg_Calibrants.Rows[max_error_index].Cells[7].Style.BackColor = Color.Plum;
+                    this.dg_Calibrants.Rows[max_error_index].Cells[8].Style.BackColor = Color.Plum;
+
+                    // this.dg_Calibrants.Rows[max_error_index].Cells[0].Value = false;
+
+                    NumEnabledCalibrants = 0;
+                    for (i = 0; i < this.dg_Calibrants.Rows.Count - 1; i++)
+                    {
+                        if (this.Calibrants[i].enabled)
+                            NumEnabledCalibrants++;
+                    }
+                }
+            }
+
+                //MessageBox.Show("'" + this.dg_Calibrants.Rows[7].Cells[6].Value.ToString() + "'  " + this.dg_Calibrants.Rows[7].Cells[6].Value.ToString().Length.ToString() + "\n" + this.Calibrants[7].error_ppm.ToString());
 #if false
             FileStream fs = new FileStream(@"C:\IonMobilityData\Calibration\NewCalib.txt", FileMode.Create);
             StreamWriter sw = new StreamWriter(fs);
@@ -220,6 +305,120 @@ namespace UIMF_File
             sw.Close();
             fs.Close();
 #endif
+        }
+
+        public int OnInternalCalibration(CalibrationType cal_type, Instrument inst_type, int tofs_per_frame, int num_enabled_calibrants)
+        {
+            int NumEnabledCalibrantsCorrected = 0;
+            int i;
+            int j;
+
+            double sum_mz_term = 0;
+            double sum_TOF_term = 0;
+            double sum_TOF_term_squared = 0;
+            double sum_mz_TOF_term = 0;
+
+            bool flag_success = false;
+
+            int max_error_index = 0;
+
+            // now go to TOF spectra and find peak maxima
+            NumEnabledCalibrantsCorrected = num_enabled_calibrants;
+
+            for (i = 0; i < this.dg_Calibrants.Rows.Count - 1; i++)
+            {
+                if (this.Calibrants[i].enabled) //Calibrants[i].mz > 0)
+                {
+                    current_Calibrant.name = this.Calibrants[i].name;
+                    current_Calibrant.charge = this.Calibrants[i].charge;
+                    current_Calibrant.mz = this.Calibrants[i].mz;
+
+                    this.Calibrants[i].new_tof = OnFindingMonoisotopicPeak((double)this.dg_Calibrants.Rows[i].Cells[5].Value,  // wfd
+                        Species.CALIBRANT, PeakPicking.THREE_POINT_QUADRATIC, tofs_per_frame);
+
+                    if (this.Calibrants[i].new_tof == 0)
+                    {
+                        NumEnabledCalibrantsCorrected--;
+                        this.Calibrants[i].enabled = false;
+
+                        this.dg_Calibrants.Rows[i].Cells[7].Value = "NOT FOUND";
+                        this.dg_Calibrants.Rows[i].Cells[7].Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
+                        this.dg_Calibrants.Rows[i].Cells[6].Style.BackColor = Color.Plum;
+                        this.dg_Calibrants.Rows[i].Cells[7].Style.BackColor = Color.Plum;
+                        this.dg_Calibrants.Rows[i].Cells[8].Style.BackColor = Color.Plum;
+
+                       // this.dg_Calibrants.Rows[i].Cells[0].Value = false;
+                    }
+                }
+            }
+
+            //MessageBox.Show(this, "NumEnabledCalibrants: "+NumEnabledCalibrants.ToString());
+            cal_type = CalibrationType.AGILENT;
+            if (cal_type == CalibrationType.AGILENT)
+            {
+                for (i = 0; i < this.dg_Calibrants.Rows.Count - 1; i++)
+                {
+                    if (this.Calibrants[i].enabled) //Calibrants[i].mz > 0)
+                    {
+                        // internal_calibrants_found = true;
+                        if (this.Calibrants[i].mz > 0)
+                        {
+                            this.Calibrants[i].new_mz = Math.Sqrt(this.Calibrants[i].mz);
+
+                            sum_mz_term = sum_mz_term + this.Calibrants[i].new_mz;
+                            sum_TOF_term = sum_TOF_term + this.Calibrants[i].new_tof;
+                            sum_TOF_term_squared = sum_TOF_term_squared + Math.Pow(this.Calibrants[i].new_tof, 2);
+                            sum_mz_TOF_term = sum_mz_TOF_term + this.Calibrants[i].new_mz * (this.Calibrants[i].new_tof);
+                        }
+
+                        coef_Internal.Experimental_Slope = (NumEnabledCalibrantsCorrected * sum_mz_TOF_term - sum_mz_term * sum_TOF_term) / (NumEnabledCalibrantsCorrected * sum_TOF_term_squared - Math.Pow(sum_TOF_term, 2));
+                        coef_Internal.Experimental_Intercept = (sum_mz_term / NumEnabledCalibrantsCorrected) - ((coef_Internal.Experimental_Slope * sum_TOF_term) / NumEnabledCalibrantsCorrected);
+                        coef_Internal.Experimental_Intercept = -coef_Internal.Experimental_Intercept / coef_Internal.Experimental_Slope;
+                    }
+                }
+            }
+
+            // check the results
+            for (j = 0; j < this.dg_Calibrants.Rows.Count - 1; ++j)
+                if (this.Calibrants[j].enabled)
+                {
+                    max_error_index = j;
+                    break;
+                }
+
+            flag_success = true;
+            for (j = max_error_index; j < this.dg_Calibrants.Rows.Count - 1; ++j)
+            {
+                if (this.Calibrants[j].enabled)
+                {
+                    this.Calibrants[j].new_mz = Math.Pow((this.Calibrants[j].new_tof - coef_Internal.Experimental_Intercept) * coef_Internal.Experimental_Slope, 2);
+                    this.Calibrants[j].error_ppm = ((this.Calibrants[j].new_mz - this.Calibrants[j].mz) / this.Calibrants[j].mz) * Math.Pow(10, 6);
+
+                    if (Math.Abs(this.Calibrants[j].error_ppm) > Math.Abs(this.Calibrants[max_error_index].error_ppm))
+                        max_error_index = j;
+
+                    if (this.Calibrants[j].new_tof > 0)
+                    {
+                        this.dg_Calibrants.Rows[j].Cells[6].Value = this.Calibrants[j].error_ppm;
+                        this.dg_Calibrants.Rows[j].Cells[7].Value = this.Calibrants[j].new_mz;
+                        this.dg_Calibrants.Rows[j].Cells[8].Value = this.Calibrants[j].new_tof;
+                    }
+                    else
+                    {
+                        flag_success = false;
+                        /*
+                        this.dg_Calibrants.Rows[j].Cells[6].Value = "failed";
+                        this.dg_Calibrants.Rows[j].Cells[7].Value = "";
+                        this.dg_Calibrants.Rows[j].Cells[8].Value = "";
+                         */
+                    }
+                }
+            }
+
+            this.pnl_Success.Enabled = flag_success;
+
+            return max_error_index;
         }
 
         // //////////////////////////////////////////////////////////////////////////////////////
@@ -856,165 +1055,6 @@ namespace UIMF_File
         */
 
         // this is all dealing with calibrants
-        public bool OnInternalCalibration(CalibrationType cal_type, Instrument inst_type, int tofs_per_frame)
-        {
-            int NumEnabledCalibrants = 0;
-            int NumEnabledCalibrantsCorrected = 0;
-            int i;
-            int j;
-
-            double sum_mz_term = 0;
-            double sum_TOF_term = 0;
-            double sum_TOF_term_squared = 0;
-            double sum_mz_TOF_term = 0;
-
-            bool flag_success;
-
-            j = 0;
-            for (i = 0; i < this.dg_Calibrants.Rows.Count - 1; ++i)
-            {
-                Calibrants[i].bins = 0;
-                Calibrants[i].new_tof = 0;
-                Calibrants[i].new_mz = 0;
-                Calibrants[i].error_ppm = 0;
-                
-                if ((this.dg_Calibrants.Rows[i].Cells[0].Value != null) &&
-                    (Convert.ToBoolean(this.dg_Calibrants.Rows[i].Cells[0].Value)))
-                {
-                    Calibrants[i].enabled = true;
-
-                    Calibrants[i].tof = (double)((Math.Sqrt(Calibrants[i].mz) / this.Experimental_Slope) + this.Experimental_Intercept);
-                    Calibrants[i].bins = Calibrants[i].tof / this.bin_Width;
-
-                    //MessageBox.Show(this, "Experimental_Slope: "+this.Experimental_Slope.ToString()+", Experimental_Intercept: "+this.Experimental_Intercept.ToString()+", pTOF_calibrant_external_non_zero: " + pTOF_calibrant_external_non_zero[i].ToString());
-
-                    NumEnabledCalibrants++;
-                    j++;
-                }
-                else
-                {
-                    Calibrants[i].enabled = false;
-                }
-            }
-
-            // now go to TOF spectra and find peak maxima
-            NumEnabledCalibrantsCorrected = NumEnabledCalibrants;
-            for (i = 0; i < this.dg_Calibrants.Rows.Count - 1; i++)
-            {
-                if (Calibrants[i].enabled) //Calibrants[i].mz > 0)
-                {
-                    current_Calibrant.name = Calibrants[i].name;
-                    current_Calibrant.charge = Calibrants[i].charge;
-                    current_Calibrant.mz = Calibrants[i].mz;
-
-                    //MessageBox.Show(this, "tofs_per_frame: " + tofs_per_frame.ToString());
-                    // MessageBox.Show(this, this.dg_Calibrants.Rows[i].Cells[1].Value + "   " + ((double)this.dg_Calibrants.Rows[i].Cells[2].Value).ToString());
-
-                    // pTOF_calibrant[j] = OnFindingMonoisotopicPeak(pTOF_calibrant_external_non_zero[j] * 1000,  // wfd
-                    Calibrants[i].new_tof = OnFindingMonoisotopicPeak((double)this.dg_Calibrants.Rows[i].Cells[5].Value,  // wfd
-                        Species.CALIBRANT, PeakPicking.THREE_POINT_QUADRATIC, tofs_per_frame);
-
-                    // if (pTOF_calibrant[i] - pTOF_calibrant_external_non_zero[i] > 0.05)
-                    //     pTOF_calibrant[i] = 0; //false identification is offset is more than 0.05 us
-
-                    if (Calibrants[i].new_tof == 0)
-                    {
-                        NumEnabledCalibrantsCorrected--;
-                        Calibrants[i].enabled = false;
-                        // Calibrants[i].mz = 0; //if calibrant wasn't found, set its m/z to zero
-                    }
-                }
-            }
-
-            //MessageBox.Show(this, "NumEnabledCalibrants: "+NumEnabledCalibrants.ToString());
-            cal_type = CalibrationType.AGILENT;
-
-#if false
-            //least-square fit
-            if (NumEnabledCalibrants > 1 && (cal_type == CalibrationType.STANDARD))
-            {
-                for (i = 0; i < NumEnabledCalibrants; i++) //take all the requested calibrants but use only non-zero entries
-                {
-                    // internal_calibrants_found = true;
-                    if (Calibrants[i].mz > 0)
-                    {
-                        pmz_calibrant_new[i] = Math.Sqrt(Calibrants[i].mz);
-
-                        sum_mz_term = sum_mz_term + pmz_calibrant_new[i];
-                        sum_TOF_term = sum_TOF_term + pTOF_calibrant[i];
-                        sum_TOF_term_squared = sum_TOF_term_squared + Math.Pow(pTOF_calibrant[i], 2);
-                        sum_mz_TOF_term = sum_mz_TOF_term + pmz_calibrant_new[i] * pTOF_calibrant[i];
-                    }
-                }
-
-                coef_Internal.Experimental_Slope = ((NumEnabledCalibrantsCorrected * sum_mz_TOF_term) - (sum_mz_term * sum_TOF_term)) / (NumEnabledCalibrantsCorrected * sum_TOF_term_squared - Math.Pow(sum_TOF_term, 2));
-                coef_Internal.Experimental_Intercept = (sum_mz_term / NumEnabledCalibrantsCorrected) - ((coef_Internal.Experimental_Slope * sum_TOF_term) / NumEnabledCalibrantsCorrected);
-            }
-#endif
-
-            if (NumEnabledCalibrants > 1 && (cal_type == CalibrationType.AGILENT))
-            {
-                for (i = 0; i < this.dg_Calibrants.Rows.Count - 1; i++)
-                {
-                    if (Calibrants[i].enabled) //Calibrants[i].mz > 0)
-                    {
-                        // internal_calibrants_found = true;
-                        if (Calibrants[i].mz > 0)
-                        {
-                            Calibrants[i].new_mz = Math.Sqrt(Calibrants[i].mz);
-
-                            sum_mz_term = sum_mz_term + Calibrants[i].new_mz;
-                            sum_TOF_term = sum_TOF_term + Calibrants[i].new_tof;
-                            sum_TOF_term_squared = sum_TOF_term_squared + Math.Pow(Calibrants[i].new_tof, 2);
-                            sum_mz_TOF_term = sum_mz_TOF_term + Calibrants[i].new_mz * (Calibrants[i].new_tof);
-                        }
-
-                        coef_Internal.Experimental_Slope = (NumEnabledCalibrantsCorrected * sum_mz_TOF_term - sum_mz_term * sum_TOF_term) / (NumEnabledCalibrantsCorrected * sum_TOF_term_squared - Math.Pow(sum_TOF_term, 2));
-                        coef_Internal.Experimental_Intercept = (sum_mz_term / NumEnabledCalibrantsCorrected) - ((coef_Internal.Experimental_Slope * sum_TOF_term) / NumEnabledCalibrantsCorrected);
-                        coef_Internal.Experimental_Intercept = -coef_Internal.Experimental_Intercept / coef_Internal.Experimental_Slope;
-                    }
-                }
-            }
-
-            this.set_ExperimentalCoefficients(coef_Internal.Experimental_Slope, coef_Internal.Experimental_Intercept);
-
-            flag_success = true;
-            for (j = 0; j < this.dg_Calibrants.Rows.Count - 1; ++j)
-            {
-                if (this.Calibrants[j].enabled)
-                {
-                    Calibrants[j].new_mz = Math.Pow((Calibrants[j].new_tof - coef_Internal.Experimental_Intercept) * coef_Internal.Experimental_Slope, 2);
-                    Calibrants[j].error_ppm = ((Calibrants[j].new_mz - Calibrants[j].mz) / Calibrants[j].mz) * Math.Pow(10, 6);
-
-                    if ((Calibrants[j].new_tof > 0) && (Math.Abs(Calibrants[j].error_ppm) < 50000))
-                    {
-                        if (Math.Abs(Calibrants[j].error_ppm) > 10.0)
-                            flag_success = false;
-
-                        this.dg_Calibrants.Rows[j].Cells[6].Value = Calibrants[j].error_ppm;
-                        this.dg_Calibrants.Rows[j].Cells[7].Value = Calibrants[j].new_mz;
-                        this.dg_Calibrants.Rows[j].Cells[8].Value = Calibrants[j].new_tof;
-                    }
-                    else
-                    {
-                        flag_success = false;
-                        this.dg_Calibrants.Rows[j].Cells[6].Value = "failed";
-                        this.dg_Calibrants.Rows[j].Cells[7].Value = "";
-                        this.dg_Calibrants.Rows[j].Cells[8].Value = "";
-                    }
-                }
-                else
-                {
-                    this.dg_Calibrants.Rows[j].Cells[6].Value = "";
-                    this.dg_Calibrants.Rows[j].Cells[7].Value = "";
-                    this.dg_Calibrants.Rows[j].Cells[8].Value = "";
-                }
-            }
-
-            this.pnl_Success.Enabled = flag_success;
-
-            return flag_success;
-        }
 
         private void num_CalculateCalibration_ValueChanged(object sender, EventArgs e)
         {

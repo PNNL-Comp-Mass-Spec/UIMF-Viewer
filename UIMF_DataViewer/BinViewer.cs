@@ -67,7 +67,7 @@ namespace UIMF_DataViewer
 
             this.xAxis_Mobility.MajorDivisions.LabelFormat = new NationalInstruments.UI.FormatString(NationalInstruments.UI.FormatStringMode.Numeric, "F0");
 
-            Generate2DIntensityArray(0);
+            Generate2DIntensityArray();
             this.GraphFrame(this.data_2D);
 
             // this.slider_ColorMap.set_Colors((float).2, (float).3, (float).4, (float).5, (float).6, (float).7);
@@ -535,7 +535,7 @@ namespace UIMF_DataViewer
         }
 
 
-        protected override void Generate2DIntensityArray(int frame_index)
+        protected override void Generate2DIntensityArray()
         {
             // Determine the frame size
             this.get_ViewableIntensities();
@@ -789,7 +789,6 @@ namespace UIMF_DataViewer
             else
                 this.plot_Mobility.Top = this.plot_TOF.Top + this.plot_TOF.Height;
             this.num_minMobility.Top = this.num_maxMobility.Top = this.plot_Mobility.Top + this.plot_Mobility.Height + 4;
-            this.cb_MaxScanValue.Top = this.plot_Mobility.Top + this.plot_Mobility.Height - this.cb_MaxScanValue.Height - 2;
 
             if (this.current_MZPerPixelX == 1)
             {
@@ -804,8 +803,10 @@ namespace UIMF_DataViewer
 
             this.num_minMobility.Left = this.plot_Mobility.Left;
             this.num_maxMobility.Left = this.plot_Mobility.Left + this.plot_Mobility.Width - this.num_maxMobility.Width; //- (this.plot_Mobility.PlotAreaBounds.Width - this.pb_2DMap.Width)
+#if MAX_SCAN_VALUE
+            this.cb_MaxScanValue.Top = this.plot_Mobility.Top + this.plot_Mobility.Height - this.cb_MaxScanValue.Height - 2;
             this.cb_MaxScanValue.Left = this.plot_Mobility.Left + this.plot_Mobility.Width - this.cb_MaxScanValue.Width - 3;
-
+#endif
             this.pb_2DMap.Left = this.plot_TOF.Left + this.plot_TOF.Width + this.plot_Mobility.PlotAreaBounds.Left;
             this.hsb_2DMap.Left = this.pb_2DMap.Left;
 
@@ -1035,7 +1036,7 @@ namespace UIMF_DataViewer
         // ///////////////////////////////////////////////////////////////
         // Graph_2DPlot()
         //
-        private void Graph_2DPlot()
+        private new void Graph_2DPlot()
         {
             if (this.WindowState == FormWindowState.Minimized)
                 return;
@@ -1054,7 +1055,7 @@ namespace UIMF_DataViewer
                 {
                     try
                     {
-                        Generate2DIntensityArray(0);
+                        Generate2DIntensityArray();
                     }
                     catch (Exception ex)
                     {
@@ -1096,7 +1097,7 @@ namespace UIMF_DataViewer
                 this.Width = this.pb_2DMap.Left + this.pb_2DMap.Width + 170;
                 this.IonMobilityDataView_Resize((object)null, (EventArgs)null);
             }
-
+ 
             this.slider_ColorMap.Invalidate();
 
             this.flag_kill_mouse = false;

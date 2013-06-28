@@ -10,11 +10,12 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>UIMF_DataViewer</RootNamespace>
     <AssemblyName>UIMF_DataViewer</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
     <OldToolsVersion>2.0</OldToolsVersion>
-    <UpgradeBackupLocation />
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -30,13 +31,14 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;THERMO</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -46,16 +48,26 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;THERMO</DefineConstants>
+    <DefineConstants>TRACE;THERMO BELOV_TRANSFORM</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NationalInstruments.Common, Version=9.0.20.610, Culture=neutral, PublicKeyToken=4544464cdeaab541, processorArchitecture=MSIL" />
-    <Reference Include="NationalInstruments.UI, Version=8.9.20.246, Culture=neutral, PublicKeyToken=4544464cdeaab541, processorArchitecture=x86" />
-    <Reference Include="NationalInstruments.UI.WindowsForms, Version=8.9.20.246, Culture=neutral, PublicKeyToken=4544464cdeaab541, processorArchitecture=x86" />
+    <Reference Include="MathNet.Numerics, Version=2011.4.17.0, Culture=neutral, PublicKeyToken=cd8b63ad3d691a37, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\BelovTranform\lib\MathNet.Numerics.dll</HintPath>
+    </Reference>
+    <Reference Include="NationalInstruments.Common, Version=9.1.40.159, Culture=neutral, PublicKeyToken=dc6ad606294fc298, processorArchitecture=MSIL">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NationalInstruments.UI, Version=9.1.40.204, Culture=neutral, PublicKeyToken=dc6ad606294fc298, processorArchitecture=MSIL">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NationalInstruments.UI.WindowsForms, Version=9.1.40.204, Culture=neutral, PublicKeyToken=dc6ad606294fc298, processorArchitecture=MSIL">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -100,7 +112,9 @@
     <Compile Include="ThermoViewer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UIMF_Demultiplexer.cs" />
+    <Compile Include="UIMFLibrary\LogEntry.cs" />
+    <Compile Include="UIMFDataWrapper.cs" />
+    <Compile Include="UIMF_BelovTransform.cs" />
     <Compile Include="UIMFLibrary\ClassDefinitions.cs" />
     <Compile Include="UIMFLibrary\UIMFDataReader.cs" />
     <Compile Include="UIMFLibrary\UIMFDataWriter.cs" />
@@ -151,6 +165,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="ThermoViewer.resx">
+      <DependentUpon>ThermoViewer.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Utilities\ExportExperiment.resx">
       <DependentUpon>ExportExperiment.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -173,6 +190,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -194,27 +212,15 @@
     <Content Include="Images\Entrance_IMS4.png" />
     <Content Include="Images\Exit_IMS4.png" />
     <Content Include="Images\IMS4a.png" />
+    <None Include="Images\triangle_up_in.GIF" />
+    <None Include="Images\triangle_up_out.GIF" />
     <None Include="Images\ripple21.gif" />
+    <None Include="Images\triangle_down_out.GIF" />
+    <None Include="Images\triangle_down_in.GIF" />
     <Content Include="Images\triangle_left_in.png" />
     <Content Include="Images\triangle_left_out.png" />
     <Content Include="Images\triangle_right_in.png" />
     <Content Include="Images\triangle_right_out.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="MSFileReaderLib">
-      <Guid>{F0C5F3E3-4F2A-443E-A74D-0AABE3237494}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-    </COMReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Belov_Transform\Belov_Transform.csproj">
-      <Project>{C08242B4-4790-4BB8-B3E7-D614E07B96A1}</Project>
-      <Name>Belov_Transform</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -232,6 +238,23 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BelovTranform\BelovTransform.csproj">
+      <Project>{1B5E8255-EA60-4D57-A5EC-A1CF428337B9}</Project>
+      <Name>BelovTransform</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="MSFileReaderLib">
+      <Guid>{F0C5F3E3-4F2A-443E-A74D-0AABE3237494}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

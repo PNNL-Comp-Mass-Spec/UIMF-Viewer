@@ -39,7 +39,7 @@
     <GenerateManifests>true</GenerateManifests>
     <SignManifests>true</SignManifests>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <OldToolsVersion>2.0</OldToolsVersion>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -55,6 +55,7 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -87,8 +88,7 @@
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <ConfigurationOverrideFile>
     </ConfigurationOverrideFile>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants>BELOV_TRANSFORM THERMO</DefineConstants>
     <DocumentationFile>
     </DocumentationFile>
     <DebugSymbols>false</DebugSymbols>
@@ -96,14 +96,14 @@
     <NoStdLib>false</NoStdLib>
     <NoWarn>
     </NoWarn>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <RegisterForComInterop>false</RegisterForComInterop>
     <RemoveIntegerChecks>false</RemoveIntegerChecks>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <WarningLevel>4</WarningLevel>
     <DebugType>none</DebugType>
     <ErrorReport>prompt</ErrorReport>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AxInterop.CWDAQControlsLib, Version=1.4.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -111,28 +111,15 @@
       <HintPath>bin\Release\AxInterop.CWDAQControlsLib.dll</HintPath>
     </Reference>
     <Reference Include="AxInterop.CWUIControlsLib, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL" />
-    <Reference Include="DeconEngineV2, Version=1.0.3458.31952, Culture=neutral">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\UIMF_DataViewer\dlls\DeconEngineV2.dll</HintPath>
+    <Reference Include="NationalInstruments.Common, Version=9.1.40.159, Culture=neutral, PublicKeyToken=dc6ad606294fc298, processorArchitecture=MSIL">
+      <Private>True</Private>
     </Reference>
-    <Reference Include="DeconTools.Backend, Version=1.0.3614.26340, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\UIMF_DataViewer\dlls\DeconTools.Backend.dll</HintPath>
+    <Reference Include="NationalInstruments.UI, Version=9.1.40.204, Culture=neutral, PublicKeyToken=dc6ad606294fc298, processorArchitecture=MSIL">
+      <Private>True</Private>
     </Reference>
-    <Reference Include="NationalInstruments.Common, Version=8.1.20.618, Culture=neutral, PublicKeyToken=4544464cdeaab541, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="NationalInstruments.UI.WindowsForms, Version=9.1.40.204, Culture=neutral, PublicKeyToken=dc6ad606294fc298, processorArchitecture=MSIL">
+      <Private>True</Private>
     </Reference>
-    <Reference Include="NationalInstruments.DAQmx">
-      <Name>NationalInstruments.DAQmx</Name>
-      <HintPath>..\..\Program Files\National Instruments\MeasurementStudio70\DotNET\Assemblies\Current\NationalInstruments.DAQmx.dll</HintPath>
-      <AssemblyFolderKey>hklm\nationalinstruments</AssemblyFolderKey>
-    </Reference>
-    <Reference Include="NationalInstruments.UI">
-      <Name>NationalInstruments.UI</Name>
-      <HintPath>..\..\..\..\Program Files\National Instruments\MeasurementStudio70\DotNET\Assemblies\Current\NationalInstruments.UI.dll</HintPath>
-      <AssemblyFolderKey>hklm\nationalinstruments</AssemblyFolderKey>
-    </Reference>
-    <Reference Include="NationalInstruments.UI.WindowsForms, Version=8.9.20.246, Culture=neutral, PublicKeyToken=4544464cdeaab541, processorArchitecture=x86" />
     <Reference Include="stdole">
       <Name>stdole</Name>
       <HintPath>..\..\..\..\Program Files\Microsoft.NET\Primary Interop Assemblies\stdole.dll</HintPath>
@@ -146,7 +133,7 @@
     </Reference>
     <Reference Include="System.Data.SQLite, Version=1.0.65.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>UIMFLibrary\lib\System.Data.SQLite.dll</HintPath>
+      <HintPath>..\UIMF_DataViewer\dlls\System.Data.SQLite.dll</HintPath>
     </Reference>
     <Reference Include="System.DirectoryServices">
       <Name>System.DirectoryServices</Name>
