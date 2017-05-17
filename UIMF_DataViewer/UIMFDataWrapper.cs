@@ -163,6 +163,59 @@ namespace UIMF_File
             m_preparedStatement.ExecuteNonQuery();
             m_preparedStatement.Dispose();
 
+            // Update the new Frame_Params table if it exists
+            if (TableExists("Frame_Params") && TableExists("Frame_Param_Keys"))
+            {
+                var calibSlopeKey = 12;
+                var calibInterceptKey = 13;
+                var calibDoneKey = 6;
+                using (var cmd = m_uimfDatabaseConnection.CreateCommand())
+                {
+                    cmd.CommandText = "SELECT ParamName, ParamID  " +
+                                      "FROM Frame_Param_Keys";
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            switch (reader.GetString(0))
+                            {
+                                case "CalibrationSlope":
+                                    calibSlopeKey = reader.GetInt32(1);
+                                    break;
+                                case "CalibrationIntercept":
+                                    calibInterceptKey = reader.GetInt32(1);
+                                    break;
+                                case "CalibrationDone":
+                                    calibDoneKey = reader.GetInt32(1);
+                                    break;
+                            }
+                        }
+                    }
+                }
+
+                using (var cmd = m_uimfDatabaseConnection.CreateCommand())
+                {
+                    cmd.CommandText = "UPDATE Frame_Params " +
+                                      "SET ParamValue = " + slope + " " +
+                                      "WHERE ParamID = " + calibSlopeKey +
+                                      " AND FrameNum = " + this.array_FrameNum[frame_index];
+                    cmd.ExecuteNonQuery();
+
+                    cmd.CommandText = "UPDATE Frame_Params " +
+                                      "SET ParamValue = " + intercept + " " +
+                                      "WHERE ParamID = " + calibInterceptKey +
+                                      " AND FrameNum = " + this.array_FrameNum[frame_index];
+                    cmd.ExecuteNonQuery();
+
+                    cmd.CommandText = "UPDATE Frame_Params " +
+                                      "SET ParamValue = " + 1 + " " +
+                                      "WHERE ParamID = " + calibDoneKey +
+                                      " AND FrameNum = " + this.array_FrameNum[frame_index];
+                    cmd.ExecuteNonQuery();
+                }
+
+            }
+
             // Make sure the mz_Calibration object is up-to-date
             // These values will likely also get updated via the call to reset_FrameParameters (which then calls GetFrameParameters)
             this.mzCalibration.k = slope / 10000.0;
@@ -194,12 +247,80 @@ namespace UIMF_File
             m_preparedStatement.ExecuteNonQuery();
             m_preparedStatement.Dispose();
 
+            // Update the new Frame_Params table if it exists
+            if (TableExists("Frame_Params") && TableExists("Frame_Param_Keys"))
+            {
+                var calibSlopeKey = 12;
+                var calibInterceptKey = 13;
+                var calibDoneKey = 6;
+                using (var cmd = m_uimfDatabaseConnection.CreateCommand())
+                {
+                    cmd.CommandText = "SELECT ParamName, ParamID  " +
+                                      "FROM Frame_Param_Keys";
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            switch (reader.GetString(0))
+                            {
+                                case "CalibrationSlope":
+                                    calibSlopeKey = reader.GetInt32(1);
+                                    break;
+                                case "CalibrationIntercept":
+                                    calibInterceptKey = reader.GetInt32(1);
+                                    break;
+                                case "CalibrationDone":
+                                    calibDoneKey = reader.GetInt32(1);
+                                    break;
+                            }
+                        }
+                    }
+                }
+
+                using (var cmd = m_uimfDatabaseConnection.CreateCommand())
+                {
+                    cmd.CommandText = "UPDATE Frame_Params " +
+                                      "SET ParamValue = " + slope + " " +
+                                      "WHERE ParamID = " + calibSlopeKey;
+                    cmd.ExecuteNonQuery();
+
+                    cmd.CommandText = "UPDATE Frame_Params " +
+                                      "SET ParamValue = " + intercept + " " +
+                                      "WHERE ParamID = " + calibInterceptKey;
+                    cmd.ExecuteNonQuery();
+
+                    cmd.CommandText = "UPDATE Frame_Params " +
+                                      "SET ParamValue = " + 1 + " " +
+                                      "WHERE ParamID = " + calibDoneKey;
+                    cmd.ExecuteNonQuery();
+                }
+
+            }
+
             this.reset_FrameParameters();
         }
 
         public void reset_FrameParameters()
         {
             this.GetFrameParameters(this.array_FrameNum[this.current_frame_index]);
+        }
+
+        public bool TableExists(string tableName)
+        {
+            bool hasRows;
+
+            using (var cmd = m_uimfDatabaseConnection.CreateCommand())
+            {
+                cmd.CommandText = "SELECT name " +
+                              "FROM sqlite_master " +
+                              "WHERE type IN ('table','view') And tbl_name = '" + tableName + "'";
+                using (var reader = cmd.ExecuteReader())
+                {
+                    hasRows = reader.HasRows;
+                }
+            }
+
+            return hasRows;
         }
 
         public void clear_FrameParametersCache()
