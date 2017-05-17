@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Data.SQLite;
 using System.Collections.Generic;
 using System.Text;
+using Lzf;
 
 namespace UIMFLibrary
 {
@@ -23,16 +24,21 @@ namespace UIMFLibrary
 		private SQLiteCommand m_dbCommandUimf;
 		private SQLiteCommand m_dbCommandPrepareInsertScan;
 		private SQLiteCommand m_dbCommandPrepareInsertFrame;
+        private SQLiteCommand m_dbCommandPrepareInsertScanParameters;
 		private GlobalParameters m_globalParameters;
         
         private bool m_FrameParameterColumnsVerified = false;
+		private string m_fileName;
+
+        private bool m_isScanParameterTable = false;
 
         /// <summary>
         /// Open a UIMF file for writing
         /// </summary>
         /// <param name="fileName"></param>
 		public void OpenUIMF(string fileName)
-		{
+        {
+        	m_fileName = fileName;
             string connectionString = "Data Source = " + fileName + "; Version=3; DateTimeFormat=Ticks;";
 			m_dbConnection = new SQLiteConnection(connectionString);
 			try
@@ -54,6 +60,13 @@ namespace UIMFLibrary
 				Console.WriteLine("Failed to open UIMF file " + ex.ToString());
 			}
 		}
+
+        public void OpenUIMF(string fileName, bool flag_CreateScanParameters)
+        {
+            this.m_isScanParameterTable = flag_CreateScanParameters;
+
+            OpenUIMF(fileName);
+        }
 
         /// <summary>
         /// This function updates the frame type to 1, 2, 2, 2, 1, 2, 2, 2, etc. for the specified frame range
@@ -105,6 +118,18 @@ namespace UIMFLibrary
         {
             return CloseUIMF();
         }
+
+		/// <summary>
+		/// This function will create tables that are bin centric (as opposed to scan centric) to allow querying of the data in 2 different ways. 
+		/// Bin centric data is important for data access speed in informed workflows.
+		/// </summary>
+		public void CreateBinCentricTables()
+		{
+			using(DataReader uimfReader = new DataReader(m_fileName))
+			{
+                BinCentricTableCreation.CreateBinCentricTable(m_dbConnection, uimfReader);
+			}
+		}
 
         /// <summary>
         /// Method to create the table struture within a UIMF file. THis must be called
@@ -161,7 +186,7 @@ namespace UIMFLibrary
                     "voltHVRack2 DOUBLE, " +                         // 19, Voltage setting in the IMS system
                     "voltHVRack3 DOUBLE, " +                         // 20, Voltage setting in the IMS system
                     "voltHVRack4 DOUBLE, " +                         // 21, Voltage setting in the IMS system
-                    "voltCapInlet DOUBLE, " +                        // 22, Capilary Inlet Voltage
+                    "voltCapInlet DOUBLE, " +                        // 22, Capillary Inlet Voltage
                     "voltEntranceHPFIn DOUBLE, " +                   // 23, HPF In Voltage  (renamed from voltEntranceIFTIn  to voltEntranceHPFIn  in July 2011)
                     "voltEntranceHPFOut DOUBLE, " +                  // 24, HPF Out Voltage (renamed from voltEntranceIFTOut to voltEntranceHPFOut in July 2011)
                     "voltEntranceCondLmt DOUBLE, " +                 // 25, Cond Limit Voltage
@@ -233,15 +258,29 @@ namespace UIMFLibrary
 					"TIC INT(4) NOT NULL, " + //  Total Ion Chromatogram
 					"Intensities BLOB);"; //  Intensities  
 			}
-			
-			//ARS made this change to facilitate faster retrieval of scans/spectrums.
-			m_dbCommandUimf.CommandText += "CREATE UNIQUE INDEX pk_index on Frame_Scans(FrameNum, ScanNum);";
-            // m_dbCommandUimf.CommandText += "CREATE UNIQUE INDEX pk_index1 on Frame_Parameters(FrameNum, FrameType);";
-			//ARS change ends
 
-			m_dbCommandUimf.ExecuteNonQuery();
-			m_dbCommandUimf.Dispose();
+            //ARS made this change to facilitate faster retrieval of scans/spectrums.
+            m_dbCommandUimf.CommandText += "CREATE UNIQUE INDEX pk_index on Frame_Scans(FrameNum, ScanNum);";
+            // m_dbCommandUimf.CommandText += "CREATE UNIQUE INDEX pk_index1 on Frame_Parameters(FrameNum, FrameType);";
+            //ARS change ends
+            m_dbCommandUimf.ExecuteNonQuery();
+
+            if (this.m_isScanParameterTable)
+            {
+                m_dbCommandUimf.CommandText = "CREATE TABLE Scan_Parameters ( " +
+                    "ScanNum INT(2) NOT NULL, " + //Scan number
+                    "MS_Level INT(2) NOT NULL);"; //  MS_Level  
+                m_dbCommandUimf.CommandText += "CREATE UNIQUE INDEX scan_index on Scan_Parameters(ScanNum, MS_Level);";
+                m_dbCommandUimf.ExecuteNonQuery();
+            }
+
+            m_dbCommandUimf.Dispose();
 		}
+
+        public GlobalParameters GetGlobalParameters()
+        {
+            return DataReader.GetGlobalParametersFromTable(this.m_dbConnection);
+        }
 
         /// <summary>
         /// Deletes the frame from the Frame_Parameters table and from the Frame_Scans table
@@ -487,7 +526,7 @@ namespace UIMFLibrary
             m_dbCommandPrepareInsertFrame.Parameters.Add(new SQLiteParameter(":voltHVRack2", frameParameters.voltHVRack2));                 // 19, Voltage setting in the IMS system
             m_dbCommandPrepareInsertFrame.Parameters.Add(new SQLiteParameter(":voltHVRack3", frameParameters.voltHVRack3));                 // 20, Voltage setting in the IMS system
             m_dbCommandPrepareInsertFrame.Parameters.Add(new SQLiteParameter(":voltHVRack4", frameParameters.voltHVRack4));                 // 21, Voltage setting in the IMS system
-            m_dbCommandPrepareInsertFrame.Parameters.Add(new SQLiteParameter(":voltCapInlet", frameParameters.voltCapInlet));               // 22, Capilary Inlet Voltage
+            m_dbCommandPrepareInsertFrame.Parameters.Add(new SQLiteParameter(":voltCapInlet", frameParameters.voltCapInlet));               // 22, Capillary Inlet Voltage
             m_dbCommandPrepareInsertFrame.Parameters.Add(new SQLiteParameter(":voltEntranceHPFIn", frameParameters.voltEntranceHPFIn));     // 23, HPF In Voltage
             m_dbCommandPrepareInsertFrame.Parameters.Add(new SQLiteParameter(":voltEntranceHPFOut", frameParameters.voltEntranceHPFOut));   // 24, HPF Out Voltage
             m_dbCommandPrepareInsertFrame.Parameters.Add(new SQLiteParameter(":voltEntranceCondLmt", frameParameters.voltEntranceCondLmt)); // 25, Cond Limit Voltage
@@ -541,23 +580,23 @@ namespace UIMFLibrary
 
 			for ( int i = 0; i < intensities.Length; i++)
 			{
-				double x = intensities[i];
-				if (x > 0)
+				double intensity = intensities[i];
+				if (intensity > 0)
 				{
 					
 					//TIC is just the sum of all intensities
-					tic += intensities[i];
-					if (intensities[i] > bpi)
+					tic += intensity;
+					if (intensity > bpi)
 					{
-						   bpi = intensities[i] ; 
-						   bpiMz = convertBinToMz(i, binWidth, frameParameters);
+						bpi = intensity; 
+						bpiMz = convertBinToMz(i, binWidth, frameParameters);
 					}
 					if(zeroCount < 0)
 					{
 						runLengthZeroEncodedData[nrlze++] = (double)zeroCount;
 						zeroCount = 0;
 					}
-					runLengthZeroEncodedData[nrlze++] = x;
+					runLengthZeroEncodedData[nrlze++] = intensity;
 				}
 				else zeroCount--;
 			}
@@ -569,7 +608,7 @@ namespace UIMFLibrary
             {
                 byte[] byteBuffer = new byte[nrlze * datatypeSize];
                 Buffer.BlockCopy(runLengthZeroEncodedData, 0, byteBuffer, 0, nrlze * datatypeSize);
-                nlzf = IMSCOMP_wrapper.compress_lzf(ref byteBuffer, nrlze * datatypeSize, ref compressedData, nrlze * datatypeSize * 5);
+				nlzf = LZFCompressionUtil.Compress(ref byteBuffer, nrlze * datatypeSize, ref compressedData, nrlze * datatypeSize * 5);
             }
 
             if (nlzf != 0)
@@ -585,11 +624,87 @@ namespace UIMFLibrary
 			return nlzf;
 		}
 
-		//This should be the correct signature for the insert scan function
-		//public int InsertScan(FrameParameters fp, int scanNum, int[] intensities, double bin_width)
-		//{
-		//}
+		/// <summary>
+		/// Insert a new scan using an array of intensities along with bin_width
+		/// </summary>
+		/// <param name="frameParameters">Frame parameters</param>
+		/// <param name="scanNum">Scan number</param>
+		/// <param name="intensities">Array of intensities, including all zeros</param>
+		/// <param name="bin_width">Bin width (used to compute m/z value of the BPI data point)</param>
+		/// <returns>Number of non-zero data points</returns>
+		public int InsertScan(FrameParameters frameParameters, int scanNum, int[] intensities, double bin_width)
+		{
+			int nonZeroCount = 0;
 
+			if (frameParameters != null)
+			{
+
+				int nrlze = 0;
+				int zeroCount = 0;
+				int[] runLengthEncodedData = new int[intensities.Length];
+				int tic = 0;
+				int bpi = 0;
+				double bpiMz = 0;
+				int datatypeSize = 4;
+
+				if (m_globalParameters == null)
+					m_globalParameters = DataReader.GetGlobalParametersFromTable(m_dbConnection);
+
+				for (int i = 0; i < intensities.Length; i++)
+				{
+					int intensity = intensities[i];
+					if (intensity > 0)
+					{
+						//TIC is just the sum of all intensities
+						tic += intensity;
+						if (intensity > bpi)
+						{
+							bpi = intensity;
+							bpiMz = convertBinToMz(i, bin_width, frameParameters);
+						}
+						if (zeroCount < 0)
+						{
+							runLengthEncodedData[nrlze++] = zeroCount;
+							zeroCount = 0;
+						}
+						runLengthEncodedData[nrlze++] = intensity;
+					}
+					else zeroCount--;
+				}
+
+				byte[] compressedData = new byte[nrlze * datatypeSize * 5];
+				if (nrlze > 0)
+				{
+					byte[] byte_array = new byte[nrlze * datatypeSize];
+					Buffer.BlockCopy(runLengthEncodedData, 0, byte_array, 0, nrlze * datatypeSize);
+					nonZeroCount = LZFCompressionUtil.Compress(ref byte_array, nrlze * datatypeSize, ref compressedData, nrlze * datatypeSize * 5);
+				}
+
+				if (nonZeroCount != 0)
+				{
+					byte[] spectra = new byte[nonZeroCount];
+					Array.Copy(compressedData, spectra, nonZeroCount);
+
+					//Insert records
+					insertScanAddParameters(frameParameters.FrameNum, scanNum, nonZeroCount, bpi, bpiMz, tic, spectra);
+					m_dbCommandPrepareInsertScan.ExecuteNonQuery();
+					m_dbCommandPrepareInsertScan.Parameters.Clear();
+				}
+
+			}
+
+			return nonZeroCount;
+		}
+
+		/// <summary>
+		/// Insert a new scan using an array of intensities (as floats), bin_width, and "counter" which should be equivalent to the count of non-zero data in intensities
+		/// </summary>
+		/// <param name="frameParameters"></param>
+		/// <param name="scanNum"></param>
+		/// <param name="counter"></param>
+		/// <param name="intensities"></param>
+		/// <param name="bin_width"></param>
+		/// <returns></returns>
 		public int InsertScan(FrameParameters frameParameters, int scanNum, int counter, float[] intensities, double bin_width)
 		{			
 			int nrlze = 0; 
@@ -603,25 +718,25 @@ namespace UIMFLibrary
             if (m_globalParameters == null)
                 m_globalParameters = DataReader.GetGlobalParametersFromTable(m_dbConnection);
 
-			for ( int i = 0; i < intensities.Length; i++)
+			for (int i = 0; i < intensities.Length; i++)
 			{
-				float x = intensities[i];
-				if (x > 0)
+				float intensity = intensities[i];
+				if (intensity > 0)
 				{
 					
 					//TIC is just the sum of all intensities
-					tic += intensities[i];
-					if (intensities[i] > bpi)
+					tic += intensity;
+					if (intensity > bpi)
 					{
-						bpi = intensities[i] ; 
+						bpi = intensity; 
 						bpiMz = convertBinToMz(i, bin_width, frameParameters);
 					}
-					if(zeroCount < 0)
+					if (zeroCount < 0)
 					{
 						runLengthEncodedData[nrlze++] = (float)zeroCount;
 						zeroCount = 0;
 					}
-					runLengthEncodedData[nrlze++] = x;
+					runLengthEncodedData[nrlze++] = intensity;
 				}
 				else zeroCount--;
 			}
@@ -633,7 +748,7 @@ namespace UIMFLibrary
             {
                 byte[] byte_array = new byte[nrlze * datatypeSize];
                 Buffer.BlockCopy(runLengthEncodedData, 0, byte_array, 0, nrlze * datatypeSize);
-                nlzf = IMSCOMP_wrapper.compress_lzf(ref byte_array, nrlze * datatypeSize, ref compressedData, nrlze * datatypeSize * 5);
+				nlzf = LZFCompressionUtil.Compress(ref byte_array, nrlze * datatypeSize, ref compressedData, nrlze * datatypeSize * 5);
             }
 
             if (nlzf != 0)
@@ -650,7 +765,18 @@ namespace UIMFLibrary
 		}
 
 
-        public int InsertScan(FrameParameters fp, int scanNum, System.Collections.Generic.List<int> bins, System.Collections.Generic.List<int> intensities, double binWidth, int timeOffset)
+		/// <summary>
+		/// Insert a scan using a list of bins and a list of intensities
+		/// </summary>
+		/// <param name="fp"></param>
+		/// <param name="scanNum"></param>
+		/// <param name="bins"></param>
+		/// <param name="intensities"></param>
+		/// <param name="binWidth"></param>
+		/// <param name="timeOffset"></param>
+		/// <returns></returns>
+		//TODO:: Deprecate this function since superseded by InsertScan with: int[] intensities, double bin_width
+		public int InsertScan(FrameParameters fp, int scanNum, System.Collections.Generic.List<int> bins, System.Collections.Generic.List<int> intensities, double binWidth, int timeOffset)
         {
 			try
 			{
@@ -679,33 +805,40 @@ namespace UIMFLibrary
 						double bpiMz = 0;
 						int datatypeSize = 4;
 
+						int previousBin = int.MinValue;
+
 						rlze[index++] = -(timeOffset + bins[0]);
 						for (int i = 0; i < bins.Count; i++)
 						{
+							int intensity = intensities[i];
+							int currentBin = bins[i];
+
 							//the intensities will always be positive integers
-							tic += intensities[i];
-							if (bpi < intensities[i])
+							tic += intensity;
+							if (bpi < intensity)
 							{
-								bpi = intensities[i];
-								bpiMz = convertBinToMz(bins[i], binWidth, fp);
+								bpi = intensity;
+								bpiMz = convertBinToMz(currentBin, binWidth, fp);
 							}
 
-							if (i != 0 && bins[i] != bins[i - 1] + 1)
+							if (i != 0 && currentBin != previousBin + 1)
 							{
 								//since the bin numbers are not continuous, add a negative index to the array
 								//and in some cases we have to add the offset from the previous index
-								rlze[index++] = bins[i - 1] - bins[i] + 1;
+								rlze[index++] = previousBin - currentBin + 1;
 							}
 
 							//copy the intensity value and increment the index.
-							rlze[index++] = intensities[i];
+							rlze[index++] = intensity;
+
+							previousBin = currentBin;
 						}
 
 						//so now we have a run length zero encoded array
 						byte[] compresedRecord = new byte[index*datatypeSize*5];
 						byte[] byteBuffer = new byte[index*datatypeSize];
 						Buffer.BlockCopy(rlze, 0, byteBuffer, 0, index*datatypeSize);
-						int nlzf = IMSCOMP_wrapper.compress_lzf(ref byteBuffer, index*datatypeSize, ref compresedRecord, compresedRecord.Length);
+						int nlzf = LZFCompressionUtil.Compress(ref byteBuffer, index * datatypeSize, ref compresedRecord, compresedRecord.Length);
 						byte[] spectra = new byte[nlzf];
 
 						Array.Copy(compresedRecord, spectra, nlzf);
@@ -754,35 +887,40 @@ namespace UIMFLibrary
                     double bpiMz = 0;
                     int datatypeSize = 4;
 
+                	int previousBin = int.MinValue;
+
                     rlze[index++] = -(timeOffset + bins[0]);
                     for (int i = 0; i < bins.Length; i++)
                     {
+                    	int intensity = intensities[i];
+                    	int currentBin = bins[i];
+
                         //the intensities will always be positive integers
-                        tic += intensities[i];
-                        if (bpi < intensities[i])
+						tic += intensity;
+						if (bpi < intensity)
                         {
-                            bpi = intensities[i];
-                            bpiMz = convertBinToMz(bins[i], binWidth, frameParameters);
+							bpi = intensity;
+							bpiMz = convertBinToMz(currentBin, binWidth, frameParameters);
                         }
 
-
-                        if (i != 0 && bins[i] != bins[i - 1] + 1)
+						if (i != 0 && currentBin != previousBin + 1)
                         {
                             //since the bin numbers are not continuous, add a negative index to the array
                             //and in some cases we have to add the offset from the previous index
-                            rlze[index++] = bins[i - 1] - bins[i] + 1;
+							rlze[index++] = previousBin - currentBin + 1;
                         }
                        
-
                         //copy the intensity value and increment the index.
-                        rlze[index++] = intensities[i]; 
+						rlze[index++] = intensity;
+
+                    	previousBin = currentBin;
                     }
 
                     //so now we have a run length zero encoded array
                     byte[] compresedRecord = new byte[index * datatypeSize * 5];
                     byte[] byteBuffer = new byte[index * datatypeSize];
                     Buffer.BlockCopy(rlze, 0, byteBuffer, 0, index * datatypeSize);
-                    int nlzf = IMSCOMP_wrapper.compress_lzf(ref byteBuffer, index * datatypeSize, ref compresedRecord, compresedRecord.Length); 
+					int nlzf = LZFCompressionUtil.Compress(ref byteBuffer, index * datatypeSize, ref compresedRecord, compresedRecord.Length); 
                     byte[] spectra = new byte[nlzf];
 
                     Array.Copy(compresedRecord, spectra, nlzf);
@@ -819,14 +957,14 @@ namespace UIMFLibrary
 			//Calculate TIC and BPI
 			for ( int i = 0; i < intensities.Length; i++)
 			{
-				int x = intensities[i];
-				if (x > 0)
+				int intensity = intensities[i];
+				if (intensity > 0)
 				{
 					//TIC is just the sum of all intensities
-					tic_scan += intensities[i];
-					if (intensities[i] > bpi)
+					tic_scan += intensity;
+					if (intensity > bpi)
 					{
-						bpi = intensities[i] ; 
+						bpi = intensity; 
 						bpi_mz = convertBinToMz(i, binWidth, frameParameters);
 					}
 					if(zero_count < 0)
@@ -834,7 +972,7 @@ namespace UIMFLibrary
 						rlze_data[nrlze++] = zero_count;
 						zero_count = 0;
 					}
-					rlze_data[nrlze++] = x;
+					rlze_data[nrlze++] = intensity;
 				}
 				else zero_count--;
 			}
@@ -847,7 +985,7 @@ namespace UIMFLibrary
             {   
                 byte[] byteBuffer = new byte[nrlze * datatypeSize];
                 Buffer.BlockCopy(rlze_data, 0, byteBuffer, 0, nrlze * datatypeSize);
-                nlzf = IMSCOMP_wrapper.compress_lzf(ref byteBuffer, nrlze * datatypeSize, ref compresedRecord, compresedRecord.Length);
+				nlzf = LZFCompressionUtil.Compress(ref byteBuffer, nrlze * datatypeSize, ref compresedRecord, compresedRecord.Length);
             }
 
             if (nlzf != 0)
@@ -884,15 +1022,15 @@ namespace UIMFLibrary
 			//Calculate TIC and BPI
 			for ( int i = 0; i < intensities.Length; i++)
 			{
-				short x = intensities[i];
-				if (x > 0)
+				short intensity = intensities[i];
+				if (intensity > 0)
 				{
 					
 					//TIC is just the sum of all intensities
-					tic_scan += intensities[i];
-					if (intensities[i] > bpi)
+					tic_scan += intensity;
+					if (intensity > bpi)
 					{
-						bpi = intensities[i] ; 
+						bpi = intensity; 
 						bpi_mz = convertBinToMz(i, bin_width, frameParameters);
 					}
 					if(zeroCount < 0)
@@ -900,7 +1038,7 @@ namespace UIMFLibrary
 						runLengthEncodedData[nrlze++] = (short)zeroCount;
 						zeroCount = 0;
 					}
-					runLengthEncodedData[nrlze++] = x;
+					runLengthEncodedData[nrlze++] = intensity;
 					nonZeroIntensities++;
 				}
 				else zeroCount--;
@@ -912,7 +1050,7 @@ namespace UIMFLibrary
             {
                 byte[] byteBuffer = new byte[nrlze * datatypeSize];
                 Buffer.BlockCopy(runLengthEncodedData, 0, byteBuffer, 0, nrlze * datatypeSize);
-                nlzf = IMSCOMP_wrapper.compress_lzf(ref byteBuffer, nrlze * datatypeSize, ref compressedData, nrlze * datatypeSize * 5);
+				nlzf = LZFCompressionUtil.Compress(ref byteBuffer, nrlze * datatypeSize, ref compressedData, nrlze * datatypeSize * 5);
             }
 
             if (nlzf != 0)
@@ -929,7 +1067,21 @@ namespace UIMFLibrary
 			return nlzf;
 		}
 
+        public int InsertScanParameters(int scanNum, int ms_level)
+        {
+            insertScanAddScanParameters(scanNum, ms_level);
 
+            m_dbCommandPrepareInsertScanParameters.ExecuteNonQuery();
+            m_dbCommandPrepareInsertScanParameters.Parameters.Clear();
+
+            return 0;
+        }
+
+        private void insertScanAddScanParameters(int scan_number, int MS_Level)
+        {
+            m_dbCommandPrepareInsertScanParameters.Parameters.Add(new SQLiteParameter("ScanNum", scan_number.ToString()));
+            m_dbCommandPrepareInsertScanParameters.Parameters.Add(new SQLiteParameter("MS_Level", MS_Level.ToString()));
+        }
 
         public bool WriteFileToTable(string tableName, byte[] fileBytesAsBuffer)
         {
@@ -1196,7 +1348,14 @@ namespace UIMFLibrary
 			m_dbCommandPrepareInsertScan.CommandText = "INSERT INTO Frame_Scans (FrameNum, ScanNum, NonZeroCount, BPI, BPI_MZ, TIC, Intensities) " +
 				"VALUES(?,?,?,?,?,?,?);";
 			m_dbCommandPrepareInsertScan.Prepare();
-			
+
+            if (this.m_isScanParameterTable)
+            {
+                this.m_dbCommandPrepareInsertScanParameters = m_dbConnection.CreateCommand();
+                this.m_dbCommandPrepareInsertScanParameters.CommandText = "INSERT INTO Scan_Parameters (ScanNum, MS_Level) VALUES (:ScanNum, :MS_Level);";
+
+                this.m_dbCommandPrepareInsertScanParameters.Prepare();
+            }			
 		}
 
         /// <summary>

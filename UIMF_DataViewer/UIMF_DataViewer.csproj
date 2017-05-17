@@ -48,7 +48,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;THERMO BELOV_TRANSFORM</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -80,11 +80,11 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="ThermoRawFileReaderDLL">
+      <HintPath>dlls\ThermoRawFileReaderDLL.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BinViewer.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="InstrumentSettings.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -109,11 +109,14 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="ThermoViewer.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Raw2UIMF.cs" />
+    <Compile Include="UIMFLibrary\BinCentricTableCreation.cs" />
+    <Compile Include="UIMFLibrary\FrameTypeInfo.cs" />
+    <Compile Include="UIMFLibrary\IntensityPoint.cs" />
     <Compile Include="UIMFLibrary\LogEntry.cs" />
     <Compile Include="UIMFDataWrapper.cs" />
+    <Compile Include="UIMFLibrary\LZFCompressionUtil.cs" />
+    <Compile Include="UIMFLibrary\SpectrumCache.cs" />
     <Compile Include="UIMF_BelovTransform.cs" />
     <Compile Include="UIMFLibrary\ClassDefinitions.cs" />
     <Compile Include="UIMFLibrary\UIMFDataReader.cs" />
@@ -165,9 +168,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="ThermoViewer.resx">
-      <DependentUpon>ThermoViewer.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Utilities\ExportExperiment.resx">
       <DependentUpon>ExportExperiment.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -212,6 +212,8 @@
     <Content Include="Images\Entrance_IMS4.png" />
     <Content Include="Images\Exit_IMS4.png" />
     <Content Include="Images\IMS4a.png" />
+    <Content Include="Resources\expand_button.gif" />
+    <Content Include="Resources\shrink_button.jpg" />
     <None Include="Images\triangle_up_in.GIF" />
     <None Include="Images\triangle_up_out.GIF" />
     <None Include="Images\ripple21.gif" />
@@ -238,12 +240,6 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\BelovTranform\BelovTransform.csproj">
-      <Project>{1B5E8255-EA60-4D57-A5EC-A1CF428337B9}</Project>
-      <Name>BelovTransform</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="MSFileReaderLib">

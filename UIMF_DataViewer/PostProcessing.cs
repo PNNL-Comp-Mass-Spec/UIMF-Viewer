@@ -47,6 +47,7 @@ namespace UIMF_File
         public double new_tof;
         public double error_ppm;
     }
+
     public struct Coefficients
     {
         public double Experimental_Intercept;
@@ -583,13 +584,11 @@ namespace UIMF_File
             {
                 MessageBox.Show("arg" + ex.ToString());
             }
+
             // finding average noise for all NumNoiseBins without taking into account the outlyars
             if (NumNonZeroNoiseBins > 0)
                 noise_intensity_average = noise_intensity_average / NumNonZeroNoiseBins / 4.0;
 
-          // MessageBox.Show(this, "NumNonZeroNoiseBins "+NumNonZeroNoiseBins.ToString()+", noise_intensity_average: "+noise_intensity_average.ToString());
-
-            //MessageBox.Show(this, Pos_peptide.ToString() + "  " + bins_per_tof.ToString());
             for (i = Pos_peptide; (i < Pos_peptide + 80) && (i<sum_intensity2.Length); ++i)
             {
                 // now identify isotopic peaks
@@ -616,8 +615,6 @@ namespace UIMF_File
                     }
                 }
             }
-           
-            // MessageBox.Show(this, "peak_number<3: " + peak_number.ToString()+"  charge!=1: "+charge.ToString());
 
             if ((peak_number < 3) && (charge != 1))
             {
@@ -632,15 +629,12 @@ namespace UIMF_File
             // Then select the smallest index as peak_number_mono
             if ((species_ID == Species.PEPTIDE) || (species_ID == Species.CALIBRANT))
             {
-                //MessageBox.Show(this, "Peak Number: "+peak_number.ToString());
                 for (i = 0; i < peak_number; ++i)
                 {
                     for (j = i + 1; j < peak_number; ++j)
                     {
-                        // MessageBox.Show(this, "here: (TOF[i] " + TOF_offset_local[i].ToString("0.0") + "- TOF[j] " + TOF_offset_local[j].ToString("0.0") + ") - shift " + TOF_monoisotope_shift.ToString("0.0") + "(" + Math.Abs(Math.Abs(TOF_offset_local[i] - TOF_offset_local[j]) - TOF_monoisotope_shift).ToString() + " < " + TOF_checkup.ToString("0.0"));
                         if (Math.Abs(Math.Abs(TOF_offset_local[i] - TOF_offset_local[j]) - TOF_monoisotope_shift) < TOF_checkup * 10.0)
                         {
-                            //MessageBox.Show(this, "inside: (TOF[i] " + TOF_offset_local[i].ToString("0.0") + "- TOF[j] " + TOF_offset_local[j].ToString("0.0") + ") - shif" + TOF_monoisotope_shift.ToString("0.0")+ " < "+TOF_checkup.ToString("0.0"));
                             if (peptide_local_max[i] != 0)
                             {
                                 if ((peptide_local_max[i] / peptide_local_max[j] < isotope_ratio && peptide_local_max[i] / peptide_local_max[j] > 1 / isotope_ratio) || (peptide_local_max[j] / peptide_local_max[i] < isotope_ratio && peptide_local_max[j] / peptide_local_max[i] > 1 / isotope_ratio))
@@ -711,8 +705,6 @@ namespace UIMF_File
                         TOF_MONOISOTOPE_FOUND = true;
                 }
 
-           // MessageBox.Show(this, "TOF_MONOISOTOPE_FOUND: " + TOF_MONOISOTOPE_FOUND.ToString());
-
             if (peak_number_mono > 10 || !TOF_MONOISOTOPE_FOUND)
                 TOF_monoisotope = 0;
             else if (TOF_MONOISOTOPE_FOUND)
@@ -754,8 +746,6 @@ namespace UIMF_File
                         TOF_monoisotope = -pCoefficientB / (2 * pCoefficientA);
                     else
                         TOF_monoisotope = 0;
-
-                   // MessageBox.Show(TOF_monoisotope.ToString());
 
                     TOF_monoisotope = TOF_monoisotope + (this.arrival_time_TOF2[pos_peptide_max - 2] * this.bin_Width);
 
@@ -970,90 +960,6 @@ namespace UIMF_File
                 this.dg_Calibrants.Rows[i].Cells[0].Value = this.settings_Calibration.ion_selection[i];
         }
 
-
-        /*
-        public void set_ExperimentList(Experiment_Settings[] list_experiments)
-        {
-            int row;
-            int i;
-
-            if (list_experiments == null)
-                return;
-
-            this.clear_Experiments();
-
-        }
-
-        public Experiment_Settings[] get_ExperimentList()
-        {
-            int bad_row_count = 0;
-            bool[] flag_bad_row = new bool[this.dg_ExperimentList.RowCount - 1];
-            int bad_rows_skipped = 0;
-
-            // check for incomplete rows - remove them!
-            for (int i = 0; i < this.dg_ExperimentList.RowCount - 1; i++)
-            {
-                try
-                {
-                    if ((((string)this.dg_ExperimentList.Rows[i].Cells[0].Value).Trim().Length < 1) ||
-                        (Convert.ToInt32(this.dg_ExperimentList.Rows[i].Cells[1].Value) <= 0) ||
-                        (((string)this.dg_ExperimentList.Rows[i].Cells[2].Value).Trim().Length < 1))
-                    {
-                        MessageBox.Show("Experiment AutoList Row " + (i + 1).ToString() + " incomplete!  Skipping it.");
-                        flag_bad_row[i] = true;
-                        bad_row_count++;
-
-
-                        this.dg_ExperimentList.Rows[i].Cells[0].Style.BackColor = Color.Yellow;
-                        this.dg_ExperimentList.Rows[i].Cells[1].Style.BackColor = Color.Yellow;
-                        this.dg_ExperimentList.Rows[i].Cells[2].Style.BackColor = Color.Yellow;
-                    }
-                    else
-                    {
-                        flag_bad_row[i] = false;
-
-                        this.dg_ExperimentList.Rows[i].Cells[0].Style.BackColor = Color.White;
-                        this.dg_ExperimentList.Rows[i].Cells[1].Style.BackColor = Color.White;
-                        this.dg_ExperimentList.Rows[i].Cells[2].Style.BackColor = Color.White;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    if (((string)this.dg_ExperimentList.Rows[i].Cells[0].Value) != null)
-                        MessageBox.Show("Experiment AutoList Row " + (i + 1).ToString() + " error!  Skipping it.\n" + ((string)this.dg_ExperimentList.Rows[i].Cells[0].Value).Trim());
-                    flag_bad_row[i] = true;
-                    bad_row_count++;
-                }
-            }
-
-            //MessageBox.Show(bad_row_count.ToString() + "  " + this.dg_ExperimentList.RowCount.ToString());
-
-            // ok create a savable, usable list and send it off
-            Experiment_Settings[] list_experiments = new Experiment_Settings[this.dg_ExperimentList.RowCount - bad_row_count - 1];
-            for (int i = 0; i < list_experiments.Length + bad_row_count; i++)
-            {
-                if (!flag_bad_row[i])
-                {
-                    try
-                    {
-                        list_experiments[i - bad_rows_skipped].dir_Experiment = (string)this.dg_ExperimentList.Rows[i].Cells[0].Value;
-                        list_experiments[i - bad_rows_skipped].Frames = Convert.ToInt32(this.dg_ExperimentList.Rows[i].Cells[1].Value);
-                        list_experiments[i - bad_rows_skipped].Method = (string)this.dg_ExperimentList.Rows[i].Cells[2].Value;
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("failed " + i.ToString() + ": " + ex.ToString());
-                    }
-                }
-                else
-                {
-                    bad_rows_skipped++;
-                }
-            }
-            return list_experiments;
-        }
-        */
-
         // this is all dealing with calibrants
 
         private void num_CalculateCalibration_ValueChanged(object sender, EventArgs e)
@@ -1164,6 +1070,7 @@ namespace UIMF_File
 
             return error / (double)count;
         }
+
         public double get_AverageAbsoluteValueMassError()
         {
             int count = 0;
@@ -1276,5 +1183,4 @@ namespace UIMF_File
             SaviorClass.Savior.Save(this, parent_key.CreateSubKey("Calibration_Settings"));
         }
     }
-
 }

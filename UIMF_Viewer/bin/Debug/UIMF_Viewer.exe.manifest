@@ -44,11 +44,6 @@
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
-      <assemblyIdentity name="NationalInstruments.Common" version="9.1.40.159" publicKeyToken="DC6AD606294FC298" language="neutral" processorArchitecture="msil" />
-    </dependentAssembly>
-  </dependency>
-  <dependency>
-    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
       <assemblyIdentity name="NationalInstruments.Common.Native" version="9.1.40.159" publicKeyToken="DC6AD606294FC298" language="neutral" processorArchitecture="x86" />
     </dependentAssembly>
   </dependency>
@@ -59,17 +54,7 @@
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
-      <assemblyIdentity name="NationalInstruments.UI" version="9.1.40.204" publicKeyToken="DC6AD606294FC298" language="neutral" processorArchitecture="msil" />
-    </dependentAssembly>
-  </dependency>
-  <dependency>
-    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
       <assemblyIdentity name="NationalInstruments.UI.Styles3D" version="9.1.40.204" publicKeyToken="DC6AD606294FC298" language="neutral" processorArchitecture="x86" />
-    </dependentAssembly>
-  </dependency>
-  <dependency>
-    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
-      <assemblyIdentity name="NationalInstruments.UI.WindowsForms" version="9.1.40.204" publicKeyToken="DC6AD606294FC298" language="neutral" processorArchitecture="msil" />
     </dependentAssembly>
   </dependency>
   <dependency>
@@ -102,14 +87,38 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Interop.MSFileReaderLib.dll" size="46592">
-      <assemblyIdentity name="Interop.MSFileReaderLib" version="1.0.0.0" language="neutral" processorArchitecture="x86" />
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="NationalInstruments.Common.dll" size="215552">
+      <assemblyIdentity name="NationalInstruments.Common" version="9.1.40.159" publicKeyToken="DC6AD606294FC298" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>CSVcrKZPG4NkKYi9IbE0nGmNqmw=</dsig:DigestValue>
+        <dsig:DigestValue>jsbsAX44hxKg9xeGOSgRNqaPMec=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="NationalInstruments.UI.dll" size="1675264">
+      <assemblyIdentity name="NationalInstruments.UI" version="9.1.40.204" publicKeyToken="DC6AD606294FC298" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>qsHb4QkNFYVU9EpT7MT3d9CWOOU=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="NationalInstruments.UI.WindowsForms.dll" size="339968">
+      <assemblyIdentity name="NationalInstruments.UI.WindowsForms" version="9.1.40.204" publicKeyToken="DC6AD606294FC298" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>/b6b/7/mV5CFZ4HRrqj9EqzLOA4=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -126,14 +135,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="UIMF_DataViewer.dll" size="570880">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="UIMF_DataViewer.dll" size="587776">
       <assemblyIdentity name="UIMF_DataViewer" version="1.0.0.0" language="neutral" processorArchitecture="x86" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>lPimqtKgz1YhZon/Qxnbxjxvk88=</dsig:DigestValue>
+        <dsig:DigestValue>H2jPiEoJsFGvW+cm5Tn9wlTGOxw=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -145,7 +154,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>huEDTyoYD4o3lA/+U2zVwlGnULk=</dsig:DigestValue>
+        <dsig:DigestValue>59QZe9OwLAH7+/jvu3k6eTyhemg=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

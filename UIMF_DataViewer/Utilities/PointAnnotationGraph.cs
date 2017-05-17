@@ -20,6 +20,8 @@ namespace UIMF_File.Utilities
 		private int x1=-1, x2=-1; 
 
         private bool flag_StopAnnotating = false;
+        private bool flag_isTims = false;
+        private double[] ramp_TIMS;
 
 		public event RangeEventHandler RangeChanged;
 
@@ -39,6 +41,18 @@ namespace UIMF_File.Utilities
 
 			Invalidate();
 		}
+
+        public void set_TIMSRamp(double tims_start, double tims_end, double tims_duration, int tofs, int offset)
+        {
+            ramp_TIMS = new double[(int) tofs];
+
+            for (int i=0; i<(int) tims_duration; i++)
+                ramp_TIMS[(i-offset+tofs) % tofs] = (((tims_end - tims_start)/tims_duration) * i) + tims_start;
+            for (int i = (int)tims_duration; i < tofs; i++)
+                ramp_TIMS[(i - offset + tofs) % tofs] = tims_start;
+
+            this.flag_isTims = true;
+        }
 
         public void SetRange(int xpos1, int xpos2)
         {
@@ -243,6 +257,8 @@ namespace UIMF_File.Utilities
                     if(hitRectangle.Contains(xPosition, yPosition))
                     {
                         string data = string.Format("x={0:F3}, y={1}", xData[x], yData[x]);
+                        if ((this.flag_isTims) && (x<this.ramp_TIMS.Length))
+                            data += "\n         Ramp @ "+ this.ramp_TIMS[x]+" volts";
 
                         this.Cursors[0].XPosition = xData[x];
                         this.Cursors[0].YPosition = yData[x];

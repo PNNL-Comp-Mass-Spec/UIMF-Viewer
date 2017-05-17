@@ -55,6 +55,7 @@ namespace IonMobility
 
         IonMobility.Form_About ptr_form_about = new Form_About();
 
+
         /******************************************************************************
          *  IonMobilityAcqMain Constructor
          */
@@ -325,6 +326,15 @@ namespace IonMobility
                 return;
             }
 
+            //detect whether its a directory or file
+            FileAttributes attr = File.GetAttributes(files[0]);
+            if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+            {
+                files = System.IO.Directory.GetFiles(files[0], "*.UIMF");
+                if (files.Length == 0)
+                    return;
+            }
+
             if (this.open_Experiments.Count > 4)
             {
                 int total_experiments = this.open_Experiments.Count;
@@ -351,25 +361,22 @@ namespace IonMobility
                     MessageBox.Show(ex.ToString());
                 }
             }
-#if THERMO
             else if (Path.GetExtension(files[0]).ToUpper() == ".RAW")
             {
-                UIMF_DataViewer.ThermoViewer frame_RAW = new UIMF_DataViewer.ThermoViewer(files[0]);
-                this.open_Experiments.Add(frame_RAW);
-            }
-            else if (Path.GetExtension(files[0]).ToUpper() == ".BIN")
-            {
-                try
+                if (MessageBox.Show("Convert RAW file to UIMF? ", "File Conversion", MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
                 {
-                    UIMF_DataViewer.BinViewer frame_BIN = new UIMF_DataViewer.BinViewer(files[0]);
-                    this.open_Experiments.Add(frame_BIN);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.ToString());
+                    try
+                    {
+                        UIMF_DataViewer.Raw2UIMF raw2uimf = new Raw2UIMF(files[0]);
+                        raw2uimf.ConvertRAWtoUIMF(Path.Combine(Path.GetDirectoryName(files[0]), Path.GetFileNameWithoutExtension(files[0]) + ".UIMF"));
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.ToString());
+                    }
                 }
             }
-#endif
+
 #if false
    // MessageBox.Show(this, "here");
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);

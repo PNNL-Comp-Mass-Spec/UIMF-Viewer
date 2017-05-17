@@ -58,7 +58,7 @@ namespace UIMFLibrary
         public double voltHVRack2;                     // 19, Voltage setting in the IMS system
         public double voltHVRack3;                     // 20, Voltage setting in the IMS system
         public double voltHVRack4;                     // 21, Voltage setting in the IMS system
-        public double voltCapInlet;                    // 22, Capilary Inlet Voltage
+        public double voltCapInlet;                    // 22, Capillary Inlet Voltage
         public double voltEntranceHPFIn;               // 23, HPF In Voltage  (renamed from voltEntranceIFTIn  to voltEntranceHPFIn  in July 2011)
         public double voltEntranceHPFOut;              // 24, HPF Out Voltage (renamed from voltEntranceIFTOut to voltEntranceHPFOut in July 2011)
         public double voltEntranceCondLmt;             // 25, Cond Limit Voltage
@@ -198,55 +198,6 @@ namespace UIMFLibrary
             Target.Decoded = this.Decoded;
         }
     }
-
-    public class IMSCOMP
-    {
-        public const string dll = "IMSCOMP.dll";
-
-        [DllImport(dll, CharSet = CharSet.Ansi)]
-        public static unsafe extern int compress_buffer(
-            double* in_data,
-            int blocksize,
-            byte* out_data);
-		[DllImport(dll, CharSet = CharSet.Ansi)]
-		public static unsafe extern int lzf_compress(byte* in_data, int in_len, byte* out_data, int out_len);
-		[DllImport(dll, CharSet = CharSet.Ansi)]
-		public static unsafe extern int lzf_decompress(byte* in_data, int in_len, byte* out_data, int out_len);
-	}
-    public class IMSCOMP_wrapper
-    {
-        public static unsafe int compress_buffer(
-            ref double[] in_data, int blocksize, ref byte[] out_data)
-        {
-            fixed (double* i = in_data)
-            {
-                fixed (byte* o = out_data)
-                {
-                    return IMSCOMP.compress_buffer(i, blocksize, o);
-                }
-            }
-        }
-		public static unsafe int compress_lzf(ref byte[] in_data, int in_len, ref byte[] out_data, int out_len)
-		{
-			fixed (byte* i = in_data)
-			{
-				fixed (byte* o = out_data)
-				{
-					return IMSCOMP.lzf_compress(i, in_len, o, out_len);
-				}
-			}
-		}
-		public static unsafe int decompress_lzf(ref byte[] in_data, int in_len, ref byte[] out_data, int out_len)
-		{
-			fixed (byte* i = in_data)
-			{
-				fixed (byte* o = out_data)
-				{
-					return IMSCOMP.lzf_decompress(i, in_len, o, out_len);
-				}
-			}
-		}
-	}
 
 
     // /////////////////////////////////////////////////////////////////////

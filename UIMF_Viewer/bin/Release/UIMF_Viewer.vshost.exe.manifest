@@ -87,30 +87,6 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="BelovTransform.dll" size="13824">
-      <assemblyIdentity name="BelovTransform" version="1.0.0.0" language="neutral" processorArchitecture="amd64" />
-      <hash>
-        <dsig:Transforms>
-          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-        </dsig:Transforms>
-        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>ioPgOMD85haGGoG09qO0AVnmHnw=</dsig:DigestValue>
-      </hash>
-    </dependentAssembly>
-  </dependency>
-  <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="MathNet.Numerics.dll" size="937472">
-      <assemblyIdentity name="MathNet.Numerics" version="2011.4.17.0" publicKeyToken="CD8B63AD3D691A37" language="neutral" processorArchitecture="msil" />
-      <hash>
-        <dsig:Transforms>
-          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-        </dsig:Transforms>
-        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>+rCa15/N2z2rgS379+vmvioh4x8=</dsig:DigestValue>
-      </hash>
-    </dependentAssembly>
-  </dependency>
-  <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="NationalInstruments.Common.dll" size="215552">
       <assemblyIdentity name="NationalInstruments.Common" version="9.1.40.159" publicKeyToken="DC6AD606294FC298" language="neutral" processorArchitecture="msil" />
       <hash>
@@ -159,26 +135,38 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="UIMF_DataViewer.dll" size="564224">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ThermoRawFileReaderDLL.dll" size="30720">
+      <assemblyIdentity name="ThermoRawFileReaderDLL" version="1.1.4661.23235" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+        <dsig:DigestValue>j9wHoWNNfXUJlpuc0FvPZv5hy30=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="UIMF_DataViewer.dll" size="567296">
       <assemblyIdentity name="UIMF_DataViewer" version="1.0.0.0" language="neutral" processorArchitecture="amd64" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>D9ETz6C85rPecs2ZleKL1X9F9aE=</dsig:DigestValue>
+        <dsig:DigestValue>jNYUsqrXRWr0hojrLSprcqEpDhY=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="UIMF_Viewer.exe" size="688128">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="UIMF_Viewer.exe" size="659456">
       <assemblyIdentity name="UIMF_Viewer" version="1.3.0.0" language="neutral" processorArchitecture="amd64" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>Itu/GN6ex1ATS2MkoUxdOAXlvZA=</dsig:DigestValue>
+        <dsig:DigestValue>9d4ucipsa4Qg61I4Vu3p/KVQNzU=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

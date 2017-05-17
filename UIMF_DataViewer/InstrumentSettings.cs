@@ -25,9 +25,11 @@ namespace UIMF_DataViewer
         private const int TOP_EXIT = -240;
         private const int LEFT_EXIT = 80;
 
-        private const int NUM_VALUES = 25;
+        private const int NUM_VALUES = 31;
         private System.Windows.Forms.Label[] lbl_Desc;
         private System.Windows.Forms.TextBox[] tb_Value;
+
+        public double[] default_FragmentationVoltages;
 
         private Graphics pnl_graphics;
         private Brush hilight_brush;
@@ -76,6 +78,14 @@ namespace UIMF_DataViewer
             this.lbl_MouseClick.Text = (e.X - LEFT_EXIT).ToString() + ", " + (e.Y - TOP_EXIT).ToString();
         }
 #endif
+
+        public void set_defaultFragmentationVoltages(double[] voltages)
+        {
+            if ((voltages != null) && (voltages.Length == 4))
+            {
+                default_FragmentationVoltages = voltages;
+            }
+        }
 
         public void update_Frame(FrameParameters fp)
         {
@@ -244,6 +254,27 @@ namespace UIMF_DataViewer
             this.tb_Value[22].Text = fp.Scans.ToString("0");
             this.tb_Value[23].Text = fp.Accumulations.ToString("0");
             this.tb_Value[24].Text = fp.TOFLosses.ToString("0") + " scans";
+
+            if (fp.FragmentationProfile != null)
+            {
+                this.tb_Value[25].Text = fp.FragmentationProfile[0].ToString("0") + " volts";
+                this.tb_Value[26].Text = fp.FragmentationProfile[1].ToString("0") + " volts";
+                this.tb_Value[27].Text = fp.FragmentationProfile[2].ToString("0") + " volts";
+                this.tb_Value[28].Text = fp.FragmentationProfile[3].ToString("0") + " volts";
+            }
+            else
+            {
+                this.tb_Value[25].Text = "NA";
+                this.tb_Value[26].Text = "NA";
+                this.tb_Value[27].Text = "NA";
+                this.tb_Value[28].Text = "NA";
+            }
+
+            this.tb_Value[29].Text = fp.FrameType.ToString();
+            if ((this.default_FragmentationVoltages != null) && (fp.FragmentationProfile != null) && ((fp.FragmentationProfile.Length == 4) && (this.default_FragmentationVoltages.Length == 4)))
+                this.tb_Value[30].Text = (fp.FragmentationProfile[0] - this.default_FragmentationVoltages[0]).ToString() + " volts";
+            else
+                this.tb_Value[30].Text = "N/A";
 
             this.Resize_This();
         }
@@ -465,6 +496,43 @@ namespace UIMF_DataViewer
             this.tb_Value[24].Top = this.lbl_Desc[24].Top - 2;
             this.lbl_Desc[24].Left = this.current_center_width - LEFT_SETTINGS - 370;
             this.tb_Value[24].Left = this.lbl_Desc[24].Left + this.lbl_Desc[24].Width + 5;
+
+            // Fragmentation
+            this.lbl_Desc[25].Text = "Frag Ch1";
+            this.lbl_Desc[25].Top = this.current_center_height - TOP_SETTINGS + 25;
+            this.tb_Value[25].Top = this.lbl_Desc[25].Top - 2;
+            this.lbl_Desc[25].Left = this.current_center_width - LEFT_SETTINGS - 45;
+            this.tb_Value[25].Left = this.lbl_Desc[25].Left + this.lbl_Desc[25].Width + 5;
+
+            this.lbl_Desc[26].Text = "Frag Ch2";
+            this.lbl_Desc[26].Top = this.current_center_height - TOP_SETTINGS + 50;
+            this.tb_Value[26].Top = this.lbl_Desc[26].Top - 2;
+            this.lbl_Desc[26].Left = this.current_center_width - LEFT_SETTINGS - 45;
+            this.tb_Value[26].Left = this.lbl_Desc[26].Left + this.lbl_Desc[26].Width + 5;
+
+            this.lbl_Desc[27].Text = "Frag Ch3";
+            this.lbl_Desc[27].Top = this.current_center_height - TOP_SETTINGS + 75;
+            this.tb_Value[27].Top = this.lbl_Desc[27].Top - 2;
+            this.lbl_Desc[27].Left = this.current_center_width - LEFT_SETTINGS - 45;
+            this.tb_Value[27].Left = this.lbl_Desc[27].Left + this.lbl_Desc[27].Width + 5;
+
+            this.lbl_Desc[28].Text = "Frag Ch4";
+            this.lbl_Desc[28].Top = this.current_center_height - TOP_SETTINGS + 100;
+            this.tb_Value[28].Top = this.lbl_Desc[28].Top - 2;
+            this.lbl_Desc[28].Left = this.current_center_width - LEFT_SETTINGS - 45;
+            this.tb_Value[28].Left = this.lbl_Desc[28].Left + this.lbl_Desc[28].Width + 5;
+
+            this.lbl_Desc[29].Text = "Frame Type";
+            this.lbl_Desc[29].Top = this.current_center_height - TOP_SETTINGS - 10;
+            this.tb_Value[29].Top = this.lbl_Desc[29].Top - 2;
+            this.lbl_Desc[29].Left = this.current_center_width - LEFT_SETTINGS+10;
+            this.tb_Value[29].Left = this.lbl_Desc[29].Left + this.lbl_Desc[29].Width + 5;
+
+            this.lbl_Desc[30].Text = "CE";
+            this.lbl_Desc[30].Top = this.current_center_height - TOP_SETTINGS + 25;
+            this.tb_Value[30].Top = this.lbl_Desc[30].Top - 2;
+            this.lbl_Desc[30].Left = this.lbl_Desc[25].Left + this.lbl_Desc[25].Width + 10;
+            this.tb_Value[30].Left = this.lbl_Desc[30].Left + this.lbl_Desc[30].Width + 5;
         }
 
         public void InstrumentSettings_Paint(object obj, PaintEventArgs e)
