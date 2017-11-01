@@ -212,6 +212,7 @@ namespace UIMFLibrary
 					int indexCurrentBin = 0;
 					int decompressLength = LZFCompressionUtil.Decompress(ref compressedBinIntensity, compressedBinIntensity.Length, ref streamBinIntensity, m_globalParameters.Bins * 4);
 
+				    int previousValue = 0;
 					for (int binData = 0; (binData < decompressLength) && (indexCurrentBin <= endBin); binData += 4)
 					{
 						int intBinIntensity = BitConverter.ToInt32(streamBinIntensity, binData);
@@ -219,6 +220,13 @@ namespace UIMFLibrary
 						if (intBinIntensity < 0)
 						{
 							indexCurrentBin += -intBinIntensity;   // concurrent zeros
+						}
+                        else if (intBinIntensity == 0 && (previousValue.Equals(short.MinValue) || previousValue.Equals(int.MinValue)))
+						{
+						    // Do nothing: this is to handle an old bug in the run-length zero encoding, that would do a
+						    // double-output of a zero (output a zero, and add it to the zero count) if there were enough
+						    // consecutive zeroes to hit the underflow limit
+						    // Really, the encoding we are using should never output a zero.
 						}
 						else if ((indexCurrentBin < minMZBin) || (indexCurrentBin < startBin))
 							indexCurrentBin++;
@@ -229,6 +237,7 @@ namespace UIMFLibrary
 							frameData[currentScan][indexCurrentBin - startBin] += intBinIntensity;
 							indexCurrentBin++;
 						}
+                        previousValue = intBinIntensity;
 					}
 				}
 			}
@@ -249,6 +258,7 @@ namespace UIMFLibrary
 					int decompressLength = LZFCompressionUtil.Decompress(ref compressedBinIntensity, compressedBinIntensity.Length, ref streamBinIntensity, m_globalParameters.Bins * 4);
 
 					int pixelY = 1;
+				    int previousValue = 0;
 
 					for (int binValue = 0; (binValue < decompressLength) && (indexCurrentBin < endBin); binValue += 4)
 					{
@@ -257,6 +267,13 @@ namespace UIMFLibrary
 						if (intBinIntensity < 0)
 						{
 							indexCurrentBin += -intBinIntensity; // concurrent zeros
+						}
+                        else if (intBinIntensity == 0 && (previousValue.Equals(short.MinValue) || previousValue.Equals(int.MinValue)))
+						{
+						    // Do nothing: this is to handle an old bug in the run-length zero encoding, that would do a
+						    // double-output of a zero (output a zero, and add it to the zero count) if there were enough
+						    // consecutive zeroes to hit the underflow limit
+						    // Really, the encoding we are using should never output a zero.
 						}
 						else if ((indexCurrentBin < minMZBin) || (indexCurrentBin < startBin))
 						{
@@ -281,6 +298,7 @@ namespace UIMFLibrary
 							}
 							indexCurrentBin++;
 						}
+                        previousValue = intBinIntensity;
 					}
 				}
 			}
@@ -953,6 +971,7 @@ namespace UIMFLibrary
 					{
 						int outputLength = LZFCompressionUtil.Decompress(ref spectra, spectra.Length, ref decompSpectraRecord, m_globalParameters.Bins * DATASIZE);
 						int numReturnedBins = outputLength / DATASIZE;
+					    int previousValue = 0;
 						for (int i = 0; i < numReturnedBins; i++)
 						{
 							int decodedIntensityValue = BitConverter.ToInt32(decompSpectraRecord, i * DATASIZE);
@@ -961,11 +980,19 @@ namespace UIMFLibrary
 							{
 								binIndex += -decodedIntensityValue;
 							}
+							else if (decodedIntensityValue == 0 && (previousValue.Equals(short.MinValue) || previousValue.Equals(int.MinValue)))
+							{
+							    // Do nothing: this is to handle an old bug in the run-length zero encoding, that would do a
+							    // double-output of a zero (output a zero, and add it to the zero count) if there were enough
+							    // consecutive zeroes to hit the underflow limit
+							    // Really, the encoding we are using should never output a zero.
+							}
 							else
 							{
 								intensities[binIndex][scanToIndexMap[scanNumber]] = decodedIntensityValue;
 								binIndex++;
 							}
+						    previousValue = decodedIntensityValue;
 						}
 					}
 				}
@@ -1222,12 +1249,20 @@ namespace UIMFLibrary
 
 						IDictionary<int, int> currentIntensityDictionary = listOfIntensityDictionaries[scanNum];
 
+					    int previousValue = 0;
 						for (int i = 0; i < numBins; i++)
 						{
 							int decodedSpectraRecord = BitConverter.ToInt32(decompSpectraRecord, i*DATASIZE);
 							if (decodedSpectraRecord < 0)
 							{
 								binIndex += -decodedSpectraRecord;
+							}
+                            else if (decodedSpectraRecord == 0 && (previousValue.Equals(short.MinValue) || previousValue.Equals(int.MinValue)))
+							{
+							    // Do nothing: this is to handle an old bug in the run-length zero encoding, that would do a
+							    // double-output of a zero (output a zero, and add it to the zero count) if there were enough
+							    // consecutive zeroes to hit the underflow limit
+							    // Really, the encoding we are using should never output a zero.
 							}
 							else
 							{
@@ -1254,6 +1289,7 @@ namespace UIMFLibrary
 
 								binIndex++;
 							}
+                            previousValue = decodedSpectraRecord;
 						}
 					}
 				}
@@ -1465,12 +1501,20 @@ namespace UIMFLibrary
 					//    numEntries = outputLength / DATASIZE;
 					//}
 
+				    int previousValue = 0;
 					for (int i = 0; i < decompSpectraRecord.Length; i++)
 					{
 						int decodedSpectraRecord = BitConverter.ToInt32(decompSpectraRecord, i * DATASIZE);
 						if (decodedSpectraRecord < 0)
 						{
 							entryIndex += -decodedSpectraRecord;
+						}
+                        else if (decodedSpectraRecord == 0 && (previousValue.Equals(short.MinValue) || previousValue.Equals(int.MinValue)))
+						{
+						    // Do nothing: this is to handle an old bug in the run-length zero encoding, that would do a
+						    // double-output of a zero (output a zero, and add it to the zero count) if there were enough
+						    // consecutive zeroes to hit the underflow limit
+						    // Really, the encoding we are using should never output a zero.
 						}
 						else
 						{
@@ -1493,6 +1537,7 @@ namespace UIMFLibrary
 								}
 							}
 						}
+                        previousValue = decodedSpectraRecord;
 					}
 
 					if (intensity > 0)
@@ -1641,6 +1686,7 @@ namespace UIMFLibrary
 					{
 						int outputLength = LZFCompressionUtil.Decompress(ref spectraRecord, spectraRecord.Length, ref decompSpectraRecord, m_globalParameters.Bins * DATASIZE);
 						int numBins = outputLength / DATASIZE;
+					    int previousValue = 0;
 
 						for (int i = 0; i < numBins; i++)
 						{
@@ -1649,11 +1695,19 @@ namespace UIMFLibrary
 							{
 								binIndex += -decodedSpectraRecord;
 							}
+                            else if (decodedSpectraRecord == 0 && (previousValue.Equals(short.MinValue) || previousValue.Equals(int.MinValue)))
+							{
+							    // Do nothing: this is to handle an old bug in the run-length zero encoding, that would do a
+							    // double-output of a zero (output a zero, and add it to the zero count) if there were enough
+							    // consecutive zeroes to hit the underflow limit
+							    // Really, the encoding we are using should never output a zero.
+							}
 							else
 							{
 								intensityArray[binIndex] += decodedSpectraRecord;
 								binIndex++;
 							}
+                            previousValue = decodedSpectraRecord;
 						}
 					}
 				}
@@ -2168,6 +2222,7 @@ namespace UIMFLibrary
 					{
 						int outputLength = LZFCompressionUtil.Decompress(ref spectra, spectra.Length, ref decompSpectraRecord, m_globalParameters.Bins * DATASIZE);
 						int numBins = outputLength / DATASIZE;
+					    int previousValue = 0;
 						for (int i = 0; i < numBins; i++)
 						{
 							int decodedIntensityValue = BitConverter.ToInt32(decompSpectraRecord, i * DATASIZE);
@@ -2175,11 +2230,19 @@ namespace UIMFLibrary
 							{
 								binIndex += -decodedIntensityValue;
 							}
+							else if (decodedIntensityValue == 0 && (previousValue.Equals(short.MinValue) || previousValue.Equals(int.MinValue)))
+							{
+							    // Do nothing: this is to handle an old bug in the run-length zero encoding, that would do a
+							    // double-output of a zero (output a zero, and add it to the zero count) if there were enough
+							    // consecutive zeroes to hit the underflow limit
+							    // Really, the encoding we are using should never output a zero.
+							}
 							else
 							{
 								currentBinDictionary.Add(binIndex, decodedIntensityValue);
 								binIndex++;
 							}
+						    previousValue = decodedIntensityValue;
 						}
 					}
 				}
@@ -2238,12 +2301,20 @@ namespace UIMFLibrary
 					{
 						int outputLength = LZFCompressionUtil.Decompress(ref spectra, spectra.Length, ref decompSpectraRecord, m_globalParameters.Bins * DATASIZE);
 						int numBins = outputLength / DATASIZE;
+					    int previousValue = 0;
 						for (int i = 0; i < numBins; i++)
 						{
 							int decodedIntensityValue = BitConverter.ToInt32(decompSpectraRecord, i * DATASIZE);
 							if (decodedIntensityValue < 0)
 							{
 								binIndex += -decodedIntensityValue;
+							}
+                            else if (decodedIntensityValue == 0 && (previousValue.Equals(short.MinValue) || previousValue.Equals(int.MinValue)))
+							{
+							    // Do nothing: this is to handle an old bug in the run-length zero encoding, that would do a
+							    // double-output of a zero (output a zero, and add it to the zero count) if there were enough
+							    // consecutive zeroes to hit the underflow limit
+							    // Really, the encoding we are using should never output a zero.
 							}
 							else
 							{
@@ -2253,6 +2324,7 @@ namespace UIMFLibrary
 								}
 								binIndex++;
 							}
+						    previousValue = decodedIntensityValue;
 						}
 					}
 				}

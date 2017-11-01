@@ -2699,7 +2699,7 @@ namespace UIMF_File
                 this.maximum_Bins = new_maxBin;
 
                 this.num_minMobility.Minimum = -100;
-                this.num_maxMobility.Maximum = 100000;
+                this.num_maxMobility.Maximum = 10000000;
 
                 // set min and max here, they will not adjust to zooming
                 this.flag_enterMobilityRange = true; // prevent events form occurring.

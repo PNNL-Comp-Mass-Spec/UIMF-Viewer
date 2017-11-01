@@ -565,6 +565,7 @@ namespace UIMF_File
                     index_current_bin = 0;
                     decompress_length = LZFCompressionUtil.Decompress(ref compressed_BinIntensity, compressed_BinIntensity.Length, ref stream_BinIntensity, this.m_globalParameters.Bins * 4);
 
+                    int previousValue = 0;
                     for (bin_data = 0; (bin_data < decompress_length) && (index_current_bin <= end_bin); bin_data += 4)
                     {
                         int_BinIntensity = BitConverter.ToInt32(stream_BinIntensity, bin_data);
@@ -572,6 +573,13 @@ namespace UIMF_File
                         if (int_BinIntensity < 0)
                         {
                             index_current_bin += -int_BinIntensity;   // concurrent zeros
+                        }
+                        else if (int_BinIntensity == 0 && (previousValue.Equals(short.MinValue) || previousValue.Equals(int.MinValue)))
+                        {
+                            // Do nothing: this is to handle an old bug in the run-length zero encoding, that would do a
+                            // double-output of a zero (output a zero, and add it to the zero count) if there were enough
+                            // consecutive zeroes to hit the underflow limit
+                            // Really, the encoding we are using should never output a zero.
                         }
                         else if ((index_current_bin < min_mzbin) || (index_current_bin < start_bin))
                             index_current_bin++;
@@ -582,6 +590,7 @@ namespace UIMF_File
                             frame_data[current_scan][index_current_bin - start_bin] += int_BinIntensity;
                             index_current_bin++;
                         }
+                        previousValue = int_BinIntensity;
                     }
                 }
             }
@@ -605,6 +614,7 @@ namespace UIMF_File
                     pixel_y = 1;
 
                     double calibrated_bin = 0;
+                    int previousValue = 0;
                     for (bin_value = 0; (bin_value < decompress_length) && (index_current_bin < end_bin); bin_value += 4)
                     {
                         int_BinIntensity = BitConverter.ToInt32(stream_BinIntensity, bin_value);
@@ -612,6 +622,13 @@ namespace UIMF_File
                         if (int_BinIntensity < 0)
                         {
                             index_current_bin += -int_BinIntensity; // concurrent zeros
+                        }
+                        else if (int_BinIntensity == 0 && (previousValue.Equals(short.MinValue) || previousValue.Equals(int.MinValue)))
+                        {
+                            // Do nothing: this is to handle an old bug in the run-length zero encoding, that would do a
+                            // double-output of a zero (output a zero, and add it to the zero count) if there were enough
+                            // consecutive zeroes to hit the underflow limit
+                            // Really, the encoding we are using should never output a zero.
                         }
                         else if ((index_current_bin < min_mzbin) || (index_current_bin < start_bin))
                             index_current_bin++;
@@ -632,6 +649,7 @@ namespace UIMF_File
                             }
                             index_current_bin++;
                         }
+                        previousValue = int_BinIntensity;
                     }
                 }
             }
@@ -684,6 +702,7 @@ namespace UIMF_File
                 index_current_bin = 0;
                 decompress_length = LZFCompressionUtil.Decompress(ref compressed_BinIntensity, compressed_BinIntensity.Length, ref stream_BinIntensity, this.m_globalParameters.Bins * 4);
 
+                int previousValue = 0;
                 for (bin_data = 0; (bin_data < decompress_length); bin_data += 4)
                 {
                     int_BinIntensity = BitConverter.ToInt32(stream_BinIntensity, bin_data);
@@ -692,11 +711,19 @@ namespace UIMF_File
                     {
                         index_current_bin += -int_BinIntensity;   // concurrent zeros
                     }
+                    else if (int_BinIntensity == 0 && (previousValue.Equals(short.MinValue) || previousValue.Equals(int.MinValue)))
+                    {
+                        // Do nothing: this is to handle an old bug in the run-length zero encoding, that would do a
+                        // double-output of a zero (output a zero, and add it to the zero count) if there were enough
+                        // consecutive zeroes to hit the underflow limit
+                        // Really, the encoding we are using should never output a zero.
+                    }
                     else
                     {
                         TOF_Array[index_current_bin] += int_BinIntensity;
                         index_current_bin++;
                     }
+                    previousValue = int_BinIntensity;
                 }
             }
 
@@ -746,6 +773,7 @@ namespace UIMF_File
                     index_current_bin = 0;
                     decompress_length = LZFCompressionUtil.Decompress(ref compressed_BinIntensity, compressed_BinIntensity.Length, ref stream_BinIntensity, this.m_globalParameters.Bins * 4);
 
+                    int previousValue = 0;
                     for (bin_index = 0; (bin_index < decompress_length); bin_index += 4)
                     {
                         int_BinIntensity = BitConverter.ToInt32(stream_BinIntensity, bin_index);
@@ -753,6 +781,13 @@ namespace UIMF_File
                         if (int_BinIntensity < 0)
                         {
                             index_current_bin += -int_BinIntensity;   // concurrent zeros
+                        }
+                        else if (int_BinIntensity == 0 && (previousValue.Equals(short.MinValue) || previousValue.Equals(int.MinValue)))
+                        {
+                            // Do nothing: this is to handle an old bug in the run-length zero encoding, that would do a
+                            // double-output of a zero (output a zero, and add it to the zero count) if there were enough
+                            // consecutive zeroes to hit the underflow limit
+                            // Really, the encoding we are using should never output a zero.
                         }
                         else if (index_current_bin < min_mzbin)
                             index_current_bin++;
@@ -769,6 +804,7 @@ namespace UIMF_File
                                 throw new Exception(mobility_index.ToString() + "  " + current_scan.ToString());
                             }
                         }
+                        previousValue = int_BinIntensity;
                     }
                 }
             }
