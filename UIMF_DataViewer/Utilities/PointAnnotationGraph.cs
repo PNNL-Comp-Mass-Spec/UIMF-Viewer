@@ -1,14 +1,14 @@
 
 using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
-using NationalInstruments.UI;
-using NationalInstruments.UI.WindowsForms;
+using ZedGraph;
 
 namespace UIMF_File.Utilities
 {
-    public class PointAnnotationGraph : WaveformGraph
+    public class PointAnnotationGraph : ZedGraphControl
     {
         public SizeF _HitSize = new SizeF(1, 10);
         public int XMax;
@@ -25,8 +25,12 @@ namespace UIMF_File.Utilities
 
         public event RangeEventHandler RangeChanged;
 
-        public PointAnnotationGraph()
+        public PointAnnotationGraph() : base()
         {
+            base.MouseDown += OnPlotAreaMouseDown;
+            base.MouseMove += OnPlotAreaMouseMove;
+            base.MouseUp += OnPlotAreaMouseUp;
+            base.Paint += OnAfterDrawPlot;
         }
 
         public void StopAnnotating(bool flag)
@@ -64,22 +68,31 @@ namespace UIMF_File.Utilities
             Invalidate();
         }
 
-        protected override void OnPlotAreaMouseDown(MouseEventArgs e)
+        protected void OnPlotAreaMouseDown(object sender, MouseEventArgs e)
         {
           //  if (this.flag_StopAnnotating)
            //     return;
 
-            base.OnPlotAreaMouseDown (e);
             if(e.Button == MouseButtons.Left)
             {
                 //Invalidate();
-                XYPlot plot = this.Plots[0];
-                double[] xData = plot.GetXData();
+                //XYPlot plot = this.Plots[0];
+                double[] xData;
+                if (this.GraphPane.CurveList[0].Points is BasicArrayPointList xyData)
+                {
+                    xData = xyData.x;
+                }
+                else
+                {
+                    var xyData2 = (PointPairList)this.GraphPane.CurveList[0].Points;
+                    xData = xyData2.Select(x => x.X).ToArray();
+                }
+
                 if (xData.Length <= 1)
                     return;
 
-                int tick_width = (this.PlotAreaBounds.Width / (xData.Length-1));
-                int hitX = e.X + (tick_width/2) - this.PlotAreaBounds.Left;
+                int tick_width = ((int)this.GraphPane.Chart.Rect.Width / (xData.Length-1));
+                int hitX = e.X + (tick_width/2) - (int)this.GraphPane.Chart.Rect.Left;
 
                 //p2 = ((p2-(int)xData[0]) * w) - (w/2) + this.PlotAreaBounds.Left;
 
@@ -91,21 +104,29 @@ namespace UIMF_File.Utilities
             this.flag_Selecting = true;
         }
 
-        protected override void OnPlotAreaMouseMove(MouseEventArgs e)
+        protected void OnPlotAreaMouseMove(object sender, MouseEventArgs e)
         {
             if (this.flag_StopAnnotating)
                 return;
-
-            base.OnPlotAreaMouseMove(e);
 
             if (e.Button == MouseButtons.Left)
             {
                 if(this.flag_Selecting)
                 {
-                    XYPlot plot = this.Plots[0];
-                    double[] xData = plot.GetXData();
-                    int tick_width = (this.PlotAreaBounds.Width / (xData.Length-1));
-                    int hitX = e.X + (tick_width/2) - this.PlotAreaBounds.Left;
+                    //XYPlot plot = this.Plots[0];
+                    double[] xData;
+                    if (this.GraphPane.CurveList[0].Points is BasicArrayPointList xyData)
+                    {
+                        xData = xyData.x;
+                    }
+                    else
+                    {
+                        var xyData2 = (PointPairList)this.GraphPane.CurveList[0].Points;
+                        xData = xyData2.Select(x => x.X).ToArray();
+                    }
+
+                    int tick_width = ((int)this.GraphPane.Chart.Rect.Width / (xData.Length-1));
+                    int hitX = e.X + (tick_width/2) - (int)this.GraphPane.Chart.Rect.Left;
 
                     if (tick_width < 1)
                         tick_width = 1;
@@ -117,22 +138,31 @@ namespace UIMF_File.Utilities
             }
         }
 
-        protected override void OnPlotAreaMouseUp(MouseEventArgs e)
+        protected void OnPlotAreaMouseUp(object sender, MouseEventArgs e)
         {
             if (this.flag_StopAnnotating)
                 return;
 
-            base.OnPlotAreaMouseUp(e);
             if(e.Button == MouseButtons.Left)
             {
                 if(this.flag_Selecting)
                 {
                     this.flag_Selecting = false;
                     //x2 = e.X-this.PlotAreaBounds.Left;
-                    XYPlot plot = this.Plots[0];
-                    double[] xData = plot.GetXData();
-                    int tick_width = (this.PlotAreaBounds.Width / (xData.Length-1));
-                    int hitX = e.X + (tick_width/2) - this.PlotAreaBounds.Left;;
+                    //XYPlot plot = this.Plots[0];
+                    double[] xData;
+                    if (this.GraphPane.CurveList[0].Points is BasicArrayPointList xyData)
+                    {
+                        xData = xyData.x;
+                    }
+                    else
+                    {
+                        var xyData2 = (PointPairList)this.GraphPane.CurveList[0].Points;
+                        xData = xyData2.Select(x => x.X).ToArray();
+                    }
+
+                    int tick_width = ((int)this.GraphPane.Chart.Rect.Width / (xData.Length-1));
+                    int hitX = e.X + (tick_width/2) - (int)this.GraphPane.Chart.Rect.Left;;
                     if (tick_width == 0)
                         tick_width = 1;
 
@@ -187,7 +217,7 @@ namespace UIMF_File.Utilities
 
             xPosition = e.X;
             yPosition = e.Y;
-            this.Cursors[0].Visible = true;
+            // TODO: //this.Cursors[0].Visible = true;
 
             this.Invalidate();
         }
@@ -201,25 +231,38 @@ namespace UIMF_File.Utilities
 
             xPosition = -1000;
             yPosition = -1000;
-            this.Cursors[0].Visible = false;
+            // TODO: //this.Cursors[0].Visible = false;
             //this.Invalidate();
         }
 
-        protected override void OnAfterDrawPlot(AfterDrawXYPlotEventArgs e)
+        protected void OnAfterDrawPlot(object sender, PaintEventArgs e)
         {
             if (this.flag_StopAnnotating)
                 return;
 
-            base.OnAfterDrawPlot(e);
+            //base.OnAfterDrawPlot(e);
 
-            XYPlot plot = e.Plot;
-            double[] xData = plot.GetXData();
-            double[] yData = plot.GetYData();
+            Line plot = ((LineItem)this.GraphPane.CurveList[0]).Line;
+            double[] xData;
+            double[] yData;
+            if (this.GraphPane.CurveList[0].Points is BasicArrayPointList xyData)
+            {
+                xData = xyData.x;
+                yData = xyData.y;
+            }
+            else
+            {
+                var xyData2 = (PointPairList) this.GraphPane.CurveList[0].Points;
+                xData = xyData2.Select(x => x.X).ToArray();
+                yData = xyData2.Select(x => x.Y).ToArray();
+            }
 
             if(xData.Length > 0)
             {
-                Rectangle bounds = e.Bounds;
-                PointF[] points = plot.MapDataPoints(bounds, xData, yData, false);
+                Rectangle bounds = e.ClipRectangle;
+                PointF[] points; // = plot.MapDataPoints(bounds, xData, yData, false);
+                int count;
+                plot.BuildPointsArray(this.GraphPane, this.GraphPane.CurveList[0], out points, out count);
                 DisplayToolTip(points, xData, yData, e.Graphics, bounds);
             }
 
@@ -230,12 +273,12 @@ namespace UIMF_File.Utilities
                 p2 = Math.Max(x1, x2);
 
                 // Find left boundary of p1:
-                int w = this.PlotAreaBounds.Width / (xData.Length-1);
-                p1 = ((p1-(int)xData[0]) * w) - (w/2) + this.PlotAreaBounds.Left;
+                int w = (int)this.GraphPane.Chart.Rect.Width / (xData.Length-1);
+                p1 = ((p1-(int)xData[0]) * w) - (w/2) + (int)this.GraphPane.Chart.Rect.Left;
                 // Find right boundary of p2:
-                p2 = ((p2-(int)xData[0]+1) * w) - (w/2) + this.PlotAreaBounds.Left;
+                p2 = ((p2-(int)xData[0]+1) * w) - (w/2) + (int)this.GraphPane.Chart.Rect.Left;
 
-                e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(115, 200, 200, 200)), p1, e.Bounds.Top, p2-p1, e.Bounds.Height);
+                e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(115, 200, 200, 200)), p1, e.ClipRectangle.Top, p2-p1, e.ClipRectangle.Height);
             }
         }
 
@@ -260,8 +303,8 @@ namespace UIMF_File.Utilities
                         if ((this.flag_isTims) && (x<this.ramp_TIMS.Length))
                             data += "\n         Ramp @ "+ this.ramp_TIMS[x]+" volts";
 
-                        this.Cursors[0].XPosition = xData[x];
-                        this.Cursors[0].YPosition = yData[x];
+                        // TODO: //this.Cursors[0].XPosition = xData[x];
+                        // TODO: //this.Cursors[0].YPosition = yData[x];
 
                         SizeF sizeString = g.MeasureString(data, Font);
                         int pos_left = ((int) (hitRectangle.Right+sizeString.Width) > bounds.Width ? (int) (bounds.Width - sizeString.Width) : (int) hitRectangle.Right);
