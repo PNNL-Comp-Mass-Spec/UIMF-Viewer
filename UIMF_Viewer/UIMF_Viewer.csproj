@@ -54,11 +54,6 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AxInterop.CWDAQControlsLib, Version=1.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Release\AxInterop.CWDAQControlsLib.dll</HintPath>
-    </Reference>
-    <Reference Include="AxInterop.CWUIControlsLib, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="NationalInstruments.Common, Version=9.1.40.159, Culture=neutral, PublicKeyToken=dc6ad606294fc298, processorArchitecture=MSIL">
       <Private>True</Private>
     </Reference>
@@ -67,11 +62,6 @@
     </Reference>
     <Reference Include="NationalInstruments.UI.WindowsForms, Version=9.1.40.204, Culture=neutral, PublicKeyToken=dc6ad606294fc298, processorArchitecture=MSIL">
       <Private>True</Private>
-    </Reference>
-    <Reference Include="stdole">
-      <Name>stdole</Name>
-      <HintPath>..\..\..\..\Program Files\Microsoft.NET\Primary Interop Assemblies\stdole.dll</HintPath>
-      <AssemblyFolderKey>hklm\primary interop assemblies</AssemblyFolderKey>
     </Reference>
     <Reference Include="System">
       <Name>System</Name>
@@ -82,9 +72,6 @@
     <Reference Include="System.Data.SQLite, Version=1.0.65.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\UIMF_DataViewer\dlls\System.Data.SQLite.dll</HintPath>
-    </Reference>
-    <Reference Include="System.DirectoryServices">
-      <Name>System.DirectoryServices</Name>
     </Reference>
     <Reference Include="System.Drawing">
       <Name>System.Drawing</Name>
