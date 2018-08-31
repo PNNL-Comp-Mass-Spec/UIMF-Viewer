@@ -938,6 +938,8 @@ namespace UIMF_File
 
             if (disposing)
             {
+                ptr_UIMFDatabase.Dispose();
+
                 try
                 {
                     /*
@@ -4919,6 +4921,7 @@ namespace UIMF_File
         private void IonMobilityDataView_Closed(object sender, System.EventArgs e)
         {
             RegistrySave(Registry.CurrentUser.CreateSubKey("Software").CreateSubKey(AppDomain.CurrentDomain.FriendlyName));
+            ptr_UIMFDatabase.Dispose();
         }
 
         private void pnl_2DMap_MouseLeave(object sender, System.EventArgs e)

@@ -108,7 +108,11 @@ namespace IonMobility
             {
                 for (int i = 0; i < this.open_Experiments.Count; i++)
                 {
-                    ((UIMF_File.DataViewer)this.open_Experiments[i]).Close();
+                    var exp = (UIMF_File.DataViewer) this.open_Experiments[i];
+                    if (!exp.IsDisposed)
+                    {
+                        ((UIMF_File.DataViewer)this.open_Experiments[i]).Close();
+                    }
                 }
 
                 if (components != null)
