@@ -1550,7 +1550,7 @@ namespace UIMF_File
             }
 
             if (this.num_FrameIndex.Maximum >= (int)selectedFrame)
-                this.num_FrameIndex.Value = (int)selectedFrame;
+                this.num_FrameIndex.Invoke(new MethodInvoker(delegate { this.num_FrameIndex.Value = (int)selectedFrame; }));
 
             for (exp_index = 0; exp_index < this.lb_DragDropFiles.Items.Count; exp_index++)
             {
@@ -1563,8 +1563,11 @@ namespace UIMF_File
 
                     if (Convert.ToInt32(this.num_FrameRange.Value) > 1)
                     {
-                        this.lbl_FramesShown.Show();
-                        this.lbl_FramesShown.Text = "Showing Frames: " + start_index.ToString() + " to " + end_index.ToString();
+                        this.lbl_FramesShown.Invoke(new MethodInvoker(delegate
+                        {
+                            this.lbl_FramesShown.Show();
+                            this.lbl_FramesShown.Text = "Showing Frames: " + start_index.ToString() + " to " + end_index.ToString();
+                        }));
                     }
 
                     // collect the data
@@ -4261,6 +4264,8 @@ namespace UIMF_File
 
                             if (this.flag_CinemaPlot)
                             {
+                                this.slide_FrameSelect.Invoke(new MethodInvoker(delegate
+                                {
                                 if ((this.slide_FrameSelect.Value + this.Cinemaframe_DataChange >= 0) &&
                                     (this.slide_FrameSelect.Value + this.Cinemaframe_DataChange <= this.slide_FrameSelect.Maximum))
                                 {
@@ -4270,16 +4275,18 @@ namespace UIMF_File
                                 {
                                     if (this.Cinemaframe_DataChange > 0)
                                     {
-                                        this.pb_PlayRightIn_Click((object)null, (EventArgs)null);
+                                        this.pb_PlayRightIn_Click((object) null, (EventArgs) null);
                                         this.slide_FrameSelect.Value = this.slide_FrameSelect.Maximum;
                                     }
                                     else
                                     {
-                                        this.pb_PlayLeftIn_Click((object)null, (EventArgs)null);
+                                        this.pb_PlayLeftIn_Click((object) null, (EventArgs) null);
                                         // TODO: //this.slide_FrameSelect.Value = Convert.ToDouble(this.num_FrameRange.Value) - 1;
                                         this.slide_FrameSelect.Value = Convert.ToInt32(this.num_FrameRange.Value) - 1;
                                     }
                                 }
+                                }));
+
                                 this.flag_update2DGraph = true;
                             }
 #if CONTROL_BOX
@@ -4290,7 +4297,10 @@ namespace UIMF_File
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(this, "cycle_GraphFrame: " + ex.ToString() + "\n\n" + ex.StackTrace.ToString());
+                    this.Invoke(new MethodInvoker(delegate
+                    {
+                        MessageBox.Show(this, "cycle_GraphFrame: " + ex.ToString() + "\n\n" + ex.StackTrace.ToString());
+                    }));
                 }
 
                 this.flag_GraphingFrame = false;
@@ -4460,7 +4470,14 @@ namespace UIMF_File
                 if (this.pnl_2DMap.Left + this.pnl_2DMap.Width + 170 > this.Width)
                 {
                     //MessageBox.Show(this.Width.ToString() + " < " + (this.pnl_2DMap.Left + this.pnl_2DMap.Width + 170).ToString());
-                    this.Width = this.pnl_2DMap.Left + this.pnl_2DMap.Width + 170;
+                    if (this.InvokeRequired)
+                    {
+                        this.Invoke(new MethodInvoker(delegate { this.Width = this.pnl_2DMap.Left + this.pnl_2DMap.Width + 170; }));
+                    }
+                    else
+                    {
+                        this.Width = this.pnl_2DMap.Left + this.pnl_2DMap.Width + 170;
+                    }
                     this.flag_ResizeThis = true;
                     //this.IonMobilityDataView_Resize((object)null, (EventArgs)null);
                 }
@@ -4934,6 +4951,8 @@ namespace UIMF_File
                 }
 
                 plot_Mobility.XMax = this.pnl_2DMap.Width + DRIFT_PLOT_WIDTH_DIFF;
+                double minX = 0;
+                double maxX = 0;
 
                 if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
                 {
@@ -4987,6 +5006,9 @@ namespace UIMF_File
 
                         //this.xAxis_Mobility.Caption = "Frame Number";
                         this.plot_Mobility.GraphPane.XAxis.Title.Text = "Frame Number";
+
+                        minX = 0;
+                        maxX = (tic_Mobility.Length - 1) * Convert.ToDouble(this.num_FrameCompression.Value) - 1;
                     }
                     else
                     {
@@ -4996,6 +5018,9 @@ namespace UIMF_File
 
                         //this.xAxis_Mobility.Caption = "Frames - Time (sec)";
                         this.plot_Mobility.GraphPane.XAxis.Title.Text = "Frames - Time (sec)";
+
+                        minX = (double)this.minFrame_Chromatogram * increment_MobilityValue;
+                        maxX = (tic_Mobility.Length - 1) * increment_MobilityValue + this.minFrame_Chromatogram * increment_MobilityValue - 1;
                     }
                 }
                 else
@@ -5016,6 +5041,9 @@ namespace UIMF_File
                         //this.plot_Mobility.PlotY(tic_Mobility, 0, this.current_maxMobility - this.current_minMobility + 1, min_MobilityValue, increment_MobilityValue);
                         this.plot_Mobility.GraphPane.CurveList[0].Points = new BasicArrayPointList(Enumerable.Range(0, this.current_maxMobility - this.current_minMobility + 1).Select(x => x * increment_MobilityValue + min_MobilityValue).ToArray(),
                             tic_Mobility.Take(this.current_maxMobility - this.current_minMobility + 1).ToArray());
+
+                        minX = min_MobilityValue;
+                        maxX = (this.current_maxMobility - this.current_minMobility + 1) * increment_MobilityValue + min_MobilityValue - 1;
                     }
                     else
                     {
@@ -5026,6 +5054,9 @@ namespace UIMF_File
                         this.plot_Mobility.GraphPane.XAxis.Scale.Format = "F2";
                         //this.plot_Mobility.PlotY(tic_Mobility, min_MobilityValue, increment_MobilityValue);
                         this.plot_Mobility.GraphPane.CurveList[0].Points = new BasicArrayPointList(Enumerable.Range(0, tic_Mobility.Length).Select(x => x * increment_MobilityValue + min_MobilityValue).ToArray(), tic_Mobility);
+
+                        minX = min_MobilityValue;
+                        maxX = (tic_Mobility.Length - 1) * increment_MobilityValue + min_MobilityValue - 1;
                     }
 
                     // set min and max here, they will not adjust to zooming
@@ -5055,6 +5086,10 @@ namespace UIMF_File
                     this.num_minMobility.Increment = this.num_maxMobility.Increment = Convert.ToDecimal((this.current_maxMobility - this.current_minMobility) / 3);
                 }
 
+                this.plot_Mobility.GraphPane.XAxis.Scale.Min = minX;// - 0.5; // Adding/subtracting 0.5 to keep outer positions the same messes up other computations.
+                this.plot_Mobility.GraphPane.XAxis.Scale.Max = maxX;// + 0.5; // Adding/subtracting 0.5 to keep outer positions the same messes up other computations.
+                this.plot_Mobility.GraphPane.AxisChange();
+                this.plot_Mobility.Refresh();
                 this.plot_Mobility.Update();
                 this.flag_enterMobilityRange = false; // OK, clear this flag to make the controls usable
             }
@@ -5693,6 +5728,8 @@ namespace UIMF_File
             this.plot_Mobility.TabIndex = 24;
             this.plot_Mobility.MouseDown += new System.Windows.Forms.MouseEventHandler(this.plot_Mobility_MouseDown);
             this.plot_Mobility.RangeChanged += new Utilities.RangeEventHandler(this.OnPlotTICRangeChanged);
+            this.plot_Mobility.GraphPane.Title.IsVisible = false;
+            this.plot_Mobility.GraphPane.Legend.IsVisible = false;
             // TODO: ////
             // TODO: //// plot_TOF
             // TODO: ////
@@ -5737,6 +5774,7 @@ namespace UIMF_File
             this.plot_Mobility.GraphPane.XAxis.Title = new AxisLabel("Mobility - Scans", "Verdana", 8.25F, Color.Black, false, false, false);
             this.plot_Mobility.GraphPane.YAxis.Title = new AxisLabel("Drift Intensity", "Verdana", 8.25F, Color.Black, false, false, false);
             this.plot_Mobility.GraphPane.YAxis.Cross = 10000000; // TODO: Set automatically
+            this.plot_Mobility.GraphPane.YAxis.Scale.IsLabelsInside = true;
 
             this.tab_DataViewer.Controls.Add(this.plot_TOF);
             this.tab_DataViewer.Controls.Add(this.plot_Mobility);

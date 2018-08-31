@@ -826,7 +826,7 @@ namespace UIMF_File
             this.slide_Threshold.Location = new System.Drawing.Point(834, 128);
             this.slide_Threshold.Name = "slide_Threshold";
             this.slide_Threshold.Minimum = 1;
-            this.slide_Threshold.Minimum = 10000000;
+            this.slide_Threshold.Maximum = 10000000;
             this.slide_Threshold.Orientation = Orientation.Vertical;
             //this.slide_Threshold.ScaleType = NationalInstruments.UI.ScaleType.Logarithmic;
             this.slide_Threshold.Size = new System.Drawing.Size(64, 280);
@@ -1517,6 +1517,8 @@ namespace UIMF_File
             this.plot_Mobility.TabIndex = 24;
             this.plot_Mobility.MouseDown += new System.Windows.Forms.MouseEventHandler(this.plot_Mobility_MouseDown);
             this.plot_Mobility.RangeChanged += new Utilities.RangeEventHandler(this.OnPlotTICRangeChanged);
+            this.plot_Mobility.GraphPane.Title.IsVisible = false;
+            this.plot_Mobility.GraphPane.Legend.IsVisible = false;
             this.tab_DataViewer.Controls.Add(this.plot_Mobility);
             //TODO: ////
             //TODO: //// xyCursor2
@@ -1552,6 +1554,7 @@ namespace UIMF_File
             this.plot_Mobility.IsEnableWheelZoom = false;
             this.plot_Mobility.GraphPane.XAxis.Scale.Format = "F2";
             this.plot_Mobility.GraphPane.XAxis.Scale.MaxAuto = true;
+            this.plot_Mobility.GraphPane.YAxis.Scale.IsLabelsInside = true;
             //
             // pb_Shrink
             //
