@@ -123,6 +123,9 @@
     <Compile Include="IonMobilityMain.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="IonMobilityMain.Designer.cs">
+      <DependentUpon>IonMobilityMain.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
