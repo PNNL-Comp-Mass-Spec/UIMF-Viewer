@@ -7,15 +7,15 @@
 
 using System;
 using System.Drawing;
-using System.Drawing.Drawing2D; 
-using System.Drawing.Imaging; 
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel; 
+using System.ComponentModel;
 using System.Windows.Forms;
 using System.Threading;
-using System.IO; 
-using Microsoft.Win32;  
+using System.IO;
+using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using UIMFLibrary;
 using System.Diagnostics;
@@ -27,17 +27,17 @@ using System.Diagnostics;
 // ******************************************************************************************************
 // * Programmer:  William Danielson
 // *
-// * Description:  Base object for the Int and Short Viewer.  The changes were to drastic to also 
+// * Description:  Base object for the Int and Short Viewer.  The changes were to drastic to also
 // *               include the float viewer.
 // *
 // * Revisions:
-// *    090130 - Added the ability to do TIC Threshold Counting.  I expect to remove it or somehow prevent 
+// *    090130 - Added the ability to do TIC Threshold Counting.  I expect to remove it or somehow prevent
 // *             the code from defaulting to calculate it everytime.  Need for speed!
 // *
 // *
 namespace UIMF_File
 {
-    public struct PixelData 
+    public struct PixelData
     {
         public byte blue;
         public byte green;
@@ -591,9 +591,9 @@ namespace UIMF_File
             this.pb_Expand.Hide();
 
             this.plot_Mobility = new Utilities.PointAnnotationGraph();
-            // 
+            //
             // plot_Mobility
-            // 
+            //
             this.plot_Mobility.BackColor = System.Drawing.Color.Gainsboro;
             this.plot_Mobility.Border = NationalInstruments.UI.Border.RaisedLite;
             this.plot_Mobility.Cursors.AddRange(new NationalInstruments.UI.XYCursor[] {
@@ -615,9 +615,9 @@ namespace UIMF_File
 
 #if MAX_SCAN_VALUE
             this.cb_MaxScanValue = new System.Windows.Forms.CheckBox();
-            // 
+            //
             // cb_MaxScanValue
-            // 
+            //
             this.cb_MaxScanValue.AutoSize = true;
             this.cb_MaxScanValue.BackColor = System.Drawing.Color.Gainsboro;
             this.cb_MaxScanValue.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -650,7 +650,7 @@ namespace UIMF_File
             this.pnl_InstrumentSettings.Height = Screen.PrimaryScreen.Bounds.Height;
 
             this.pnl_postProcessing = new PostProcessing(MainKey);
-            this.pnl_postProcessing.Left = 0; 
+            this.pnl_postProcessing.Left = 0;
             this.pnl_postProcessing.Top = 0;
 
             this.tab_PostProcessing.Controls.Add(this.pnl_postProcessing);
@@ -787,15 +787,15 @@ namespace UIMF_File
                 this.rb_CompleteChromatogram.CheckedChanged += new System.EventHandler(this.rb_CompleteChromatogram_CheckedChanged);
                 this.rb_PartialChromatogram.CheckedChanged += new System.EventHandler(this.rb_PartialChromatogram_CheckedChanged);
                 this.num_FrameCompression.ValueChanged += new System.EventHandler(this.num_FrameCompression_ValueChanged);
-                
+
 #if MAX_SCAN_VALUE
                 this.cb_MaxScanValue.CheckedChanged += new System.EventHandler(this.cb_MaxScanValue_CheckedChanged);
 #endif
                 this.btn_TIC.Click += new System.EventHandler(this.btn_TIC_Click);
-               
+
                 this.num_FrameRange.ValueChanged += new System.EventHandler(this.num_FrameRange_ValueChanged);
                 this.slide_FrameSelect.ValueChanged += new System.EventHandler(this.slide_FrameSelect_ValueChanged);
-               
+
                 this.vsb_2DMap.Scroll += new System.Windows.Forms.ScrollEventHandler(this.vsb_2DMap_Scroll);
                 this.hsb_2DMap.Scroll += new System.Windows.Forms.ScrollEventHandler(this.hsb_2DMap_Scroll);
 
@@ -803,7 +803,7 @@ namespace UIMF_File
                 this.tb_CalT0.Leave += new System.EventHandler(this.CalibratorT0_Changed);
                 this.tb_CalA.Click += new System.EventHandler(this.CalibratorA_Changed);
                 this.tb_CalA.Leave += new System.EventHandler(this.CalibratorA_Changed);
-              
+
                 this.btn_Reset.Click += new System.EventHandler(this.btn_Reset_Clicked);
                 this.slide_Threshold.ValueChanged += new System.EventHandler(this.slide_Threshold_ValueChanged);
                 this.btn_revertCalDefaults.Click += new System.EventHandler(this.btn_revertCalDefaults_Click);
@@ -961,9 +961,9 @@ namespace UIMF_File
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            // moving the application on and off the screen causes the 
+            // moving the application on and off the screen causes the
             // pb_2DGraph to rewrite - while the other paint event locks the bits.
-            // ignore the system paint. 
+            // ignore the system paint.
         }
 
         #region Windows Form Designer generated code
@@ -1132,9 +1132,9 @@ namespace UIMF_File
             ((System.ComponentModel.ISupportInitialize)(this.pb_PlayUpOut)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_SliderBackground)).BeginInit();
             this.SuspendLayout();
-            // 
+            //
             // contextMenu_pb_2DMap
-            // 
+            //
             this.contextMenu_pb_2DMap.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.menuItemZoomFull,
             this.menuItemZoomPrevious,
@@ -1158,128 +1158,128 @@ namespace UIMF_File
             this.menuItem_CaptureExperimentFrame,
             this.menuItem_SaveIMF,
             this.menuItem_WriteUIMF});
-            // 
+            //
             // menuItemZoomFull
-            // 
+            //
             this.menuItemZoomFull.Index = 0;
             this.menuItemZoomFull.Text = "Zoom Full";
-            // 
+            //
             // menuItemZoomPrevious
-            // 
+            //
             this.menuItemZoomPrevious.Index = 1;
             this.menuItemZoomPrevious.Text = "Zoom Previous";
-            // 
+            //
             // menuItemZoomOut
-            // 
+            //
             this.menuItemZoomOut.Index = 2;
             this.menuItemZoomOut.Text = "Zoom Out";
-            // 
+            //
             // menuItem_MaxIntensities
-            // 
+            //
             this.menuItem_MaxIntensities.Index = 3;
             this.menuItem_MaxIntensities.Text = "Show Max Intensities ONLY";
-            // 
+            //
             // menuItem5
-            // 
+            //
             this.menuItem5.Index = 4;
             this.menuItem5.Text = "-";
-            // 
+            //
             // menuItemConvertToMZ
-            // 
+            //
             this.menuItemConvertToMZ.Index = 5;
             this.menuItemConvertToMZ.Text = "m/z";
-            // 
+            //
             // menuItemConvertToTOF
-            // 
+            //
             this.menuItemConvertToTOF.Index = 6;
             this.menuItemConvertToTOF.Text = "TOF";
-            // 
+            //
             // menuItem3
-            // 
+            //
             this.menuItem3.Index = 7;
             this.menuItem3.Text = "-";
-            // 
+            //
             // menuItem_Mobility
-            // 
+            //
             this.menuItem_Mobility.Index = 8;
             this.menuItem_Mobility.Text = "Mobility";
-            // 
+            //
             // menuItem_ScanTime
-            // 
+            //
             this.menuItem_ScanTime.Index = 9;
             this.menuItem_ScanTime.Text = "Scan Time";
-            // 
+            //
             // menuItem3a
-            // 
+            //
             this.menuItem3a.Index = 10;
             this.menuItem3a.Text = "-";
-            // 
+            //
             // menuItem_SelectionCorners
-            // 
+            //
             this.menuItem_SelectionCorners.Index = 11;
             this.menuItem_SelectionCorners.Text = "Mask Plot Selection";
-            // 
+            //
             // menuItem_ExportCompressed
-            // 
+            //
             this.menuItem_ExportCompressed.Index = 12;
             this.menuItem_ExportCompressed.Text = "Export Intensity Values (Compressed Pixel Resolution)";
-            // 
+            //
             // menuItem_ExportComplete
-            // 
+            //
             this.menuItem_ExportComplete.Index = 13;
             this.menuItem_ExportComplete.Text = "Export Intensity Values (Complete Bin Resolution)";
-            // 
+            //
             // menuItem_ExportAll
-            // 
+            //
             this.menuItem_ExportAll.Index = 14;
             this.menuItem_ExportAll.Text = "Export All Frames Intensity Values";
-            // 
+            //
             // menuItem_SuperFrame
-            // 
+            //
             this.menuItem_SuperFrame.Index = 15;
             this.menuItem_SuperFrame.Text = "Export Superframe IMF file";
-            // 
+            //
             // menuItem_SuperExperiment
-            // 
+            //
             this.menuItem_SuperExperiment.Index = 16;
             this.menuItem_SuperExperiment.Text = "Create Merged IMF Frame Experiment...";
-            // 
+            //
             // menuItem1
-            // 
+            //
             this.menuItem1.Index = 17;
             this.menuItem1.Text = "-";
-            // 
+            //
             // menuItem_CopyToClipboard
-            // 
+            //
             this.menuItem_CopyToClipboard.Index = 18;
             this.menuItem_CopyToClipboard.Text = "Copy Image to Clipboard";
-            // 
+            //
             // menuItem_CaptureExperimentFrame
-            // 
+            //
             this.menuItem_CaptureExperimentFrame.Index = 19;
             this.menuItem_CaptureExperimentFrame.Text = "Save Experiment GUI";
-            // 
+            //
             // menuItem_SaveIMF
-            // 
+            //
             this.menuItem_SaveIMF.Index = 20;
             this.menuItem_SaveIMF.Text = "Save Frame IMF";
-            // 
+            //
             // menuItem_WriteUIMF
-            // 
+            //
             this.menuItem_WriteUIMF.Index = 21;
             this.menuItem_WriteUIMF.Text = "Write Frame to UIMF file";
-            // 
+            //
             // label3
-            // 
+            //
             this.label3.Location = new System.Drawing.Point(176, 32);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(24, 20);
             this.label3.TabIndex = 35;
             this.label3.Text = "us";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
+            //
             // lbl_CursorScanTime
-            // 
+            //
             this.lbl_CursorScanTime.BackColor = System.Drawing.Color.WhiteSmoke;
             this.lbl_CursorScanTime.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lbl_CursorScanTime.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -1288,18 +1288,18 @@ namespace UIMF_File
             this.lbl_CursorScanTime.Size = new System.Drawing.Size(88, 20);
             this.lbl_CursorScanTime.TabIndex = 34;
             this.lbl_CursorScanTime.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
+            //
             // label5
-            // 
+            //
             this.label5.Location = new System.Drawing.Point(8, 32);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(80, 18);
             this.label5.TabIndex = 33;
             this.label5.Text = "Scan Time:";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
+            //
             // lbl_CursorMZ
-            // 
+            //
             this.lbl_CursorMZ.BackColor = System.Drawing.Color.WhiteSmoke;
             this.lbl_CursorMZ.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lbl_CursorMZ.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -1308,9 +1308,9 @@ namespace UIMF_File
             this.lbl_CursorMZ.Size = new System.Drawing.Size(88, 20);
             this.lbl_CursorMZ.TabIndex = 32;
             this.lbl_CursorMZ.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
+            //
             // lbl_CursorTOF
-            // 
+            //
             this.lbl_CursorTOF.BackColor = System.Drawing.Color.WhiteSmoke;
             this.lbl_CursorTOF.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lbl_CursorTOF.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -1319,45 +1319,45 @@ namespace UIMF_File
             this.lbl_CursorTOF.Size = new System.Drawing.Size(88, 20);
             this.lbl_CursorTOF.TabIndex = 31;
             this.lbl_CursorTOF.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
+            //
             // label4
-            // 
+            //
             this.label4.Location = new System.Drawing.Point(8, 88);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(80, 18);
             this.label4.TabIndex = 27;
             this.label4.Text = "M/Z:";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
+            //
             // lbl_TOForMZ
-            // 
+            //
             this.lbl_TOForMZ.Location = new System.Drawing.Point(8, 64);
             this.lbl_TOForMZ.Name = "lbl_TOForMZ";
             this.lbl_TOForMZ.Size = new System.Drawing.Size(80, 18);
             this.lbl_TOForMZ.TabIndex = 3;
             this.lbl_TOForMZ.Text = "TOF:";
             this.lbl_TOForMZ.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
+            //
             // lbl_IonMobilityValue
-            // 
+            //
             this.lbl_IonMobilityValue.Location = new System.Drawing.Point(8, 8);
             this.lbl_IonMobilityValue.Name = "lbl_IonMobilityValue";
             this.lbl_IonMobilityValue.Size = new System.Drawing.Size(80, 18);
             this.lbl_IonMobilityValue.TabIndex = 2;
             this.lbl_IonMobilityValue.Text = "Mobility:";
             this.lbl_IonMobilityValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
+            //
             // label2
-            // 
+            //
             this.label2.Location = new System.Drawing.Point(176, 64);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(24, 20);
             this.label2.TabIndex = 4;
             this.label2.Text = "us";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
+            //
             // lbl_TimeOffset
-            // 
+            //
             this.lbl_TimeOffset.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_TimeOffset.ForeColor = System.Drawing.Color.DarkSlateGray;
             this.lbl_TimeOffset.Location = new System.Drawing.Point(16, 112);
@@ -1366,9 +1366,9 @@ namespace UIMF_File
             this.lbl_TimeOffset.TabIndex = 25;
             this.lbl_TimeOffset.Text = "Time Offset";
             this.lbl_TimeOffset.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
+            //
             // lbl_CursorMobility
-            // 
+            //
             this.lbl_CursorMobility.BackColor = System.Drawing.Color.WhiteSmoke;
             this.lbl_CursorMobility.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.lbl_CursorMobility.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -1377,54 +1377,54 @@ namespace UIMF_File
             this.lbl_CursorMobility.Size = new System.Drawing.Size(88, 20);
             this.lbl_CursorMobility.TabIndex = 30;
             this.lbl_CursorMobility.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
+            //
             // contextMenu_HorizontalAxis
-            // 
+            //
             this.contextMenu_HorizontalAxis.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.menuItem_UseScans,
             this.menuItem_UseDriftTime,
             this.menuItem2});
-            // 
+            //
             // menuItem_UseScans
-            // 
+            //
             this.menuItem_UseScans.Index = 0;
             this.menuItem_UseScans.Text = "Scans";
-            // 
+            //
             // menuItem_UseDriftTime
-            // 
+            //
             this.menuItem_UseDriftTime.Index = 1;
             this.menuItem_UseDriftTime.Text = "Drift Time";
-            // 
+            //
             // menuItem2
-            // 
+            //
             this.menuItem2.Index = 2;
             this.menuItem2.Text = "-";
-            // 
+            //
             // xyCursor1
-            // 
+            //
             this.xyCursor1.HorizontalCrosshairMode = NationalInstruments.UI.CursorCrosshairMode.None;
             this.xyCursor1.Plot = this.waveformPlot3;
             this.xyCursor1.PointStyle = NationalInstruments.UI.PointStyle.Cross;
             this.xyCursor1.SnapMode = NationalInstruments.UI.CursorSnapMode.Fixed;
             this.xyCursor1.VerticalCrosshairMode = NationalInstruments.UI.CursorCrosshairMode.None;
-            // 
+            //
             // waveformPlot3
-            // 
+            //
             this.waveformPlot3.LineColor = System.Drawing.Color.Red;
             this.waveformPlot3.LineColorPrecedence = NationalInstruments.UI.ColorPrecedence.UserDefinedColor;
             this.waveformPlot3.XAxis = this.xAxis2;
             this.waveformPlot3.YAxis = this.yAxis2;
-            // 
+            //
             // xAxis2
-            // 
+            //
             this.xAxis2.Visible = false;
-            // 
+            //
             // yAxis2
-            // 
+            //
             this.yAxis2.Visible = false;
-            // 
+            //
             // contextMenu_driftTIC
-            // 
+            //
             this.contextMenu_driftTIC.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.menuItem_Frame_driftTIC,
             this.menuItem_Time_driftTIC,
@@ -1432,39 +1432,39 @@ namespace UIMF_File
             this.menuItem_Exportnew_driftTIC,
             this.menuItem9,
             this.menuItem8});
-            // 
+            //
             // menuItem_Frame_driftTIC
-            // 
+            //
             this.menuItem_Frame_driftTIC.Index = 0;
             this.menuItem_Frame_driftTIC.Text = "Chromatogram units - Frames";
-            // 
+            //
             // menuItem_Time_driftTIC
-            // 
+            //
             this.menuItem_Time_driftTIC.Index = 1;
             this.menuItem_Time_driftTIC.Text = "Chromatogram units - Time";
-            // 
+            //
             // menuItem6
-            // 
+            //
             this.menuItem6.Index = 2;
             this.menuItem6.Text = "-";
-            // 
+            //
             // menuItem_Exportnew_driftTIC
-            // 
+            //
             this.menuItem_Exportnew_driftTIC.Index = 3;
             this.menuItem_Exportnew_driftTIC.Text = "Export Data to File...";
-            // 
+            //
             // menuItem9
-            // 
+            //
             this.menuItem9.Index = 4;
             this.menuItem9.Text = "Copy Current TIC Image to Clipboard";
-            // 
+            //
             // menuItem8
-            // 
+            //
             this.menuItem8.Index = 5;
             this.menuItem8.Text = "Copy Full TIC Image to Clipboard";
-            // 
+            //
             // plot_TOF
-            // 
+            //
             this.plot_TOF.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.plot_TOF.BackColor = System.Drawing.Color.Gainsboro;
             this.plot_TOF.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
@@ -1484,45 +1484,45 @@ namespace UIMF_File
             this.xAxis_TOF});
             this.plot_TOF.YAxes.AddRange(new NationalInstruments.UI.YAxis[] {
             this.yAxis_TOF});
-            // 
+            //
             // waveform_TOFPlot
-            // 
+            //
             this.waveform_TOFPlot.LineColor = System.Drawing.Color.DarkBlue;
             this.waveform_TOFPlot.LineColorPrecedence = NationalInstruments.UI.ColorPrecedence.UserDefinedColor;
             this.waveform_TOFPlot.XAxis = this.xAxis_TOF;
             this.waveform_TOFPlot.YAxis = this.yAxis_TOF;
-            // 
+            //
             // xAxis_TOF
-            // 
+            //
             this.xAxis_TOF.Inverted = true;
             this.xAxis_TOF.MinorDivisions.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.xAxis_TOF.MinorDivisions.GridLineStyle = NationalInstruments.UI.LineStyle.Dot;
             this.xAxis_TOF.MinorDivisions.GridVisible = true;
             this.xAxis_TOF.MinorDivisions.TickVisible = true;
             this.xAxis_TOF.Position = NationalInstruments.UI.XAxisPosition.Top;
-            // 
+            //
             // yAxis_TOF
-            // 
+            //
             this.yAxis_TOF.Mode = NationalInstruments.UI.AxisMode.AutoScaleExact;
-            // 
+            //
             // contextMenu_TOF
-            // 
+            //
             this.contextMenu_TOF.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.menuItem_TOFExport,
             this.menuItem_TOFMaximum});
-            // 
+            //
             // menuItem_TOFExport
-            // 
+            //
             this.menuItem_TOFExport.Index = 0;
             this.menuItem_TOFExport.Text = "Export Data to File...";
-            // 
+            //
             // menuItem_TOFMaximum
-            // 
+            //
             this.menuItem_TOFMaximum.Index = 1;
             this.menuItem_TOFMaximum.Text = "Show Maximum Intensities ONLY";
-            // 
+            //
             // num_minMobility
-            // 
+            //
             this.num_minMobility.DecimalPlaces = 2;
             this.num_minMobility.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.num_minMobility.Location = new System.Drawing.Point(244, 732);
@@ -1535,9 +1535,9 @@ namespace UIMF_File
             this.num_minMobility.Size = new System.Drawing.Size(90, 21);
             this.num_minMobility.TabIndex = 25;
             this.num_minMobility.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
+            //
             // num_maxMobility
-            // 
+            //
             this.num_maxMobility.DecimalPlaces = 2;
             this.num_maxMobility.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.num_maxMobility.Location = new System.Drawing.Point(664, 732);
@@ -1550,9 +1550,9 @@ namespace UIMF_File
             this.num_maxMobility.Size = new System.Drawing.Size(91, 21);
             this.num_maxMobility.TabIndex = 26;
             this.num_maxMobility.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
+            //
             // num_maxBin
-            // 
+            //
             this.num_maxBin.DecimalPlaces = 4;
             this.num_maxBin.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.num_maxBin.Location = new System.Drawing.Point(16, 72);
@@ -1565,9 +1565,9 @@ namespace UIMF_File
             this.num_maxBin.Size = new System.Drawing.Size(163, 21);
             this.num_maxBin.TabIndex = 28;
             this.num_maxBin.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
+            //
             // num_minBin
-            // 
+            //
             this.num_minBin.DecimalPlaces = 4;
             this.num_minBin.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.num_minBin.Location = new System.Drawing.Point(18, 552);
@@ -1580,9 +1580,9 @@ namespace UIMF_File
             this.num_minBin.Size = new System.Drawing.Size(158, 21);
             this.num_minBin.TabIndex = 29;
             this.num_minBin.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
+            //
             // slide_Threshold
-            // 
+            //
             this.slide_Threshold.Caption = "Threshold";
             this.slide_Threshold.CaptionBackColor = System.Drawing.Color.Transparent;
             this.slide_Threshold.CaptionFont = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -1599,9 +1599,9 @@ namespace UIMF_File
             this.slide_Threshold.Size = new System.Drawing.Size(64, 280);
             this.slide_Threshold.TabIndex = 36;
             this.slide_Threshold.Value = 1D;
-            // 
+            //
             // btn_Reset
-            // 
+            //
             this.btn_Reset.BackColor = System.Drawing.Color.Gainsboro;
             this.btn_Reset.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_Reset.Location = new System.Drawing.Point(860, 416);
@@ -1610,9 +1610,9 @@ namespace UIMF_File
             this.btn_Reset.TabIndex = 37;
             this.btn_Reset.Text = "Reset";
             this.btn_Reset.UseVisualStyleBackColor = false;
-            // 
+            //
             // lbl_ExperimentDate
-            // 
+            //
             this.lbl_ExperimentDate.BackColor = System.Drawing.Color.Transparent;
             this.lbl_ExperimentDate.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_ExperimentDate.ForeColor = System.Drawing.Color.Blue;
@@ -1621,9 +1621,9 @@ namespace UIMF_File
             this.lbl_ExperimentDate.Size = new System.Drawing.Size(240, 16);
             this.lbl_ExperimentDate.TabIndex = 38;
             this.lbl_ExperimentDate.Text = "The date";
-            // 
+            //
             // tabpages_FrameInfo
-            // 
+            //
             this.tabpages_FrameInfo.Controls.Add(this.tabPage_Cursor);
             this.tabpages_FrameInfo.Controls.Add(this.tabPage_Calibration);
             this.tabpages_FrameInfo.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -1632,9 +1632,9 @@ namespace UIMF_File
             this.tabpages_FrameInfo.SelectedIndex = 0;
             this.tabpages_FrameInfo.Size = new System.Drawing.Size(208, 164);
             this.tabpages_FrameInfo.TabIndex = 42;
-            // 
+            //
             // tabPage_Cursor
-            // 
+            //
             this.tabPage_Cursor.BackColor = System.Drawing.Color.Gainsboro;
             this.tabPage_Cursor.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.tabPage_Cursor.Controls.Add(this.label3);
@@ -1653,9 +1653,9 @@ namespace UIMF_File
             this.tabPage_Cursor.Size = new System.Drawing.Size(200, 138);
             this.tabPage_Cursor.TabIndex = 0;
             this.tabPage_Cursor.Text = " Cursor  ";
-            // 
+            //
             // tabPage_Calibration
-            // 
+            //
             this.tabPage_Calibration.BackColor = System.Drawing.Color.Gainsboro;
             this.tabPage_Calibration.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.tabPage_Calibration.Controls.Add(this.tb_CalT0);
@@ -1673,27 +1673,27 @@ namespace UIMF_File
             this.tabPage_Calibration.TabIndex = 1;
             this.tabPage_Calibration.Text = " Calibration  ";
             this.tabPage_Calibration.Visible = false;
-            // 
+            //
             // tb_CalT0
-            // 
+            //
             this.tb_CalT0.BackColor = System.Drawing.Color.Black;
             this.tb_CalT0.ForeColor = System.Drawing.Color.White;
             this.tb_CalT0.Location = new System.Drawing.Point(42, 72);
             this.tb_CalT0.Name = "tb_CalT0";
             this.tb_CalT0.Size = new System.Drawing.Size(142, 21);
             this.tb_CalT0.TabIndex = 54;
-            // 
+            //
             // tb_CalA
-            // 
+            //
             this.tb_CalA.BackColor = System.Drawing.Color.Black;
             this.tb_CalA.ForeColor = System.Drawing.Color.White;
             this.tb_CalA.Location = new System.Drawing.Point(42, 52);
             this.tb_CalA.Name = "tb_CalA";
             this.tb_CalA.Size = new System.Drawing.Size(142, 21);
             this.tb_CalA.TabIndex = 51;
-            // 
+            //
             // btn_setCalDefaults
-            // 
+            //
             this.btn_setCalDefaults.BackColor = System.Drawing.Color.Gold;
             this.btn_setCalDefaults.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_setCalDefaults.ForeColor = System.Drawing.Color.Black;
@@ -1703,9 +1703,9 @@ namespace UIMF_File
             this.btn_setCalDefaults.TabIndex = 54;
             this.btn_setCalDefaults.Text = "Set as Default";
             this.btn_setCalDefaults.UseVisualStyleBackColor = false;
-            // 
+            //
             // label9
-            // 
+            //
             this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label9.Location = new System.Drawing.Point(20, 72);
             this.label9.Name = "label9";
@@ -1713,9 +1713,9 @@ namespace UIMF_File
             this.label9.TabIndex = 51;
             this.label9.Text = "t0";
             this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
+            //
             // label8
-            // 
+            //
             this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label8.Location = new System.Drawing.Point(20, 52);
             this.label8.Name = "label8";
@@ -1723,34 +1723,34 @@ namespace UIMF_File
             this.label8.TabIndex = 50;
             this.label8.Text = "a";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
+            //
             // label7
-            // 
+            //
             this.label7.Location = new System.Drawing.Point(16, 4);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(48, 24);
             this.label7.TabIndex = 49;
             this.label7.Text = "Date";
             this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
+            //
             // date_Calibration
-            // 
+            //
             this.date_Calibration.Format = System.Windows.Forms.DateTimePickerFormat.Short;
             this.date_Calibration.Location = new System.Drawing.Point(68, 4);
             this.date_Calibration.Name = "date_Calibration";
             this.date_Calibration.Size = new System.Drawing.Size(112, 21);
             this.date_Calibration.TabIndex = 47;
-            // 
+            //
             // lbl_CalibratorType
-            // 
+            //
             this.lbl_CalibratorType.Location = new System.Drawing.Point(8, 32);
             this.lbl_CalibratorType.Name = "lbl_CalibratorType";
             this.lbl_CalibratorType.Size = new System.Drawing.Size(180, 16);
             this.lbl_CalibratorType.TabIndex = 43;
             this.lbl_CalibratorType.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
+            //
             // btn_revertCalDefaults
-            // 
+            //
             this.btn_revertCalDefaults.BackColor = System.Drawing.Color.DodgerBlue;
             this.btn_revertCalDefaults.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_revertCalDefaults.ForeColor = System.Drawing.Color.White;
@@ -1760,23 +1760,23 @@ namespace UIMF_File
             this.btn_revertCalDefaults.TabIndex = 55;
             this.btn_revertCalDefaults.Text = "Revert to Defaults";
             this.btn_revertCalDefaults.UseVisualStyleBackColor = false;
-            // 
+            //
             // hsb_2DMap
-            // 
+            //
             this.hsb_2DMap.Location = new System.Drawing.Point(244, 112);
             this.hsb_2DMap.Name = "hsb_2DMap";
             this.hsb_2DMap.Size = new System.Drawing.Size(500, 12);
             this.hsb_2DMap.TabIndex = 48;
-            // 
+            //
             // vsb_2DMap
-            // 
+            //
             this.vsb_2DMap.Location = new System.Drawing.Point(742, 124);
             this.vsb_2DMap.Name = "vsb_2DMap";
             this.vsb_2DMap.Size = new System.Drawing.Size(12, 492);
             this.vsb_2DMap.TabIndex = 49;
-            // 
+            //
             // slide_FrameSelect
-            // 
+            //
             this.slide_FrameSelect.AutoDivisionSpacing = false;
             this.slide_FrameSelect.EditRangeNumericFormatMode = NationalInstruments.UI.NumericFormatMode.CreateGenericMode("F0");
             this.slide_FrameSelect.FillBackColor = System.Drawing.Color.DarkSlateGray;
@@ -1784,7 +1784,7 @@ namespace UIMF_File
             this.slide_FrameSelect.FillColor = System.Drawing.Color.GhostWhite;
             this.slide_FrameSelect.FillMode = NationalInstruments.UI.NumericFillMode.ToBaseValue;
             this.slide_FrameSelect.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.slide_FrameSelect.InteractionMode = ((NationalInstruments.UI.LinearNumericPointerInteractionModes)(((NationalInstruments.UI.LinearNumericPointerInteractionModes.DragPointer | NationalInstruments.UI.LinearNumericPointerInteractionModes.SnapPointer) 
+            this.slide_FrameSelect.InteractionMode = ((NationalInstruments.UI.LinearNumericPointerInteractionModes)(((NationalInstruments.UI.LinearNumericPointerInteractionModes.DragPointer | NationalInstruments.UI.LinearNumericPointerInteractionModes.SnapPointer)
             | NationalInstruments.UI.LinearNumericPointerInteractionModes.EditRange)));
             this.slide_FrameSelect.Location = new System.Drawing.Point(272, 36);
             this.slide_FrameSelect.MajorDivisions.Interval = 1D;
@@ -1798,9 +1798,9 @@ namespace UIMF_File
             this.slide_FrameSelect.TabIndex = 50;
             this.slide_FrameSelect.ToolTipFormat = new NationalInstruments.UI.FormatString(NationalInstruments.UI.FormatStringMode.Numeric, "F0");
             this.slide_FrameSelect.Value = 4D;
-            // 
+            //
             // lbl_FrameRange
-            // 
+            //
             this.lbl_FrameRange.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_FrameRange.Location = new System.Drawing.Point(380, 76);
             this.lbl_FrameRange.Name = "lbl_FrameRange";
@@ -1808,9 +1808,9 @@ namespace UIMF_File
             this.lbl_FrameRange.TabIndex = 52;
             this.lbl_FrameRange.Text = "Frame Range:";
             this.lbl_FrameRange.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
+            //
             // num_FrameRange
-            // 
+            //
             this.num_FrameRange.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.num_FrameRange.Location = new System.Drawing.Point(480, 72);
             this.num_FrameRange.Maximum = new decimal(new int[] {
@@ -1833,9 +1833,9 @@ namespace UIMF_File
             0,
             0,
             0});
-            // 
+            //
             // lbl_FramesShown
-            // 
+            //
             this.lbl_FramesShown.AutoSize = true;
             this.lbl_FramesShown.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.lbl_FramesShown.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -1844,9 +1844,9 @@ namespace UIMF_File
             this.lbl_FramesShown.Size = new System.Drawing.Size(86, 14);
             this.lbl_FramesShown.TabIndex = 53;
             this.lbl_FramesShown.Text = "showing frames";
-            // 
+            //
             // btn_Refresh
-            // 
+            //
             this.btn_Refresh.BackColor = System.Drawing.Color.WhiteSmoke;
             this.btn_Refresh.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_Refresh.Location = new System.Drawing.Point(8, 4);
@@ -1856,9 +1856,9 @@ namespace UIMF_File
             this.btn_Refresh.Text = "Refresh";
             this.btn_Refresh.UseVisualStyleBackColor = false;
             this.btn_Refresh.Click += new System.EventHandler(this.btn_Refresh_Click);
-            // 
+            //
             // num_TICThreshold
-            // 
+            //
             this.num_TICThreshold.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.num_TICThreshold.Increment = new decimal(new int[] {
             50,
@@ -1879,9 +1879,9 @@ namespace UIMF_File
             0,
             0,
             0});
-            // 
+            //
             // btn_TIC
-            // 
+            //
             this.btn_TIC.BackColor = System.Drawing.Color.Salmon;
             this.btn_TIC.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_TIC.Location = new System.Drawing.Point(224, 80);
@@ -1890,9 +1890,9 @@ namespace UIMF_File
             this.btn_TIC.TabIndex = 66;
             this.btn_TIC.Text = "OK";
             this.btn_TIC.UseVisualStyleBackColor = false;
-            // 
+            //
             // num_FrameCompression
-            // 
+            //
             this.num_FrameCompression.Location = new System.Drawing.Point(148, 40);
             this.num_FrameCompression.Maximum = new decimal(new int[] {
             200,
@@ -1908,9 +1908,9 @@ namespace UIMF_File
             0,
             0,
             0});
-            // 
+            //
             // lbl_FrameCompression
-            // 
+            //
             this.lbl_FrameCompression.ForeColor = System.Drawing.Color.Black;
             this.lbl_FrameCompression.Location = new System.Drawing.Point(12, 40);
             this.lbl_FrameCompression.Name = "lbl_FrameCompression";
@@ -1918,9 +1918,9 @@ namespace UIMF_File
             this.lbl_FrameCompression.TabIndex = 74;
             this.lbl_FrameCompression.Text = "Frame Compression:";
             this.lbl_FrameCompression.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
+            //
             // rb_CompleteChromatogram
-            // 
+            //
             this.rb_CompleteChromatogram.AutoSize = true;
             this.rb_CompleteChromatogram.ForeColor = System.Drawing.Color.Yellow;
             this.rb_CompleteChromatogram.Location = new System.Drawing.Point(8, 16);
@@ -1929,9 +1929,9 @@ namespace UIMF_File
             this.rb_CompleteChromatogram.TabIndex = 78;
             this.rb_CompleteChromatogram.Text = "Complete Peak Chromatogram";
             this.rb_CompleteChromatogram.UseVisualStyleBackColor = true;
-            // 
+            //
             // rb_PartialChromatogram
-            // 
+            //
             this.rb_PartialChromatogram.AutoSize = true;
             this.rb_PartialChromatogram.ForeColor = System.Drawing.Color.Yellow;
             this.rb_PartialChromatogram.Location = new System.Drawing.Point(8, 0);
@@ -1940,9 +1940,9 @@ namespace UIMF_File
             this.rb_PartialChromatogram.TabIndex = 77;
             this.rb_PartialChromatogram.Text = "Partial Peak Chromatogram";
             this.rb_PartialChromatogram.UseVisualStyleBackColor = true;
-            // 
+            //
             // pnl_Chromatogram
-            // 
+            //
             this.pnl_Chromatogram.BackColor = System.Drawing.Color.DarkGray;
             this.pnl_Chromatogram.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnl_Chromatogram.Controls.Add(this.rb_CompleteChromatogram);
@@ -1954,9 +1954,9 @@ namespace UIMF_File
             this.pnl_Chromatogram.Name = "pnl_Chromatogram";
             this.pnl_Chromatogram.Size = new System.Drawing.Size(208, 68);
             this.pnl_Chromatogram.TabIndex = 79;
-            // 
+            //
             // tabpages_Main
-            // 
+            //
             this.tabpages_Main.Alignment = System.Windows.Forms.TabAlignment.Left;
             this.tabpages_Main.Controls.Add(this.tab_DataViewer);
             this.tabpages_Main.Controls.Add(this.tab_InstrumentSettings);
@@ -1969,9 +1969,9 @@ namespace UIMF_File
             this.tabpages_Main.SelectedIndex = 0;
             this.tabpages_Main.Size = new System.Drawing.Size(1016, 880);
             this.tabpages_Main.TabIndex = 81;
-            // 
+            //
             // tab_DataViewer
-            // 
+            //
             this.tab_DataViewer.BackColor = System.Drawing.Color.Silver;
             this.tab_DataViewer.Controls.Add(this.pb_Shrink);
             this.tab_DataViewer.Controls.Add(this.pb_Expand);
@@ -2006,9 +2006,9 @@ namespace UIMF_File
             this.tab_DataViewer.Size = new System.Drawing.Size(980, 872);
             this.tab_DataViewer.TabIndex = 0;
             this.tab_DataViewer.Text = "   Data Viewer    ";
-            // 
+            //
             // pnl_FrameControl
-            // 
+            //
             this.pnl_FrameControl.BackColor = System.Drawing.Color.LightGray;
             this.pnl_FrameControl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnl_FrameControl.Controls.Add(this.pb_PlayLeftIn);
@@ -2029,9 +2029,9 @@ namespace UIMF_File
             this.pnl_FrameControl.Name = "pnl_FrameControl";
             this.pnl_FrameControl.Size = new System.Drawing.Size(700, 108);
             this.pnl_FrameControl.TabIndex = 97;
-            // 
+            //
             // cb_ExperimentControlled
-            // 
+            //
             this.cb_ExperimentControlled.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cb_ExperimentControlled.FormattingEnabled = true;
             this.cb_ExperimentControlled.Location = new System.Drawing.Point(8, 8);
@@ -2040,9 +2040,9 @@ namespace UIMF_File
             this.cb_ExperimentControlled.TabIndex = 96;
             this.cb_ExperimentControlled.Text = "Sarc_P09_C04_0796_089_22Jul11_Cheetah_11-05-32_inversed.UIMF";
             this.cb_ExperimentControlled.SelectedIndexChanged += new System.EventHandler(this.cb_ExperimentControlled_SelectedIndexChanged);
-            // 
+            //
             // cb_FrameType
-            // 
+            //
             this.cb_FrameType.BackColor = System.Drawing.Color.Gainsboro;
             this.cb_FrameType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cb_FrameType.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -2053,18 +2053,18 @@ namespace UIMF_File
             this.cb_FrameType.Size = new System.Drawing.Size(128, 27);
             this.cb_FrameType.TabIndex = 89;
             this.cb_FrameType.TabStop = false;
-            // 
+            //
             // num_FrameIndex
-            // 
+            //
             this.num_FrameIndex.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.num_FrameIndex.Location = new System.Drawing.Point(196, 52);
             this.num_FrameIndex.Name = "num_FrameIndex";
             this.num_FrameIndex.Size = new System.Drawing.Size(68, 26);
             this.num_FrameIndex.TabIndex = 82;
             this.num_FrameIndex.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            // 
+            //
             // lbl_Chromatogram
-            // 
+            //
             this.lbl_Chromatogram.AutoSize = true;
             this.lbl_Chromatogram.Font = new System.Drawing.Font("Verdana", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_Chromatogram.Location = new System.Drawing.Point(108, 52);
@@ -2073,9 +2073,9 @@ namespace UIMF_File
             this.lbl_Chromatogram.TabIndex = 33;
             this.lbl_Chromatogram.Text = "Frame:";
             this.lbl_Chromatogram.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
+            //
             // cb_Exclusive
-            // 
+            //
             this.cb_Exclusive.AutoSize = true;
             this.cb_Exclusive.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.cb_Exclusive.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
@@ -2087,9 +2087,9 @@ namespace UIMF_File
             this.cb_Exclusive.TabIndex = 95;
             this.cb_Exclusive.Text = "Exclusive Viewing";
             this.cb_Exclusive.UseVisualStyleBackColor = true;
-            // 
+            //
             // lb_DragDropFiles
-            // 
+            //
             this.lb_DragDropFiles.BackColor = System.Drawing.Color.WhiteSmoke;
             this.lb_DragDropFiles.FormattingEnabled = true;
             this.lb_DragDropFiles.Location = new System.Drawing.Point(278, 772);
@@ -2097,9 +2097,9 @@ namespace UIMF_File
             this.lb_DragDropFiles.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
             this.lb_DragDropFiles.Size = new System.Drawing.Size(420, 43);
             this.lb_DragDropFiles.TabIndex = 90;
-            // 
+            //
             // gb_MZRange
-            // 
+            //
             this.gb_MZRange.BackColor = System.Drawing.Color.Transparent;
             this.gb_MZRange.Controls.Add(this.lbl_PPM);
             this.gb_MZRange.Controls.Add(this.lbl_MZ);
@@ -2111,9 +2111,9 @@ namespace UIMF_File
             this.gb_MZRange.Size = new System.Drawing.Size(220, 76);
             this.gb_MZRange.TabIndex = 88;
             this.gb_MZRange.TabStop = false;
-            // 
+            //
             // lbl_PPM
-            // 
+            //
             this.lbl_PPM.BackColor = System.Drawing.Color.Transparent;
             this.lbl_PPM.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_PPM.Location = new System.Drawing.Point(8, 48);
@@ -2122,9 +2122,9 @@ namespace UIMF_File
             this.lbl_PPM.TabIndex = 81;
             this.lbl_PPM.Text = "Range:";
             this.lbl_PPM.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
+            //
             // lbl_MZ
-            // 
+            //
             this.lbl_MZ.BackColor = System.Drawing.Color.Transparent;
             this.lbl_MZ.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_MZ.Location = new System.Drawing.Point(8, 24);
@@ -2133,9 +2133,9 @@ namespace UIMF_File
             this.lbl_MZ.TabIndex = 80;
             this.lbl_MZ.Text = "M/Z:";
             this.lbl_MZ.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
+            //
             // num_PPM
-            // 
+            //
             this.num_PPM.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.num_PPM.Increment = new decimal(new int[] {
             10,
@@ -2162,9 +2162,9 @@ namespace UIMF_File
             0,
             0,
             0});
-            // 
+            //
             // label1
-            // 
+            //
             this.label1.BackColor = System.Drawing.Color.Transparent;
             this.label1.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.Location = new System.Drawing.Point(176, 48);
@@ -2173,9 +2173,9 @@ namespace UIMF_File
             this.label1.TabIndex = 82;
             this.label1.Text = "PPM";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
+            //
             // num_MZ
-            // 
+            //
             this.num_MZ.DecimalPlaces = 4;
             this.num_MZ.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.num_MZ.Increment = new decimal(new int[] {
@@ -2198,9 +2198,9 @@ namespace UIMF_File
             0,
             0,
             0});
-            // 
+            //
             // cb_EnableMZRange
-            // 
+            //
             this.cb_EnableMZRange.AutoSize = true;
             this.cb_EnableMZRange.BackColor = System.Drawing.Color.Silver;
             this.cb_EnableMZRange.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -2210,18 +2210,18 @@ namespace UIMF_File
             this.cb_EnableMZRange.TabIndex = 87;
             this.cb_EnableMZRange.Text = "Enable MZ Range";
             this.cb_EnableMZRange.UseVisualStyleBackColor = false;
-            // 
+            //
             // pnl_2DMap
-            // 
+            //
             this.pnl_2DMap.BackColor = System.Drawing.Color.Black;
             this.pnl_2DMap.Cursor = System.Windows.Forms.Cursors.Cross;
             this.pnl_2DMap.Location = new System.Drawing.Point(242, 124);
             this.pnl_2DMap.Name = "pnl_2DMap";
             this.pnl_2DMap.Size = new System.Drawing.Size(500, 484);
             this.pnl_2DMap.TabIndex = 2;
-            // 
+            //
             // tab_InstrumentSettings
-            // 
+            //
             this.tab_InstrumentSettings.Font = new System.Drawing.Font("Verdana", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tab_InstrumentSettings.Location = new System.Drawing.Point(32, 4);
             this.tab_InstrumentSettings.Name = "tab_InstrumentSettings";
@@ -2230,9 +2230,9 @@ namespace UIMF_File
             this.tab_InstrumentSettings.TabIndex = 1;
             this.tab_InstrumentSettings.Text = "   Instrument Settings    ";
             this.tab_InstrumentSettings.UseVisualStyleBackColor = true;
-            // 
+            //
             // tab_PostProcessing
-            // 
+            //
             this.tab_PostProcessing.Font = new System.Drawing.Font("Verdana", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tab_PostProcessing.Location = new System.Drawing.Point(32, 4);
             this.tab_PostProcessing.Name = "tab_PostProcessing";
@@ -2241,30 +2241,30 @@ namespace UIMF_File
             this.tab_PostProcessing.TabIndex = 2;
             this.tab_PostProcessing.Text = "   Post Processing    ";
             this.tab_PostProcessing.UseVisualStyleBackColor = true;
-            // 
+            //
             // xyCursor2
-            // 
+            //
             this.xyCursor2.HorizontalCrosshairMode = NationalInstruments.UI.CursorCrosshairMode.None;
             this.xyCursor2.Plot = this.waveform_MobilityPlot;
             this.xyCursor2.PointStyle = NationalInstruments.UI.PointStyle.Plus;
             this.xyCursor2.VerticalCrosshairMode = NationalInstruments.UI.CursorCrosshairMode.None;
-            // 
+            //
             // waveform_MobilityPlot
-            // 
+            //
             this.waveform_MobilityPlot.LineColor = System.Drawing.Color.Crimson;
             this.waveform_MobilityPlot.LineColorPrecedence = NationalInstruments.UI.ColorPrecedence.UserDefinedColor;
             this.waveform_MobilityPlot.PointColor = System.Drawing.Color.Salmon;
             this.waveform_MobilityPlot.XAxis = this.xAxis_Mobility;
             this.waveform_MobilityPlot.YAxis = this.yAxis_Mobility;
-            // 
+            //
             // xAxis_Mobility
-            // 
+            //
             this.xAxis_Mobility.InteractionMode = NationalInstruments.UI.ScaleInteractionMode.None;
             this.xAxis_Mobility.MajorDivisions.LabelFormat = new NationalInstruments.UI.FormatString(NationalInstruments.UI.FormatStringMode.Numeric, "F2");
             this.xAxis_Mobility.Mode = NationalInstruments.UI.AxisMode.AutoScaleExact;
-            // 
+            //
             // pb_Shrink
-            // 
+            //
             this.pb_Shrink.BackgroundImage = global::UIMF_DataViewer.Properties.Resources.shrink_button;
             this.pb_Shrink.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.pb_Shrink.Location = new System.Drawing.Point(834, 456);
@@ -2272,9 +2272,9 @@ namespace UIMF_File
             this.pb_Shrink.Size = new System.Drawing.Size(14, 14);
             this.pb_Shrink.TabIndex = 99;
             this.pb_Shrink.TabStop = false;
-            // 
+            //
             // pb_Expand
-            // 
+            //
             this.pb_Expand.BackgroundImage = global::UIMF_DataViewer.Properties.Resources.expand_button;
             this.pb_Expand.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.pb_Expand.Location = new System.Drawing.Point(812, 456);
@@ -2282,9 +2282,9 @@ namespace UIMF_File
             this.pb_Expand.Size = new System.Drawing.Size(14, 14);
             this.pb_Expand.TabIndex = 98;
             this.pb_Expand.TabStop = false;
-            // 
+            //
             // pb_PlayLeftIn
-            // 
+            //
             this.pb_PlayLeftIn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pb_PlayLeftIn.BackgroundImage")));
             this.pb_PlayLeftIn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pb_PlayLeftIn.Location = new System.Drawing.Point(572, 40);
@@ -2292,9 +2292,9 @@ namespace UIMF_File
             this.pb_PlayLeftIn.Size = new System.Drawing.Size(24, 16);
             this.pb_PlayLeftIn.TabIndex = 46;
             this.pb_PlayLeftIn.TabStop = false;
-            // 
+            //
             // pb_PlayRightIn
-            // 
+            //
             this.pb_PlayRightIn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pb_PlayRightIn.BackgroundImage")));
             this.pb_PlayRightIn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pb_PlayRightIn.Location = new System.Drawing.Point(652, 40);
@@ -2302,9 +2302,9 @@ namespace UIMF_File
             this.pb_PlayRightIn.Size = new System.Drawing.Size(24, 16);
             this.pb_PlayRightIn.TabIndex = 45;
             this.pb_PlayRightIn.TabStop = false;
-            // 
+            //
             // pb_PlayLeftOut
-            // 
+            //
             this.pb_PlayLeftOut.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pb_PlayLeftOut.BackgroundImage")));
             this.pb_PlayLeftOut.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pb_PlayLeftOut.Location = new System.Drawing.Point(600, 40);
@@ -2312,9 +2312,9 @@ namespace UIMF_File
             this.pb_PlayLeftOut.Size = new System.Drawing.Size(24, 16);
             this.pb_PlayLeftOut.TabIndex = 47;
             this.pb_PlayLeftOut.TabStop = false;
-            // 
+            //
             // pb_PlayRightOut
-            // 
+            //
             this.pb_PlayRightOut.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pb_PlayRightOut.BackgroundImage")));
             this.pb_PlayRightOut.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pb_PlayRightOut.Location = new System.Drawing.Point(624, 40);
@@ -2322,9 +2322,9 @@ namespace UIMF_File
             this.pb_PlayRightOut.Size = new System.Drawing.Size(24, 16);
             this.pb_PlayRightOut.TabIndex = 44;
             this.pb_PlayRightOut.TabStop = false;
-            // 
+            //
             // pb_PlayDownIn
-            // 
+            //
             this.pb_PlayDownIn.BackColor = System.Drawing.Color.Transparent;
             this.pb_PlayDownIn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pb_PlayDownIn.BackgroundImage")));
             this.pb_PlayDownIn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
@@ -2333,9 +2333,9 @@ namespace UIMF_File
             this.pb_PlayDownIn.Size = new System.Drawing.Size(24, 24);
             this.pb_PlayDownIn.TabIndex = 94;
             this.pb_PlayDownIn.TabStop = false;
-            // 
+            //
             // pb_PlayDownOut
-            // 
+            //
             this.pb_PlayDownOut.BackColor = System.Drawing.Color.Transparent;
             this.pb_PlayDownOut.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pb_PlayDownOut.BackgroundImage")));
             this.pb_PlayDownOut.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
@@ -2344,9 +2344,9 @@ namespace UIMF_File
             this.pb_PlayDownOut.Size = new System.Drawing.Size(24, 24);
             this.pb_PlayDownOut.TabIndex = 93;
             this.pb_PlayDownOut.TabStop = false;
-            // 
+            //
             // pb_PlayUpIn
-            // 
+            //
             this.pb_PlayUpIn.BackColor = System.Drawing.Color.Transparent;
             this.pb_PlayUpIn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pb_PlayUpIn.BackgroundImage")));
             this.pb_PlayUpIn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
@@ -2355,9 +2355,9 @@ namespace UIMF_File
             this.pb_PlayUpIn.Size = new System.Drawing.Size(22, 24);
             this.pb_PlayUpIn.TabIndex = 92;
             this.pb_PlayUpIn.TabStop = false;
-            // 
+            //
             // pb_PlayUpOut
-            // 
+            //
             this.pb_PlayUpOut.BackColor = System.Drawing.Color.Transparent;
             this.pb_PlayUpOut.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pb_PlayUpOut.BackgroundImage")));
             this.pb_PlayUpOut.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
@@ -2366,9 +2366,9 @@ namespace UIMF_File
             this.pb_PlayUpOut.Size = new System.Drawing.Size(22, 24);
             this.pb_PlayUpOut.TabIndex = 91;
             this.pb_PlayUpOut.TabStop = false;
-            // 
+            //
             // pb_SliderBackground
-            // 
+            //
             this.pb_SliderBackground.Image = ((System.Drawing.Image)(resources.GetObject("pb_SliderBackground.Image")));
             this.pb_SliderBackground.Location = new System.Drawing.Point(786, 68);
             this.pb_SliderBackground.Name = "pb_SliderBackground";
@@ -2376,9 +2376,9 @@ namespace UIMF_File
             this.pb_SliderBackground.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pb_SliderBackground.TabIndex = 22;
             this.pb_SliderBackground.TabStop = false;
-            // 
+            //
             // DataViewer
-            // 
+            //
             this.BackColor = System.Drawing.Color.Silver;
             this.ClientSize = new System.Drawing.Size(1040, 887);
             this.Controls.Add(this.tabpages_Main);
@@ -2504,7 +2504,7 @@ namespace UIMF_File
 
                 return;
             }
-            
+
             this.pnl_postProcessing.Width = this.tab_PostProcessing.Width + 50;
             this.pnl_postProcessing.Height = this.tab_PostProcessing.Height + 50;
 
@@ -2569,7 +2569,7 @@ namespace UIMF_File
             this.pnl_FrameControl.Height = this.num_FrameRange.Top + this.num_FrameRange.Height + 6;
 
             // --------------------------------------------------------------------------------------------------
-            // Right 
+            // Right
             this.slider_PlotBackground.Height = (this.max_plot_height / 3) + 5;
             this.slider_PlotBackground.Top = this.pnl_FrameControl.Top + this.pnl_FrameControl.Height + 10;
 
@@ -2586,7 +2586,7 @@ namespace UIMF_File
             this.slider_ColorMap.Left = this.slide_Threshold.Left - this.slider_ColorMap.Width - 10;
             this.btn_Reset.Left = this.slider_ColorMap.Left + 12;
 
-            // Middle Bottom 
+            // Middle Bottom
             this.num_minMobility.Top = this.plot_Mobility.Top + plot_Mobility_HEIGHT + 5;
             this.num_maxMobility.Top = this.num_minMobility.Top;
 
@@ -3085,7 +3085,7 @@ namespace UIMF_File
 
 #if false // erin did not like my attempt at extending out the plot.  Aug 2, 2010
                     this.current_maxMobility = this.current_minMobility + (this.max_plot_width / -this.current_valuesPerPixelX) - 1;
-                   
+
                     if (this.current_maxMobility > this.maximum_Mobility)
                     {
                         this.current_maxMobility = this.maximum_Mobility;
@@ -3337,7 +3337,7 @@ namespace UIMF_File
             if (this.current_maxBin < this.current_minBin)
             {
                 MessageBox.Show("(this.current_maxBin < this.current_minBin): ("+this.current_maxBin.ToString()+" < "+this.current_minBin.ToString()+")"+maximum_Bins.ToString());
-      
+
                 temp = this.current_minBin;
                 this.current_minBin = this.current_maxBin;
                 this.current_maxBin = temp;
@@ -3469,7 +3469,7 @@ namespace UIMF_File
 
 #if false // erin did not like my attempt at extending out the plot.  Aug 2, 2010
                     this.current_maxMobility = this.current_minMobility + (this.max_plot_width / -this.current_valuesPerPixelX) - 1;
-                   
+
                     if (this.current_maxMobility > this.maximum_Mobility)
                     {
                         this.current_maxMobility = this.maximum_Mobility;
@@ -3494,7 +3494,7 @@ namespace UIMF_File
                 new_2dmap_width = (total_mobility * -this.current_valuesPerPixelX) + 1;
             if (this.pnl_2DMap.Width != new_2dmap_width)
             {
-                this.flag_ResizeThis = true; 
+                this.flag_ResizeThis = true;
                 this.pnl_2DMap.Width = new_2dmap_width;
             }
 
@@ -3600,8 +3600,8 @@ namespace UIMF_File
                                     else
                                         pixel_y = bin_value * -this.current_valuesPerPixelY;
                                     sdfasdfsadf
-                                    
-                                    
+
+
                                     if (this.inside_Polygon_Pixel(current_scan, this.ptr_UIMFDatabase.get_pixelMZ((int)max_Py / -this.current_valuesPerPixelY)))
                                     {
                                         this.data_driftTIC[current_scan] += this.data_2D[current_scan][bin_value];
@@ -3628,7 +3628,7 @@ namespace UIMF_File
                     this.update_CalibrationCoefficients();
                 }
             }
-                    
+
             // point to the selected experiment whether it is enabled or not
             this.ptr_UIMFDatabase = (UIMFDataWrapper)this.array_Experiments[this.index_CurrentExperiment];
 
@@ -3760,7 +3760,7 @@ namespace UIMF_File
                         test += y_pos.ToString() + " " + bins[y_pos].ToString() + ", ";
                 }
 
-            // 
+            //
             this.lbl_FramesShown.Show();
             this.lbl_FramesShown.Text = "(TIC Count > " + threshold.ToString() + ") = " + TIC_Count.ToString();
 #endif
@@ -4042,7 +4042,7 @@ namespace UIMF_File
             this.plot_Mobility.Top = this.plot_TOF.Top + this.plot_TOF.Height;
             this.num_minMobility.Top = this.num_maxMobility.Top = this.plot_Mobility.Top + this.plot_Mobility.Height + 4;
             this.vsb_2DMap.Height = this.pnl_2DMap.Height;
-         
+
             this.pnl_2DMap.Top = this.num_maxBin.Top + this.num_maxBin.Height + 4 + this.plot_TOF.PlotAreaBounds.Top;
             this.hsb_2DMap.Top = this.pnl_2DMap.Top - this.hsb_2DMap.Height;
             this.vsb_2DMap.Top = this.pnl_2DMap.Top;
@@ -4121,7 +4121,7 @@ namespace UIMF_File
             if (this.menuItem_SelectionCorners.Checked && (e.Button == MouseButtons.Middle))
                 MessageBox.Show("Mouse at " + e.X.ToString() + ", " + e.Y.ToString() + (this.inside_Polygon_Pixel(e.X, this.pnl_2DMap.Height - e.Y) ? " is inside" : " is outside"));
 
-            // Starting a zoom process			
+            // Starting a zoom process
             if (e.Button == MouseButtons.Left)
             {
                 if ((e.X > this.pnl_2DMap.Width - 17) && (e.Y < 17))
@@ -4165,7 +4165,7 @@ namespace UIMF_File
             // this section draws the intensities on the different pixels if they are big
             // enough.  Lot of waste; but it only occurs when the mouse is pressed down.
             //
-            // wfd:  this will do for now.  I am sure there is a much more efficient method of 
+            // wfd:  this will do for now.  I am sure there is a much more efficient method of
             // handling this.  For now, the race is on.
             if ((current_valuesPerPixelY < -10) && (current_valuesPerPixelX < -20))
             {
@@ -4410,12 +4410,12 @@ namespace UIMF_File
                     this._mouseDragging = false;
                     return;
                 }
-          
+
                 if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
                 {
                     this.minFrame_Chromatogram = 0;
                     this.maxFrame_Chromatogram = this.ptr_UIMFDatabase.set_FrameType(this.current_frame_type) - 1;
-                    
+
                     // select the range of frames
                     if (this.chromatogram_valuesPerPixelX < 0)
                     {
@@ -4430,7 +4430,7 @@ namespace UIMF_File
                         else
                         {
                           //  MessageBox.Show("here");
-                            
+
                             minframe_Data_number = this.minFrame_Chromatogram + (this._mouseDownPoint.X * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
                             maxframe_Data_number = this.minFrame_Chromatogram + (this._mouseMovePoint.X * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
                             //minframe_Data_number = this.minFrame_Chromatogram + (this._mouseDownPoint.X / -this.chromatogram_valuesPerPixelX) + 1;
@@ -4464,7 +4464,7 @@ namespace UIMF_File
 
                   //  MessageBox.Show("wfd: "+maxframe_Data_number.ToString()+" - "+minframe_Data_number.ToString()+" + 1");
                     this.num_FrameRange.Value = maxframe_Data_number - minframe_Data_number + 1;
-                                    
+
                     this.plot_Mobility.StopAnnotating(false);
 
                     // select the mobility highlight
@@ -4787,7 +4787,7 @@ namespace UIMF_File
         private void menuItem_SetScanTime_DrawItem(object sender, System.Windows.Forms.DrawItemEventArgs e)
         {
             SolidBrush b = new SolidBrush(e.ForeColor);
-            e.DrawBackground(); //Draw the menu item background 
+            e.DrawBackground(); //Draw the menu item background
             e.Graphics.DrawString(((MenuItem)sender).Text, SystemInformation.MenuFont, b, e.Bounds.Left + 16, e.Bounds.Top + 2, StringFormat.GenericTypographic);
             b.Dispose();
         }
@@ -4795,7 +4795,7 @@ namespace UIMF_File
         private void menuItem_SetScanTime_MeasureItem(object sender, System.Windows.Forms.MeasureItemEventArgs e)
         {
             System.Drawing.SizeF s = e.Graphics.MeasureString(((MenuItem)sender).Text, SystemInformation.MenuFont, 1024, StringFormat.GenericTypographic);
-            s.Width += SystemInformation.MenuCheckSize.Width; // for the checkmark if any 
+            s.Width += SystemInformation.MenuCheckSize.Width; // for the checkmark if any
             e.ItemHeight = (int)s.Height + 5;
             e.ItemWidth = (int)s.Width;
         }
@@ -4815,7 +4815,7 @@ namespace UIMF_File
         {
             int save_width = this.tabpages_Main.Width;
             int save_height = this.tabpages_Main.Height;
-            
+
             this.Update();
             using (Graphics g1 = CreateGraphics())
             {
@@ -4891,7 +4891,7 @@ namespace UIMF_File
             save_dialog.FilterIndex = 1;
 
             //this.plot_Mobility.PlotY(tic_Mobility, (double)this.minFrame_Chromatogram * increment_MobilityValue, increment_MobilityValue);
-            
+
             if (save_dialog.ShowDialog(this) == DialogResult.OK)
             {
                 System.IO.StreamWriter w = new System.IO.StreamWriter(save_dialog.FileName);
@@ -5135,7 +5135,7 @@ namespace UIMF_File
 
             double increment = mean_TOFScanTime / 1000000.0;
             int bin_value;
- 
+
             //increment = (((double)(this.current_maxMobility - this.current_minMobility)) * this.mean_TOFScanTime) / mob_width / 1000000.0;
             //drift_axis[0] = this.current_minMobility * this.mean_TOFScanTime / mob_width / 1000000.0;
             drift_axis[0] = this.current_minMobility * this.mean_TOFScanTime / 1000000.0;
@@ -5879,7 +5879,7 @@ namespace UIMF_File
 
         /***************************************************************
          * The sections below only display and do not set the following values
-         * 
+         *
          *      this.current_minBin, this.current_maxBin
          *      this.current_minMobility, this.current_maxMobility
          */
@@ -5925,7 +5925,7 @@ namespace UIMF_File
 
                     current_valuesPerPixelX = (current_maxMobility - current_minMobility + 1 < this.pnl_2DMap.Width) ?
                         -(this.pnl_2DMap.Width / (current_maxMobility - current_minMobility + 1)) : 1;
-					
+
                     // For initial viz., don't want to expand widths of datasets with few TOFs
                     // if(current_maxMobility == this.imfReader.Experiment_Properties.TOFSpectraPerFrame-1 && current_minMobility== 0)
                     if (current_maxMobility == this.ptr_UIMFDatabase.UIMF_FrameParameters.Scans - 1 && current_minMobility == 0)
@@ -6308,7 +6308,7 @@ namespace UIMF_File
             // Figure out the number of bytes in a row
             // This is rounded up to be a multiple of 4
             // bytes, since a scan line in an image must always be a multiple of 4 bytes
-            // in length. 
+            // in length.
             pixel_width = this.pnl_2DMap.Width * sizeof(PixelData);
             if (pixel_width % 4 != 0)
             {
@@ -6396,9 +6396,9 @@ namespace UIMF_File
         private void invoke_CreateProgressBar()
         {
             this.progress_ReadingFile = new System.Windows.Forms.ProgressBar();
-            // 
+            //
             // progress_ReadingFile
-            // 
+            //
             this.progress_ReadingFile.BackColor = System.Drawing.Color.SlateGray;
             this.progress_ReadingFile.ForeColor = System.Drawing.Color.DeepSkyBlue;
             this.progress_ReadingFile.Location = new System.Drawing.Point(244, 728);
@@ -6529,14 +6529,14 @@ namespace UIMF_File
                     if ((this.mean_TOFScanTime == 0) || this.flag_Chromatogram_Frames)
                     {
                         this.plot_Mobility.PlotY(tic_Mobility, (double)0, 1.0 * Convert.ToDouble(this.num_FrameCompression.Value));
-                      
+
                         this.xAxis_Mobility.Caption = "Frame Number";
                     }
                     else
                     {
                         increment_MobilityValue = this.mean_TOFScanTime * (this.maximum_Mobility + 1) * this.ptr_UIMFDatabase.UIMF_FrameParameters.Accumulations / 1000000.0 / 1000.0;
                         this.plot_Mobility.PlotY(tic_Mobility, (double)this.minFrame_Chromatogram * increment_MobilityValue, increment_MobilityValue);
-                        
+
                         this.xAxis_Mobility.Caption = "Frames - Time (sec)";
                     }
                 }
@@ -6756,7 +6756,7 @@ namespace UIMF_File
         }
 
         private void pb_PlayRightIn_Click(object sender, EventArgs e)
-        { 
+        {
             this.StopCinema();
         }
 
@@ -6791,7 +6791,7 @@ namespace UIMF_File
                     this.slide_FrameSelect.Value = this.slide_FrameSelect.Range.Maximum - this.Cinemaframe_DataChange;
                 else
                     this.slide_FrameSelect.Value += this.Cinemaframe_DataChange;
-         
+
             }
         }
 
@@ -6843,7 +6843,7 @@ namespace UIMF_File
         }
 #endif
         // ////////////////////////////////////////////////////////////////
-        // 
+        //
         //
         private void menuItem_SelectionCorners_Click(object sender, EventArgs e)
         {
@@ -6963,7 +6963,7 @@ namespace UIMF_File
 
                 this.pnl_Chromatogram.Enabled = false;
                 MessageBox.Show("frames <=1");
-                
+
                 this.slide_FrameSelect.Hide();
                 this.pb_PlayLeftIn.Hide();
                 this.pb_PlayLeftOut.Hide();
@@ -6983,7 +6983,7 @@ namespace UIMF_File
                 this.rb_PartialChromatogram.Enabled = true;
 
                 this.pnl_Chromatogram.Enabled = true;
-                
+
                 this.slide_FrameSelect.Show();
                 this.slide_FrameSelect.Range = new NationalInstruments.UI.Range(0, this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType()) - 1);
                 this.pb_PlayLeftIn.Show();
@@ -7137,48 +7137,48 @@ namespace UIMF_File
             this.yAxis_TOF = new NationalInstruments.UI.YAxis();
             this.plot_Mobility = new Utilities.PointAnnotationGraph();
             this.plot_TOF = new NationalInstruments.UI.WindowsForms.WaveformGraph();
-            // 
+            //
             // xyCursor2
-            // 
+            //
             this.xyCursor2.HorizontalCrosshairMode = NationalInstruments.UI.CursorCrosshairMode.None;
             this.xyCursor2.Plot = this.waveform_MobilityPlot;
             this.xyCursor2.PointStyle = NationalInstruments.UI.PointStyle.Plus;
             this.xyCursor2.VerticalCrosshairMode = NationalInstruments.UI.CursorCrosshairMode.None;
-            // 
+            //
             // waveform_MobilityPlot
-            // 
+            //
             this.waveform_MobilityPlot.LineColor = System.Drawing.Color.Crimson;
             this.waveform_MobilityPlot.PointColor = System.Drawing.Color.Salmon;
             this.waveform_MobilityPlot.XAxis = this.xAxis_Mobility;
             this.waveform_MobilityPlot.YAxis = this.yAxis_Mobility;
-            // 
+            //
             // xAxis_Mobility
-            // 
+            //
             this.xAxis_Mobility.Mode = NationalInstruments.UI.AxisMode.AutoScaleExact;
 
-            // 
+            //
             // waveform_TOFPlot
-            // 
+            //
             this.waveform_TOFPlot.LineColor = System.Drawing.Color.DarkBlue;
             this.waveform_TOFPlot.PointColor = System.Drawing.Color.DarkTurquoise;
             this.waveform_TOFPlot.XAxis = this.xAxis_TOF;
             this.waveform_TOFPlot.YAxis = this.yAxis_TOF;
-            // 
+            //
             // xAxis_TOF
-            // 
+            //
             this.xAxis_TOF.Inverted = true;
             this.xAxis_TOF.MinorDivisions.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.xAxis_TOF.MinorDivisions.GridLineStyle = NationalInstruments.UI.LineStyle.Dot;
             this.xAxis_TOF.MinorDivisions.GridVisible = true;
             this.xAxis_TOF.MinorDivisions.TickVisible = true;
             this.xAxis_TOF.Position = NationalInstruments.UI.XAxisPosition.Top;
-            // 
+            //
             // yAxis_TOF
-            // 
+            //
             this.yAxis_TOF.Mode = NationalInstruments.UI.AxisMode.AutoScaleExact;
-            // 
+            //
             // plot_DriftPlot
-            // 
+            //
             this.plot_Mobility.BackColor = System.Drawing.Color.Gainsboro;
             this.plot_Mobility.Border = NationalInstruments.UI.Border.RaisedLite;
             this.plot_Mobility.Cursors.AddRange(new NationalInstruments.UI.XYCursor[] {
@@ -7196,9 +7196,9 @@ namespace UIMF_File
             this.yAxis_Mobility});
             this.plot_Mobility.MouseDown += new System.Windows.Forms.MouseEventHandler(this.plot_Mobility_MouseDown);
             this.plot_Mobility.RangeChanged += new Utilities.RangeEventHandler(this.OnPlotTICRangeChanged);
-            // 
+            //
             // plot_TOF
-            // 
+            //
             this.plot_TOF.BackColor = System.Drawing.Color.Gainsboro;
             this.plot_TOF.Border = NationalInstruments.UI.Border.RaisedLite;
             this.plot_TOF.Location = new System.Drawing.Point(14, 52);
@@ -7801,7 +7801,7 @@ namespace UIMF_File
 
                 this.cb_FrameType.Show();
                 this.lbl_Chromatogram.Hide();
-                
+
                 this.Update();
 
                 this.num_minBin.DecimalPlaces = 4;
@@ -7963,7 +7963,7 @@ namespace UIMF_File
         }
 
         // /////////////////////////////////////////////////////////////
-        // Set Calibration.  
+        // Set Calibration.
         //
         // the trick here is to mess with the settings without messing with the file until
         // it is requested.
@@ -8082,7 +8082,7 @@ namespace UIMF_File
         //
         private void btn_ApplyCalculatedCalibration_Click(object sender, EventArgs e)
         {
-            this.ptr_UIMFDatabase.update_CalibrationCoefficients(this.ptr_UIMFDatabase.current_frame_index, (float)this.pnl_postProcessing.Calculated_Slope, 
+            this.ptr_UIMFDatabase.update_CalibrationCoefficients(this.ptr_UIMFDatabase.current_frame_index, (float)this.pnl_postProcessing.Calculated_Slope,
                 (float)this.pnl_postProcessing.Calculated_Intercept);
 
             this.update_CalibrationCoefficients();
@@ -8091,11 +8091,11 @@ namespace UIMF_File
 
             this.flag_update2DGraph = true;
         }
-         
+
         private void btn_ApplyCalibration_Experiment_Click(object sender, EventArgs e)
         {
             //MessageBox.Show((Convert.ToDouble(this.tb_CalA.Text) * 10000.0).ToString() + "  " + this.pnl_postProcessing.Experimental_Slope.ToString());
-            this.ptr_UIMFDatabase.updateAll_CalibrationCoefficients((float)this.pnl_postProcessing.get_Experimental_Slope(), 
+            this.ptr_UIMFDatabase.updateAll_CalibrationCoefficients((float)this.pnl_postProcessing.get_Experimental_Slope(),
                 (float)this.pnl_postProcessing.get_Experimental_Intercept());
 
             this.update_CalibrationCoefficients();
@@ -8190,7 +8190,7 @@ namespace UIMF_File
         {
             int i, j, k;
             int scans;
-            
+
             int uimf_bins;
             int maximum_spectrum = 0;
 
@@ -8358,7 +8358,7 @@ namespace UIMF_File
             FrameParameters fp = new FrameParameters();
             GlobalParameters gp = new GlobalParameters();
             int uimf_bins;
-           
+
             uimf_writer.OpenUIMF(filename);
             uimf_writer.CreateTables("int");
 
@@ -8435,7 +8435,7 @@ namespace UIMF_File
 
             this.new_maxBin = this.maximum_Bins = this.ptr_UIMFDatabase.UIMF_GlobalParameters.Bins - 1;
             this.new_maxMobility = this.maximum_Mobility = this.ptr_UIMFDatabase.UIMF_FrameParameters.Scans - 1;
-           
+
             if (frame_count == 0)
                 return;
 
@@ -8608,7 +8608,7 @@ namespace UIMF_File
                 this.frame_progress.Show();
             }
 
-            this.uimf_BelovTransform = new UIMF_BelovTransform.UIMF_BelovTransform(this.ptr_UIMFDatabase, 
+            this.uimf_BelovTransform = new UIMF_BelovTransform.UIMF_BelovTransform(this.ptr_UIMFDatabase,
                 Path.Combine(this.pnl_postProcessing.tb_SaveDecodeDirectory.Text, this.pnl_postProcessing.tb_SaveDecodeFilename.Text),
                 this.frame_progress, true);
         }
@@ -8640,7 +8640,7 @@ namespace UIMF_File
 
             this.thread_Compress = new Thread(new ThreadStart(this.Compress4GHzUIMF));
             this.thread_Compress.Priority = System.Threading.ThreadPriority.Lowest;
-            this.thread_Compress.Start(); 
+            this.thread_Compress.Start();
 
             //Invoke(new ThreadStart(this.Compress4GHzUIMF));
         }
@@ -8658,7 +8658,7 @@ namespace UIMF_File
         {
             UIMFLibrary.GlobalParameters gp = this.ptr_UIMFDatabase.GetGlobalParameters();
             UIMFLibrary.FrameParameters fp;
-            string name_instrument; 
+            string name_instrument;
             int i;
             int j;
             int k;

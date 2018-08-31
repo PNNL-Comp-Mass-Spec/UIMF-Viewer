@@ -187,7 +187,7 @@ namespace UIMFLibrary
 				}
 			}
 
-			// This function extracts intensities from selected scans and bins in a single frame 
+			// This function extracts intensities from selected scans and bins in a single frame
 			// and returns a two-dimensional array intensities[scan][bin]
 			// frameNum is mandatory and all other arguments are optional
 			m_preparedStatement = m_uimfDatabaseConnection.CreateCommand();
@@ -236,7 +236,7 @@ namespace UIMFLibrary
 						{
 							frameData[currentScan][indexCurrentBin - startBin] += intBinIntensity;
 							indexCurrentBin++;
-						}
+					    }
                         previousValue = intBinIntensity;
 					}
 				}
@@ -257,7 +257,7 @@ namespace UIMFLibrary
 					int indexCurrentBin = 0;
 					int decompressLength = LZFCompressionUtil.Decompress(ref compressedBinIntensity, compressedBinIntensity.Length, ref streamBinIntensity, m_globalParameters.Bins * 4);
 
-					int pixelY = 1;
+				    int pixelY = 1;
 				    int previousValue = 0;
 
 					for (int binValue = 0; (binValue < decompressLength) && (indexCurrentBin < endBin); binValue += 4)
@@ -297,7 +297,7 @@ namespace UIMFLibrary
 								}
 							}
 							indexCurrentBin++;
-						}
+					    }
                         previousValue = intBinIntensity;
 					}
 				}
@@ -314,14 +314,14 @@ namespace UIMFLibrary
     	/// <param name="targetDBPath">The desired path of the newly cloned UIMF file.</param>
     	/// <param name="tablesToSkip">A list of table names (e.g. Frame_Scans) that should not be copied.</param>
 		/// <param name="frameTypesToAlwaysCopy">
-		/// A list of FrameTypes that should ALWAYS be copied. 
+		/// A list of FrameTypes that should ALWAYS be copied.
 		///		e.g. If "Frame_Scans" is passed into tablesToSkip, data will still be inserted into "Frame_Scans" for these Frame Types.
 		/// </param>
     	/// <returns>True if success, false if a problem</returns>
     	public bool CloneUIMF(string targetDBPath, List<string> tablesToSkip, List<FrameType> frameTypesToAlwaysCopy)
         {
             string sCurrentTable = string.Empty;
-			
+
             try
             {
                 // Get list of tables in source DB
@@ -345,10 +345,10 @@ namespace UIMFLibrary
                 {
                     string sTargetConnectionString = "Data Source = " + targetDBPath + "; Version=3; DateTimeFormat=Ticks;";
                     SQLiteConnection cnTargetDB = new SQLiteConnection(sTargetConnectionString);
-	           
+
 		            cnTargetDB.Open();
                     SQLiteCommand cmdTargetDB = cnTargetDB.CreateCommand();
-                        
+
                     // Create each table
 					foreach (KeyValuePair<string, string> kvp in dctTableInfo)
                 	{
@@ -389,14 +389,14 @@ namespace UIMFLibrary
                             }
                             else
                             {
-                                if (sCurrentTable.ToLower() == "Frame_Scans".ToLower() && 
-                                    frameTypesToAlwaysCopy != null && 
+                                if (sCurrentTable.ToLower() == "Frame_Scans".ToLower() &&
+                                    frameTypesToAlwaysCopy != null &&
                                     frameTypesToAlwaysCopy.Count > 0)
                                 {
                                     // Explicitly copy data for the frame types defined in eFrameScanFrameTypeDataToAlwaysCopy
                                     for (int i = 0; i < frameTypesToAlwaysCopy.Count; i++)
                                     {
-                                        string sSql = "INSERT INTO main." + sCurrentTable + 
+                                        string sSql = "INSERT INTO main." + sCurrentTable +
                                                       " SELECT * FROM SourceDB." + sCurrentTable +
                                                       " WHERE FrameNum IN (SELECT FrameNum FROM Frame_Parameters " +
 													  "WHERE FrameType = " + (frameTypesToAlwaysCopy[i].Equals(FrameType.MS1) ? m_frameTypeMs : (int)frameTypesToAlwaysCopy[i]) + ");";
@@ -427,7 +427,7 @@ namespace UIMFLibrary
                 {
                     throw new Exception("Error initializing cloned database, table " + sCurrentTable, ex);
                 }
-                      
+
             }
             catch (Exception ex)
             {
@@ -649,7 +649,7 @@ namespace UIMFLibrary
 		}
 
         /// <summary>
-        /// Method to provide the bytes from tables that store metadata files 
+        /// Method to provide the bytes from tables that store metadata files
         /// </summary>
         /// <param name="tableName"></param>
         /// <returns></returns>
@@ -680,7 +680,7 @@ namespace UIMFLibrary
             }
             return byteBuffer;
         }
-        
+
         public Stack<int[]> GetFrameAndScanListByDescendingIntensity()
         {
             FrameParameters fp = GetFrameParameters(0);
@@ -767,7 +767,7 @@ namespace UIMFLibrary
 		}
 
         /// <summary>
-        /// Returns the key frame pressure value that is used in the calculation of drift time 
+        /// Returns the key frame pressure value that is used in the calculation of drift time
         /// </summary>
         /// <param name="frameIndex"></param>
         /// <returns>Frame pressure used in drift time calc</returns>
@@ -776,12 +776,12 @@ namespace UIMFLibrary
 
             /*
              * [gord, April 2011] A little history..
-             * Earlier UIMF files have the column 'PressureBack' but not the 
+             * Earlier UIMF files have the column 'PressureBack' but not the
              * newer 'RearIonFunnelPressure' or 'IonFunnelTrapPressure'
-             * 
+             *
              * So, will first check for old format
              * if there is a value there, will use it.  If not,
-             * look for newer columns and use these values. 
+             * look for newer columns and use these values.
              */
 
             FrameParameters fp = GetFrameParameters(frameIndex);
@@ -851,7 +851,7 @@ namespace UIMFLibrary
                 }
                 else
                 {
-                    m_globalParameters = GetGlobalParametersFromTable(m_uimfDatabaseConnection);                    
+                    m_globalParameters = GetGlobalParametersFromTable(m_uimfDatabaseConnection);
                 }
             }
 
@@ -970,7 +970,7 @@ namespace UIMFLibrary
 					if (spectra.Length > 0)
 					{
 						int outputLength = LZFCompressionUtil.Decompress(ref spectra, spectra.Length, ref decompSpectraRecord, m_globalParameters.Bins * DATASIZE);
-						int numReturnedBins = outputLength / DATASIZE;
+                        int numReturnedBins = outputLength / DATASIZE;
 					    int previousValue = 0;
 						for (int i = 0; i < numReturnedBins; i++)
 						{
@@ -991,7 +991,7 @@ namespace UIMFLibrary
 							{
 								intensities[binIndex][scanToIndexMap[scanNumber]] = decodedIntensityValue;
 								binIndex++;
-							}
+						    }
 						    previousValue = decodedIntensityValue;
 						}
 					}
@@ -1165,7 +1165,7 @@ namespace UIMFLibrary
 			{
 				return FrameType.MS1;
 			}
-			
+
 			return (FrameType) frameTypeInt;
         }
 
@@ -1288,7 +1288,7 @@ namespace UIMFLibrary
 								}
 
 								binIndex++;
-							}
+						    }
                             previousValue = decodedSpectraRecord;
 						}
 					}
@@ -1396,7 +1396,7 @@ namespace UIMFLibrary
 					}
 				}
 			}
-			
+
 
 			StripZerosFromArrays(nonZeroCount, ref mzArray, ref intensityArray);
 
@@ -1536,7 +1536,7 @@ namespace UIMFLibrary
 									intensity += decodedSpectraRecord;
 								}
 							}
-						}
+					    }
                         previousValue = decodedSpectraRecord;
 					}
 
@@ -1676,7 +1676,7 @@ namespace UIMFLibrary
 			using (SQLiteDataReader reader = m_getSpectrumCommand.ExecuteReader())
 			{
 				byte[] decompSpectraRecord = new byte[m_globalParameters.Bins * DATASIZE];
-				
+
 				while (reader.Read())
 				{
 					int binIndex = 0;
@@ -1685,7 +1685,7 @@ namespace UIMFLibrary
 					if (spectraRecord.Length > 0)
 					{
 						int outputLength = LZFCompressionUtil.Decompress(ref spectraRecord, spectraRecord.Length, ref decompSpectraRecord, m_globalParameters.Bins * DATASIZE);
-						int numBins = outputLength / DATASIZE;
+                        int numBins = outputLength / DATASIZE;
 					    int previousValue = 0;
 
 						for (int i = 0; i < numBins; i++)
@@ -1706,7 +1706,7 @@ namespace UIMFLibrary
 							{
 								intensityArray[binIndex] += decodedSpectraRecord;
 								binIndex++;
-							}
+						    }
                             previousValue = decodedSpectraRecord;
 						}
 					}
@@ -1755,7 +1755,7 @@ namespace UIMFLibrary
 
             return tic;
         }
-		
+
 		/// <summary>
 		/// Extracts TIC from startFrame to endFrame and startScan to endScan and returns a dictionary for all frames
 		/// </summary>
@@ -2086,7 +2086,7 @@ namespace UIMFLibrary
                     return;
                 }
 
-              
+
 				isMilliTorr = ColumnIsMilliTorr(cmd, "Frame_Parameters", "IonFunnelTrapPressure");
 				if (isMilliTorr)
 				{
@@ -2104,9 +2104,9 @@ namespace UIMFLibrary
 		}
 
 		/// <summary>
-		/// Determines if the MS1 Frames of this file are labeled as 0 or 1. 
+		/// Determines if the MS1 Frames of this file are labeled as 0 or 1.
 		/// Note that MS1 frames should recorded as '1'. But we need to
-		/// support legacy UIMF files which have values of '0' for MS1. 
+		/// support legacy UIMF files which have values of '0' for MS1.
 		/// The determined value is stored in a class-wide variable for later use.
 		/// Exception is thrown if both 0 and 1 are found.
 		/// </summary>
@@ -2168,7 +2168,7 @@ namespace UIMFLibrary
 		}
 
 		/// <summary>
-		/// Returns the bin value that corresponds to an m/z value.  
+		/// Returns the bin value that corresponds to an m/z value.
 		/// NOTE: this may not be accurate if the UIMF file uses polynomial calibration values  (eg.  FrameParameter A2)
 		/// </summary>
 		/// <param name="slope"></param>
@@ -2221,7 +2221,7 @@ namespace UIMFLibrary
 					if (spectra.Length > 0)
 					{
 						int outputLength = LZFCompressionUtil.Decompress(ref spectra, spectra.Length, ref decompSpectraRecord, m_globalParameters.Bins * DATASIZE);
-						int numBins = outputLength / DATASIZE;
+                        int numBins = outputLength / DATASIZE;
 					    int previousValue = 0;
 						for (int i = 0; i < numBins; i++)
 						{
@@ -2241,7 +2241,7 @@ namespace UIMFLibrary
 							{
 								currentBinDictionary.Add(binIndex, decodedIntensityValue);
 								binIndex++;
-							}
+						    }
 						    previousValue = decodedIntensityValue;
 						}
 					}
@@ -2283,7 +2283,7 @@ namespace UIMFLibrary
 			m_getSpectrumCommand.Parameters.Add(new SQLiteParameter("ScanNum1", startScan));
 			m_getSpectrumCommand.Parameters.Add(new SQLiteParameter("ScanNum2", endScan));
 			m_getSpectrumCommand.Parameters.Add(new SQLiteParameter("FrameType", (frameType.Equals(FrameType.MS1) ? m_frameTypeMs : (int)frameType)));
-			
+
 			using (SQLiteDataReader reader = m_getSpectrumCommand.ExecuteReader())
 			{
 				byte[] decompSpectraRecord = new byte[m_globalParameters.Bins * DATASIZE];
@@ -2300,7 +2300,7 @@ namespace UIMFLibrary
 					if (spectra.Length > 0)
 					{
 						int outputLength = LZFCompressionUtil.Decompress(ref spectra, spectra.Length, ref decompSpectraRecord, m_globalParameters.Bins * DATASIZE);
-						int numBins = outputLength / DATASIZE;
+                        int numBins = outputLength / DATASIZE;
 					    int previousValue = 0;
 						for (int i = 0; i < numBins; i++)
 						{
@@ -2323,7 +2323,7 @@ namespace UIMFLibrary
 									intensities[frameNum - startFrameNumber][scanNum - startScan][binIndex - startBin] = decodedIntensityValue;
 								}
 								binIndex++;
-							}
+						    }
 						    previousValue = decodedIntensityValue;
 						}
 					}
@@ -2751,7 +2751,7 @@ namespace UIMFLibrary
 			Dictionary<int, double> dctTicOrBPI = GetTicOrBpiByFrame(startFrameNumber, endFrameNumber, startScan, endScan, fieldName, filterByFrameType: true, frameType:frameType);
 
 			double[] data = new double[dctTicOrBPI.Count];
-			
+
 			int index = 0;
 			foreach (double Value in dctTicOrBPI.Values)
 			{
@@ -2820,7 +2820,7 @@ namespace UIMFLibrary
 			{
 				dbcmdUIMF.CommandText = sql;
 				using (SQLiteDataReader reader = dbcmdUIMF.ExecuteReader())
-				{					
+				{
 					while (reader.Read())
 					{
 						dctTicOrBPI.Add(Convert.ToInt32(reader["FrameNum"]), Convert.ToDouble(reader["Value"]));
@@ -2838,11 +2838,11 @@ namespace UIMFLibrary
 			double upperMZ = targetMZ + toleranceInMZ;
 			FrameParameters fp = GetFrameParameters(frameNumber);
 			GlobalParameters gp = GetGlobalParameters();
-			bool polynomialCalibrantsAreUsed = (Math.Abs(fp.a2 - 0) > float.Epsilon || 
-												Math.Abs(fp.b2 - 0) > float.Epsilon || 
-												Math.Abs(fp.c2 - 0) > float.Epsilon || 
-												Math.Abs(fp.d2 - 0) > float.Epsilon || 
-												Math.Abs(fp.e2 - 0) > float.Epsilon || 
+			bool polynomialCalibrantsAreUsed = (Math.Abs(fp.a2 - 0) > float.Epsilon ||
+												Math.Abs(fp.b2 - 0) > float.Epsilon ||
+												Math.Abs(fp.c2 - 0) > float.Epsilon ||
+												Math.Abs(fp.d2 - 0) > float.Epsilon ||
+												Math.Abs(fp.e2 - 0) > float.Epsilon ||
 												Math.Abs(fp.f2 - 0) > float.Epsilon);
 			if (polynomialCalibrantsAreUsed)
 			{
@@ -2924,7 +2924,7 @@ namespace UIMFLibrary
 
 				fp.Duration = Convert.ToDouble(reader["Duration"]);
 				fp.Accumulations = Convert.ToInt32(reader["Accumulations"]);
-				
+
 				int frameTypeInt = Convert.ToInt16(reader["FrameType"]);
 
 				// If the frametype is 0, then this is an older UIMF file where the MS1 frames were labeled as 0.

@@ -101,34 +101,34 @@ namespace UIMF_File.Utilities
             }
         }
 #if false
-		public void Export(string file_path, float [,] Array2D)
-		{
-			FileStream fs=null;
-			StreamWriter sw=null;
-			try
-			{
-				// Write the data
-				fs = new FileStream(file_path, FileMode.Create);
-				sw = new StreamWriter(fs);
-				for(int i=0; i<=Array2D.GetUpperBound(1); i++)
-				{
-					int j=0;
-					for(; j<=Array2D.GetUpperBound(0)-1; j++)
-						sw.Write(Array2D[j,i] + ",");
-					sw.Write(Array2D[j,Array2D.GetUpperBound(1)] + "\n");
-				}
-				sw.Close();
-				fs.Close();
-			}
-			catch(Exception ex)
-			{
-				if(sw != null)
-					sw.Close();
-				if(fs != null)
-					fs.Close();
-				throw new Exception(ex.ToString());
-			}
-		}
+        public void Export(string file_path, float [,] Array2D)
+        {
+            FileStream fs=null;
+            StreamWriter sw=null;
+            try
+            {
+                // Write the data
+                fs = new FileStream(file_path, FileMode.Create);
+                sw = new StreamWriter(fs);
+                for(int i=0; i<=Array2D.GetUpperBound(1); i++)
+                {
+                    int j=0;
+                    for(; j<=Array2D.GetUpperBound(0)-1; j++)
+                        sw.Write(Array2D[j,i] + ",");
+                    sw.Write(Array2D[j,Array2D.GetUpperBound(1)] + "\n");
+                }
+                sw.Close();
+                fs.Close();
+            }
+            catch(Exception ex)
+            {
+                if(sw != null)
+                    sw.Close();
+                if(fs != null)
+                    fs.Close();
+                throw new Exception(ex.ToString());
+            }
+        }
 #endif
     }
 }

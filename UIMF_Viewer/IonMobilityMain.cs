@@ -16,14 +16,14 @@ using UIMF_DataViewer;
 // * Description:  Main Central Object that controls everything for the desktop.
 // *
 // * Revisions:
-// *    090130 - Added the ability to do TIC Threshold Counting.  I expect to remove it or somehow prevent 
+// *    090130 - Added the ability to do TIC Threshold Counting.  I expect to remove it or somehow prevent
 // *             the code from defaulting to calculate it everytime.  Need for speed!
 // *    090130 - Made the btn_cmdStart change state faster and highlight the cb_DisableSpectrometer field red
 // *             when attempting to start the mass spectrometer having the voltages disabled.
 // *
 // *
 namespace IonMobility
-{ 
+{
     /// <summary>
     /// Summary description for IonMobilityAcqMain.
     /// </summary>
@@ -39,10 +39,10 @@ namespace IonMobility
         private System.Windows.Forms.MenuItem menuProcess_SelectExperiment;
         #endregion
 
-        private UIMF_File.DataViewer frame_dataViewer; 
+        private UIMF_File.DataViewer frame_dataViewer;
 
         private const string SETTINGS_FILE = @"settings.xml";
- 
+
         public bool flag_Stopped = false;
 
         private System.Windows.Forms.MenuItem menuProcess_Batch;
@@ -101,8 +101,8 @@ namespace IonMobility
 
         /// <summary>
         /// Clean up any resources being used.
-        /// </summary> 
-        protected override void Dispose(bool disposing) 
+        /// </summary>
+        protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
@@ -168,63 +168,63 @@ namespace IonMobility
             this.pb_PNNLLogo = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.pb_PNNLLogo)).BeginInit();
             this.SuspendLayout();
-            // 
+            //
             // mainMenu_Desktop
-            // 
+            //
             this.mainMenu_Desktop.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.menubar_File,
             this.menubar_Graph,
             this.menuItem_About});
-            // 
+            //
             // menubar_File
-            // 
+            //
             this.menubar_File.Index = 0;
             this.menubar_File.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.menuitem_OpenFile});
             this.menubar_File.Text = "File";
-            // 
+            //
             // menuitem_OpenFile
-            // 
+            //
             this.menuitem_OpenFile.Index = 0;
             this.menuitem_OpenFile.Text = "Open";
-            // 
+            //
             // menubar_Graph
-            // 
+            //
             this.menubar_Graph.Index = 1;
             this.menubar_Graph.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.menuGraph_SelectExperiment});
             this.menubar_Graph.Text = "&Graph";
-            // 
+            //
             // menuGraph_SelectExperiment
-            // 
+            //
             this.menuGraph_SelectExperiment.Index = 0;
             this.menuGraph_SelectExperiment.Text = "&Experiment...";
             this.menuGraph_SelectExperiment.Click += new System.EventHandler(this.menuGraph_SelectExperiment_Click);
-            // 
+            //
             // menuItem_About
-            // 
+            //
             this.menuItem_About.Index = 2;
             this.menuItem_About.Text = "About";
             this.menuItem_About.Click += new System.EventHandler(this.menuItem_About_Click);
-            // 
+            //
             // menuProcess_SelectExperiment
-            // 
+            //
             this.menuProcess_SelectExperiment.Index = -1;
             this.menuProcess_SelectExperiment.Text = "";
-            // 
+            //
             // menuProcess_Batch
-            // 
+            //
             this.menuProcess_Batch.Index = -1;
             this.menuProcess_Batch.Text = "";
-            // 
+            //
             // folderBrowserDialogExperiment
-            // 
+            //
             this.folderBrowserDialogExperiment.Description = "Select an experiment folder";
             this.folderBrowserDialogExperiment.SelectedPath = "C:\\IonMobilityData";
             this.folderBrowserDialogExperiment.ShowNewFolderButton = false;
-            // 
+            //
             // pb_PNNLLogo
-            // 
+            //
             this.pb_PNNLLogo.BackColor = System.Drawing.Color.White;
             this.pb_PNNLLogo.BackgroundImage = global::IonMobility.Properties.Resources.PNNL_Color_Logo_Horizontal;
             this.pb_PNNLLogo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
@@ -235,9 +235,9 @@ namespace IonMobility
             this.pb_PNNLLogo.Size = new System.Drawing.Size(188, 84);
             this.pb_PNNLLogo.TabIndex = 39;
             this.pb_PNNLLogo.TabStop = false;
-            // 
+            //
             // IonMobilityMain
-            // 
+            //
             this.AllowDrop = true;
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.SystemColors.Control;
@@ -382,7 +382,7 @@ namespace IonMobility
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (files.Length > 1)
             {
-                MessageBox.Show("Just one file please."); 
+                MessageBox.Show("Just one file please.");
                 return;
             }
 
@@ -397,7 +397,7 @@ namespace IonMobility
                 {
                     MessageBox.Show("We allow 5 experiments open at a time.  Please close an experiment before opening another.");
                     return;
-                } 
+                }
             }
 #if THERMO
             if (Path.GetExtension(files[0]).ToLower() == ".raw")

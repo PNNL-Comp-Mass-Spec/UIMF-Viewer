@@ -9,11 +9,11 @@ using System.Threading;
 
 namespace UIMF_File.Utilities
 {
-	/// <summary>
-	/// Summary description for ProgressBar.
-	/// </summary>
-	public class progress_Processing : System.Windows.Forms.Form
-	{
+    /// <summary>
+    /// Summary description for ProgressBar.
+    /// </summary>
+    public class progress_Processing : System.Windows.Forms.Form
+    {
         public System.Windows.Forms.Label lbl_Processing;
         public System.Windows.Forms.Button btn_Cancel;
         private System.Windows.Forms.Label label1;
@@ -29,23 +29,23 @@ namespace UIMF_File.Utilities
 
         private bool flag_Errors = false;
 
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.Container components = null;
 
         public progress_Processing()
-		{
+        {
             this.flag_Errors = false;
 
             this.queue_Status = new ArrayList();
             this.font_Messages = new Font("Verdana", 7);
             this.font_Error = new Font("Verdana", 8);
 
-			//
-			// Required for Windows Form Designer support
-			//
-			InitializeComponent();
+            //
+            // Required for Windows Form Designer support
+            //
+            InitializeComponent();
             this.VisibleChanged += new EventHandler(progress_Processing_VisibleChanged);
 
             // it appears as thought the frame does not have a parent and
@@ -53,36 +53,36 @@ namespace UIMF_File.Utilities
             // not initialized correctly and can not be enabled.
             this.Show();
 
-			//
-			// TODO: Add any constructor code after InitializeComponent call
-			//
+            //
+            // TODO: Add any constructor code after InitializeComponent call
+            //
             this.btn_Cancel.Enabled = true;
             this.btn_Continue.Hide();
 
-		}
+        }
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        protected override void Dispose( bool disposing )
+        {
+            if( disposing )
+            {
+                if(components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose( disposing );
+        }
 
 #region Windows Form Designer generated code
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
             this.lbl_Processing = new System.Windows.Forms.Label();
             this.btn_Cancel = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
@@ -90,9 +90,9 @@ namespace UIMF_File.Utilities
             this.progress_Slider = new System.Windows.Forms.ProgressBar();
             this.rtb_Status = new System.Windows.Forms.RichTextBox();
             this.SuspendLayout();
-            // 
+            //
             // lbl_Processing
-            // 
+            //
             this.lbl_Processing.BackColor = System.Drawing.Color.Transparent;
             this.lbl_Processing.Font = new System.Drawing.Font("Verdana", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_Processing.Location = new System.Drawing.Point(16, 4);
@@ -101,9 +101,9 @@ namespace UIMF_File.Utilities
             this.lbl_Processing.TabIndex = 1;
             this.lbl_Processing.Text = "frame";
             this.lbl_Processing.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
+            //
             // btn_Cancel
-            // 
+            //
             this.btn_Cancel.BackColor = System.Drawing.Color.Crimson;
             this.btn_Cancel.Font = new System.Drawing.Font("Lucida Sans", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_Cancel.ForeColor = System.Drawing.Color.White;
@@ -114,9 +114,9 @@ namespace UIMF_File.Utilities
             this.btn_Cancel.Text = "Cancel";
             this.btn_Cancel.UseVisualStyleBackColor = false;
             this.btn_Cancel.Click += new System.EventHandler(this.btn_Cancel_Click);
-            // 
+            //
             // label1
-            // 
+            //
             this.label1.BackColor = System.Drawing.Color.Transparent;
             this.label1.Font = new System.Drawing.Font("Verdana", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.Location = new System.Drawing.Point(16, 40);
@@ -125,9 +125,9 @@ namespace UIMF_File.Utilities
             this.label1.TabIndex = 4;
             this.label1.Text = "Status";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
+            //
             // btn_Continue
-            // 
+            //
             this.btn_Continue.BackColor = System.Drawing.Color.DarkSlateGray;
             this.btn_Continue.Font = new System.Drawing.Font("Lucida Sans", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_Continue.ForeColor = System.Drawing.Color.White;
@@ -138,9 +138,9 @@ namespace UIMF_File.Utilities
             this.btn_Continue.Text = "Continue";
             this.btn_Continue.UseVisualStyleBackColor = false;
             this.btn_Continue.Click += new System.EventHandler(this.btn_Continue_Click);
-            // 
+            //
             // progress_Slider
-            // 
+            //
             this.progress_Slider.BackColor = System.Drawing.Color.DimGray;
             this.progress_Slider.ForeColor = System.Drawing.Color.DeepSkyBlue;
             this.progress_Slider.Location = new System.Drawing.Point(14, 23);
@@ -149,18 +149,18 @@ namespace UIMF_File.Utilities
             this.progress_Slider.Step = 1;
             this.progress_Slider.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
             this.progress_Slider.TabIndex = 7;
-            // 
+            //
             // rtb_Status
-            // 
+            //
             this.rtb_Status.BackColor = System.Drawing.Color.Silver;
             this.rtb_Status.Location = new System.Drawing.Point(12, 64);
             this.rtb_Status.Name = "rtb_Status";
             this.rtb_Status.Size = new System.Drawing.Size(384, 128);
             this.rtb_Status.TabIndex = 8;
             this.rtb_Status.Text = "";
-            // 
+            //
             // progress_Processing
-            // 
+            //
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
             this.BackColor = System.Drawing.Color.WhiteSmoke;
             this.BackgroundImage = global::UIMF_DataViewer.Properties.Resources.ripple21;
@@ -182,11 +182,11 @@ namespace UIMF_File.Utilities
         }
 #endregion
 
-		public string Caption
-		{
-			set { this.Text = value; }
-			get { return this.Text; }
-		}
+        public string Caption
+        {
+            set { this.Text = value; }
+            get { return this.Text; }
+        }
 
         public string Title
         {
@@ -194,22 +194,22 @@ namespace UIMF_File.Utilities
             get { return this.lbl_Processing.Text; }
         }
 
-		public int Min
-		{
+        public int Min
+        {
             set { this.progress_Slider.Minimum = value; }
             get { return this.progress_Slider.Minimum; }
-		}
-		public int Max
-		{
+        }
+        public int Max
+        {
             set { this.progress_Slider.Maximum = value; }
             get { return progress_Slider.Maximum; }
-		}
+        }
 
         public int current_value = 0;
         public int time_msec = 0;
         public bool flag_Busy = false;
         public void SetValue(int newValue, int msec)
-		{
+        {
             this.time_msec = msec;
 
             current_value = newValue+1;
@@ -231,8 +231,8 @@ namespace UIMF_File.Utilities
 
             this.handle_rtb_StatusUpdates();
 
-			this.Update();
-		}
+            this.Update();
+        }
 
         public void add_Status(string message, bool flag_error)
         {
@@ -258,8 +258,8 @@ namespace UIMF_File.Utilities
             this.queue_Status.Clear();
         }
 
-		public void Reset()
-		{
+        public void Reset()
+        {
             progress_Slider.Value = this.progress_Slider.Minimum;
         }
 
@@ -404,7 +404,7 @@ namespace UIMF_File.Utilities
                     MessageBox.Show("failed in handle_rtb_StatusUpdates(): " + ex.ToString() + "\n" + ex.GetHashCode().ToString());
             }
         }
-	}
+    }
 
     public class Status_Messages
     {

@@ -2,12 +2,12 @@ namespace UIMF_DataViewer
 {
     partial class InstrumentSettings
     {
-        /// <summary> 
+        /// <summary>
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary> 
+        /// <summary>
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
@@ -22,8 +22,8 @@ namespace UIMF_DataViewer
 
         #region Component Designer generated code
 
-        /// <summary> 
-        /// Required method for Designer support - do not modify 
+        /// <summary>
+        /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
@@ -35,9 +35,9 @@ namespace UIMF_DataViewer
             ((System.ComponentModel.ISupportInitialize)(this.pb_Tube)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Exit)).BeginInit();
             this.SuspendLayout();
-            // 
+            //
             // pb_Entrance
-            // 
+            //
             this.pb_Entrance.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pb_Entrance.Image = global::UIMF_DataViewer.Properties.Resources.Entrance_IMS41;
             this.pb_Entrance.Location = new System.Drawing.Point(56, 40);
@@ -46,9 +46,9 @@ namespace UIMF_DataViewer
             this.pb_Entrance.Size = new System.Drawing.Size(251, 157);
             this.pb_Entrance.TabIndex = 0;
             this.pb_Entrance.TabStop = false;
-            // 
+            //
             // pb_Tube
-            // 
+            //
             this.pb_Tube.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pb_Tube.Image = global::UIMF_DataViewer.Properties.Resources.IMS4a;
             this.pb_Tube.Location = new System.Drawing.Point(16, 248);
@@ -57,9 +57,9 @@ namespace UIMF_DataViewer
             this.pb_Tube.Size = new System.Drawing.Size(668, 157);
             this.pb_Tube.TabIndex = 3;
             this.pb_Tube.TabStop = false;
-            // 
+            //
             // pb_Exit
-            // 
+            //
             this.pb_Exit.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.pb_Exit.Image = global::UIMF_DataViewer.Properties.Resources.Exit_IMS4;
             this.pb_Exit.Location = new System.Drawing.Point(364, 32);
@@ -68,9 +68,9 @@ namespace UIMF_DataViewer
             this.pb_Exit.Size = new System.Drawing.Size(212, 168);
             this.pb_Exit.TabIndex = 5;
             this.pb_Exit.TabStop = false;
-            // 
+            //
             // InstrumentSettings
-            // 
+            //
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Silver;

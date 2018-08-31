@@ -7,11 +7,11 @@ using System.Drawing.Drawing2D;
 
 namespace UIMF_File.Utilities
 {
-	/// <summary>
-	/// Summary description for ColorBlend.
-	/// </summary>
+    /// <summary>
+    /// Summary description for ColorBlend.
+    /// </summary>
     public class Intensity_ColorMap : System.Windows.Forms.Panel
-    {            
+    {
         public System.Windows.Forms.Button[] btn_Slider;
         private Rectangle rect_colors;
         private ColorBlend color_blend;
@@ -32,7 +32,7 @@ namespace UIMF_File.Utilities
         {
             int i;
             this.rect_colors = new Rectangle(7, 10,  6, 300);
-            
+
             this.color_blend = new ColorBlend();
             this.color_positions = new float[] { COLOR_POS[0], COLOR_POS[1], COLOR_POS[2], COLOR_POS[3], COLOR_POS[4], COLOR_POS[5], COLOR_POS[6], COLOR_POS[7] };
             //this.color_blend.Colors = new Color[] { Color.DarkBlue, Color.Blue, Color.SkyBlue, Color.Lime, Color.GreenYellow, Color.Yellow, Color.Red, Color.Purple };
@@ -57,9 +57,9 @@ namespace UIMF_File.Utilities
             {
                 btn_Slider[i] = new System.Windows.Forms.Button();
 
-                // 
+                //
                 // btn_Slider
-                // 
+                //
                 this.btn_Slider[i].BackColor = color_blend.Colors[i+1];
                 this.btn_Slider[i].FlatStyle = System.Windows.Forms.FlatStyle.Standard;
                 this.btn_Slider[i].Location = new System.Drawing.Point(24, 8);
@@ -79,9 +79,9 @@ namespace UIMF_File.Utilities
                 this.Controls.Add(this.btn_Slider[i]);
             }
 
-            // 
+            //
             // lbl_MaxIntensity
-            // 
+            //
             this.lbl_MaxIntensity = new System.Windows.Forms.Label();
             this.lbl_MaxIntensity.Font = new System.Drawing.Font("Verdana", 6.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
             this.lbl_MaxIntensity.Location = new System.Drawing.Point(0,0);
@@ -123,9 +123,9 @@ namespace UIMF_File.Utilities
         {
             this.panel1 = new System.Windows.Forms.Panel();
             this.SuspendLayout();
-            // 
+            //
             // ColorBlender
-            // 
+            //
             this.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.Location = new System.Drawing.Point(4, 8);
             this.Name = "ColorBlender";
@@ -133,13 +133,13 @@ namespace UIMF_File.Utilities
             this.TabIndex = 0;
         }
         #endregion
-	
+
         private void ResizeThis(object sender, System.EventArgs e)
-        { 
+        {
             rect_colors = new Rectangle(12, 10,  4, this.Height-20);
             for (int i=0; i<color_blend.Positions.Length-2; i++)
                 this.btn_Slider[i].Top = (int)(((float) rect_colors.Height) * color_blend.Positions[i+1]); // - this.btn_Slider[i].Height;
-    
+
             this.Invalidate();
         }
 
@@ -193,7 +193,7 @@ namespace UIMF_File.Utilities
         {
             this.btn_selected = (System.Windows.Forms.Button) sender;
         }
-   
+
         private void slider_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             int new_pos;
@@ -249,7 +249,7 @@ namespace UIMF_File.Utilities
             {
                 new_position = this.rect_colors.Top-4;
             }
-                
+
             moved_button.Top = new_position;
             this.color_positions[moved_button.TabIndex] = (float) (moved_button.Top + (moved_button.Height/2)) / (float) this.rect_colors.Height;
             return new_position;
@@ -282,7 +282,7 @@ namespace UIMF_File.Utilities
                     red = (int) (((float) (this.color_blend.Colors[i].R - this.color_blend.Colors[i-1].R)) * interp) + this.color_blend.Colors[i-1].R;
                     green = (int) (((float) (this.color_blend.Colors[i].G - this.color_blend.Colors[i-1].G) * interp)) + this.color_blend.Colors[i-1].G;
                     blue = (int) (((float) (this.color_blend.Colors[i].B - this.color_blend.Colors[i-1].B) * interp)) + this.color_blend.Colors[i-1].B;
-                   
+
                     p->red = (byte) red;
                     p->green = (byte) green;
                     p->blue = (byte) blue;

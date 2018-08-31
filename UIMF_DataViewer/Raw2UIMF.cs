@@ -103,18 +103,18 @@ namespace UIMF_DataViewer
 
             uimf_frame.StartTime = start_time;               // 1, Start time of frame, in minutes
             uimf_frame.Duration = 500; // 2, Duration of frame, in seconds
-            uimf_frame.Accumulations = 1;                     // 3, Number of collected and summed acquisitions in a frame 
-            uimf_frame.FrameType = 0;                         // 4, Bitmap: 0=MS (Regular); 1=MS/MS (Frag); 2=Prescan; 4=Multiplex 
+            uimf_frame.Accumulations = 1;                     // 3, Number of collected and summed acquisitions in a frame
+            uimf_frame.FrameType = 0;                         // 4, Bitmap: 0=MS (Regular); 1=MS/MS (Frag); 2=Prescan; 4=Multiplex
 
             uimf_frame.Scans = total_scans;         // 5, Number of TOF scans
             uimf_frame.IMFProfile = "";			              // new, IMFProfile Name
             uimf_frame.TOFLosses = 0;			              // new TOF Losses
-            uimf_frame.AverageTOFLength = 200000;                 // 6, Average time between TOF trigger pulses 
+            uimf_frame.AverageTOFLength = 200000;                 // 6, Average time between TOF trigger pulses
             uimf_frame.CalibrationSlope = .35;               // 7, Value of k0
             uimf_frame.CalibrationIntercept = 0;              // 8, Value of t0
             uimf_frame.a2 = 0.0;	                          // The six parameters below are coefficients for residual mass error correction
             uimf_frame.b2 = 0.0;	                          // ResidualMassError=a2t+b2t^3+c2t^5+d2t^7+e2t^9+f2t^11
-            uimf_frame.c2 = 0.0; 
+            uimf_frame.c2 = 0.0;
             uimf_frame.d2 = 0.0;
             uimf_frame.e2 = 0.0;
             uimf_frame.f2 = 0.0;
@@ -123,9 +123,9 @@ namespace UIMF_DataViewer
             uimf_frame.voltHVRack2 = 0.0;                     // 11, Voltage setting in the IMS system
             uimf_frame.voltHVRack3 = 0.0;                     // 12, Voltage setting in the IMS system
             uimf_frame.voltHVRack4 = 0.0;                     // 13, Voltage setting in the IMS system
-            uimf_frame.voltCapInlet = 0.0;                    // 14, Capilary Inlet Voltage 
-            uimf_frame.voltEntranceIFTIn = 0.0;               // 15, IFT In Voltage 
-            uimf_frame.voltEntranceIFTOut = 0.0;              // 16, IFT Out Voltage 
+            uimf_frame.voltCapInlet = 0.0;                    // 14, Capilary Inlet Voltage
+            uimf_frame.voltEntranceIFTIn = 0.0;               // 15, IFT In Voltage
+            uimf_frame.voltEntranceIFTOut = 0.0;              // 16, IFT Out Voltage
             uimf_frame.voltEntranceCondLmt = 0.0;             // 17, Cond Limit Voltage
             uimf_frame.voltTrapOut = 0.0;                     // 18, Trap Out Voltage
             uimf_frame.voltTrapIn = 0.0;                      // 19, Trap In Voltage
@@ -268,13 +268,13 @@ namespace UIMF_DataViewer
 
             uimf_frame.StartTime = DateTime.Now.Minute;               // 1, Start time of frame, in minutes
             uimf_frame.Duration = 500; // 2, Duration of frame, in seconds
-            uimf_frame.Accumulations = 1;                     // 3, Number of collected and summed acquisitions in a frame 
-            uimf_frame.FrameType = 0;                         // 4, Bitmap: 0=MS (Regular); 1=MS/MS (Frag); 2=Prescan; 4=Multiplex 
+            uimf_frame.Accumulations = 1;                     // 3, Number of collected and summed acquisitions in a frame
+            uimf_frame.FrameType = 0;                         // 4, Bitmap: 0=MS (Regular); 1=MS/MS (Frag); 2=Prescan; 4=Multiplex
 
             uimf_frame.Scans = last_scan;         // 5, Number of TOF scans
             uimf_frame.IMFProfile = "";			              // new, IMFProfile Name
             uimf_frame.TOFLosses = 0;			              // new TOF Losses
-            uimf_frame.AverageTOFLength = 200000;                 // 6, Average time between TOF trigger pulses 
+            uimf_frame.AverageTOFLength = 200000;                 // 6, Average time between TOF trigger pulses
             uimf_frame.CalibrationSlope = .35;               // 7, Value of k0
             uimf_frame.CalibrationIntercept = 0;              // 8, Value of t0
             uimf_frame.a2 = 0.0;	                          // The six parameters below are coefficients for residual mass error correction
@@ -288,9 +288,9 @@ namespace UIMF_DataViewer
             uimf_frame.voltHVRack2 = 0.0;                     // 11, Voltage setting in the IMS system
             uimf_frame.voltHVRack3 = 0.0;                     // 12, Voltage setting in the IMS system
             uimf_frame.voltHVRack4 = 0.0;                     // 13, Voltage setting in the IMS system
-            uimf_frame.voltCapInlet = 0.0;                    // 14, Capilary Inlet Voltage 
-            uimf_frame.voltEntranceIFTIn = 0.0;               // 15, IFT In Voltage 
-            uimf_frame.voltEntranceIFTOut = 0.0;              // 16, IFT Out Voltage 
+            uimf_frame.voltCapInlet = 0.0;                    // 14, Capilary Inlet Voltage
+            uimf_frame.voltEntranceIFTIn = 0.0;               // 15, IFT In Voltage
+            uimf_frame.voltEntranceIFTOut = 0.0;              // 16, IFT Out Voltage
             uimf_frame.voltEntranceCondLmt = 0.0;             // 17, Cond Limit Voltage
             uimf_frame.voltTrapOut = 0.0;                     // 18, Trap Out Voltage
             uimf_frame.voltTrapIn = 0.0;                      // 19, Trap In Voltage
@@ -383,13 +383,13 @@ namespace UIMF_DataViewer
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 this.rawData = new DeconToolsV2.Readers.clsRawData();
-                
+
                 this.rawData.LoadFile(openFileDialog1.FileName, DeconToolsV2.Readers.FileType.FINNIGAN);
                 tb_SpectraFile.Text = openFileDialog1.FileName;
                 btn_SendData.Enabled = true;
             }
         }
-        
+
         private bool flag_doubleclick = false;
         public void mctl_spectra_DoubleClick(object obj, System.EventArgs e)
         {
@@ -426,7 +426,7 @@ namespace UIMF_DataViewer
             }
 
             this.rawData.GetSpectrum(mintScanNum, ref mzs, ref intensities);
-            
+
             SmartMSComm.clsSpectrum spectrum = new SmartMSComm.clsSpectrum(mintScanNum, ref mzs, ref intensities, mintScanNum / 8527);
         }
 #endif

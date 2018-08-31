@@ -51,9 +51,9 @@ namespace UIMF_DataViewer
             this.pb_Entrance.MouseDown += new MouseEventHandler(pb_Entrance_MouseDown);
 
             this.lbl_MouseClick = new System.Windows.Forms.Label();
-            // 
+            //
             // lbl_MouseClick
-            // 
+            //
             this.lbl_MouseClick.ForeColor = System.Drawing.Color.Black;
             this.lbl_MouseClick.Location = new System.Drawing.Point(500, 4);
             this.lbl_MouseClick.Name = "lbl_MouseClick";
@@ -292,9 +292,9 @@ namespace UIMF_DataViewer
             {
                 this.lbl_Desc[i] = new Label();
                 this.tb_Value[i] = new TextBox();
-                // 
+                //
                 // lbl_Desc
-                // 
+                //
                 this.lbl_Desc[i].Cursor = System.Windows.Forms.Cursors.SizeAll;
                 this.lbl_Desc[i].ForeColor = System.Drawing.Color.Black;
                 this.lbl_Desc[i].ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -304,9 +304,9 @@ namespace UIMF_DataViewer
                 this.lbl_Desc[i].TabIndex = 1;
                 this.lbl_Desc[i].Text = "";
                 this.lbl_Desc[i].TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-                // 
+                //
                 // tb_Value
-                // 
+                //
                 this.tb_Value[i].BackColor = System.Drawing.Color.WhiteSmoke;
                 this.tb_Value[i].ForeColor = System.Drawing.Color.Black;
                 this.tb_Value[i].BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;

@@ -13,7 +13,7 @@ namespace UIMF_File
         // //////////////////////////////////////////////////////////////////////////////////////
         // //////////////////////////////////////////////////////////////////////////////////////
         // Viewer functionality
-        // 
+        //
         // William Danielson
         // //////////////////////////////////////////////////////////////////////////////////////
         // //////////////////////////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ namespace UIMF_File
                 // get the MS1 frames and use the fragmentation voltages on that.
                 int current_frame_type = get_FrameType();
                 int num_frames = this.set_FrameType(1);
- 
+
                 // if there are MS1 frames, set the default voltages.
                 if (num_frames > 0)
                 {
@@ -525,7 +525,7 @@ namespace UIMF_File
                     this.calibration_table[i] = (double)this.mzCalibration.MZtoTOF(mz_min + ((double)i * (mz_max - mz_min) / (double)data_height)) * this.m_globalParameters.BinWidth / (double)TenthsOfNanoSecondsPerBin;
             }
 
-            // This function extracts intensities from selected scans and bins in a single frame 
+            // This function extracts intensities from selected scans and bins in a single frame
             // and returns a two-dimetional array intensities[scan][bin]
             // frameNum is mandatory and all other arguments are optional
             this.m_preparedStatement = this.m_uimfDatabaseConnection.CreateCommand();
@@ -681,7 +681,7 @@ namespace UIMF_File
                 this.mzCalibration = this.GetMzCalibrator(this.UIMF_FrameParameters);
             }
 
-            // This function extracts intensities from selected scans and bins in a single frame 
+            // This function extracts intensities from selected scans and bins in a single frame
             // and returns a two-dimetional array intensities[scan][bin]
             // frameNum is mandatory and all other arguments are optional
             this.m_preparedStatement = this.m_uimfDatabaseConnection.CreateCommand();
@@ -753,7 +753,7 @@ namespace UIMF_File
                 this.load_Frame(frame_index);
                 mobility_data = new int[this.UIMF_FrameParameters.Scans];
 
-                // This function extracts intensities from selected scans and bins in a single frame 
+                // This function extracts intensities from selected scans and bins in a single frame
                 // and returns a two-dimetional array intensities[scan][bin]
                 // frameNum is mandatory and all other arguments are optional
                 this.m_preparedStatement = this.m_uimfDatabaseConnection.CreateCommand();
@@ -823,7 +823,7 @@ namespace UIMF_File
             // check if table exists
             this.m_preparedStatement = this.m_uimfDatabaseConnection.CreateCommand();
             this.m_preparedStatement.CommandText = "SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name = 'Scan_Parameters'";
-           
+
             this.m_sqliteDataReader = this.m_preparedStatement.ExecuteReader();
             this.m_preparedStatement.Dispose();
 
@@ -838,7 +838,7 @@ namespace UIMF_File
                 this.flag_UseScanMSLevel = true;
             else
                 this.flag_UseScanMSLevel = false;
-    
+
             this.scan_MSLevel = level;
         }
     }

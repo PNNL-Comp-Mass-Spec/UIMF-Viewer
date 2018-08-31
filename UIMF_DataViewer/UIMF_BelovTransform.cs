@@ -17,7 +17,7 @@ using System.Drawing;
 // -------------------------------------------------------------------------------
 // Written by William Danielson for the Department of Energy (PNNL, Richland, WA)
 // -------------------------------------------------------------------------------
-// 
+//
 
 namespace UIMF_BelovTransform
 {
@@ -201,7 +201,7 @@ namespace UIMF_BelovTransform
             for (int currentFrameNumber = 600; currentFrameNumber < 601; currentFrameNumber++)
             //foreach (int currentFrameNumber in frameNumbers)
             {
-                if (currentFrameNumber == 1) 
+                if (currentFrameNumber == 1)
                     continue;
 
                 int currentFrameIndex = uimfReader.GetFrameIndex(currentFrameNumber);
