@@ -5008,7 +5008,7 @@ namespace UIMF_File
                         this.plot_Mobility.GraphPane.XAxis.Title.Text = "Frame Number";
 
                         minX = 0;
-                        maxX = (tic_Mobility.Length - 1) * Convert.ToDouble(this.num_FrameCompression.Value) - 1;
+                        maxX = (tic_Mobility.Length - 1) * Convert.ToDouble(this.num_FrameCompression.Value) - 1; // TODO: Revisit this last "- 1" - why is it needed?
                     }
                     else
                     {
@@ -5020,7 +5020,7 @@ namespace UIMF_File
                         this.plot_Mobility.GraphPane.XAxis.Title.Text = "Frames - Time (sec)";
 
                         minX = (double)this.minFrame_Chromatogram * increment_MobilityValue;
-                        maxX = (tic_Mobility.Length - 1) * increment_MobilityValue + this.minFrame_Chromatogram * increment_MobilityValue - 1;
+                        maxX = (tic_Mobility.Length - 1) * increment_MobilityValue + this.minFrame_Chromatogram * increment_MobilityValue - 1; // TODO: Revisit this last "- 1" - why is it needed?
                     }
                 }
                 else
@@ -5043,7 +5043,7 @@ namespace UIMF_File
                             tic_Mobility.Take(this.current_maxMobility - this.current_minMobility + 1).ToArray());
 
                         minX = min_MobilityValue;
-                        maxX = (this.current_maxMobility - this.current_minMobility + 1) * increment_MobilityValue + min_MobilityValue - 1;
+                        maxX = (this.current_maxMobility - this.current_minMobility + 1) * increment_MobilityValue + min_MobilityValue - 1; // TODO: Revisit this last "- 1" - why is it needed?
                     }
                     else
                     {
@@ -5056,7 +5056,7 @@ namespace UIMF_File
                         this.plot_Mobility.GraphPane.CurveList[0].Points = new BasicArrayPointList(Enumerable.Range(0, tic_Mobility.Length).Select(x => x * increment_MobilityValue + min_MobilityValue).ToArray(), tic_Mobility);
 
                         minX = min_MobilityValue;
-                        maxX = (tic_Mobility.Length - 1) * increment_MobilityValue + min_MobilityValue - 1;
+                        maxX = (tic_Mobility.Length - 1) * increment_MobilityValue + min_MobilityValue - 1; // TODO: Revisit this last "- 1" - why is it needed?
                     }
 
                     // set min and max here, they will not adjust to zooming
@@ -5164,6 +5164,8 @@ namespace UIMF_File
                 }
 #endif
                 this.flag_enterBinRange = true;
+                double minY = 0;
+                double maxY = 0;
 
                 if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
                 {
@@ -5179,11 +5181,17 @@ namespace UIMF_File
                     {
                         //this.plot_TOF.PlotX(tic_TOF, this.minMobility_Chromatogram, 1.0);
                         this.waveform_TOFPlot.Points = new BasicArrayPointList(tic_TOF, Enumerable.Range(this.minMobility_Chromatogram, tic_TOF.Length).Select(x => (double) x).ToArray());
+
+                        minY = this.minMobility_Chromatogram;
+                        maxY = (tic_TOF.Length - 1) + this.minMobility_Chromatogram;
                     }
                     else
                     {
                         //this.plot_TOF.PlotX(tic_TOF, this.minMobility_Chromatogram, this.ptr_UIMFDatabase.UIMF_FrameParameters.AverageTOFLength / 1000000.0);
                         this.waveform_TOFPlot.Points = new BasicArrayPointList(tic_TOF, Enumerable.Range(0, tic_TOF.Length).Select(x => this.ptr_UIMFDatabase.UIMF_FrameParameters.AverageTOFLength / 1000000.0 * x + this.minMobility_Chromatogram).ToArray());
+
+                        minY = this.minMobility_Chromatogram;
+                        maxY = this.ptr_UIMFDatabase.UIMF_FrameParameters.AverageTOFLength / 1000000.0 * (tic_TOF.Length - 1) + this.minMobility_Chromatogram;
                     }
                 }
                 else
@@ -5207,6 +5215,9 @@ namespace UIMF_File
                         // this.plot_TOF.Enabled = false;
                         //this.plot_TOF.PlotX(tic_TOF, min_BinValue, increment_BinValue); //wfd
                         this.waveform_TOFPlot.Points = new BasicArrayPointList(tic_TOF, Enumerable.Range(0, tic_TOF.Length).Select(x => increment_BinValue * x + min_BinValue).ToArray());
+
+                        minY = min_BinValue;
+                        maxY = increment_BinValue * (tic_TOF.Length - 1) + min_BinValue;
                     }
                     else
                     {
@@ -5229,8 +5240,16 @@ namespace UIMF_File
                         //  this.plot_TOF.Enabled = false;
                         //this.plot_TOF.PlotX(tic_TOF, min_BinValue, increment_BinValue); //wfd
                         this.waveform_TOFPlot.Points = new BasicArrayPointList(tic_TOF, Enumerable.Range(0, tic_TOF.Length).Select(x => increment_BinValue * x + min_BinValue).ToArray());
+
+                        minY = min_BinValue;
+                        maxY = increment_BinValue * (tic_TOF.Length - 1) + min_BinValue;
                     }
                 }
+
+                this.plot_TOF.GraphPane.YAxis.Scale.Min = minY;// - 0.5; // Adding/subtracting 0.5 to keep outer positions the same messes up other computations.
+                this.plot_TOF.GraphPane.YAxis.Scale.Max = maxY;// + 0.5; // Adding/subtracting 0.5 to keep outer positions the same messes up other computations.
+                this.plot_TOF.GraphPane.AxisChange();
+                this.plot_TOF.Refresh();
                 //   this.plot_TOF.Enabled = true;
 #if false
                 if (Math.Abs(this.plot_TOF.PlotAreaBounds.Height- this.pnl_2DMap.Height) > 5)
@@ -5689,6 +5708,7 @@ namespace UIMF_File
             // TODO: //this.xAxis_TOF.MinorDivisions.TickVisible = true;
             // TODO: //this.xAxis_TOF.Position = NationalInstruments.UI.XAxisPosition.Top;
             this.plot_TOF.GraphPane.XAxis.Scale.IsReverse = true;
+            this.plot_TOF.GraphPane.XAxis.Scale.IsLabelsInside = true;
             this.plot_TOF.GraphPane.XAxis.MajorGrid.Color = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.plot_TOF.GraphPane.XAxis.MajorGrid.IsVisible = true;
             this.plot_TOF.GraphPane.XAxis.CrossAuto = false;
@@ -5764,6 +5784,9 @@ namespace UIMF_File
             // TODO: //this.yAxis_TOF.Caption = "Time of Flight";
             // TODO: //this.yAxis_TOF.CaptionFont = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
             this.plot_TOF.GraphPane.YAxis.Title = new AxisLabel("Time of Flight", "Verdana", 8.25F, Color.Black, false, false, false);
+
+            this.plot_TOF.GraphPane.Title.IsVisible = false;
+            this.plot_TOF.GraphPane.Legend.IsVisible = false;
 
             // TODO: //// bottom plot
             // TODO: //this.xAxis_Mobility.Caption = "Mobility - Scans";

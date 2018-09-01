@@ -697,6 +697,8 @@ namespace UIMF_File
             this.plot_TOF.Size = new System.Drawing.Size(204, 440);
             this.plot_TOF.TabIndex = 20;
             this.plot_TOF.TabStop = false;
+            this.plot_TOF.GraphPane.Title.IsVisible = false;
+            this.plot_TOF.GraphPane.Legend.IsVisible = false;
             //TODO: ////
             //TODO: //// waveform_TOFPlot
             //TODO: ////
@@ -716,6 +718,7 @@ namespace UIMF_File
             //TODO: //this.xAxis_TOF.MinorDivisions.TickVisible = true;
             //TODO: //this.xAxis_TOF.Position = NationalInstruments.UI.XAxisPosition.Top;
             this.plot_TOF.GraphPane.XAxis.Scale.IsReverse = true;
+            this.plot_TOF.GraphPane.XAxis.Scale.IsLabelsInside = true;
             this.plot_TOF.GraphPane.XAxis.MajorGrid.Color = System.Drawing.Color.FromArgb(((int) (((byte) (224)))), ((int) (((byte) (224)))), ((int) (((byte) (224)))));
             this.plot_TOF.GraphPane.XAxis.MajorGrid.IsVisible = true;
             this.plot_TOF.GraphPane.XAxis.CrossAuto = false;
@@ -1237,7 +1240,7 @@ namespace UIMF_File
             this.tab_DataViewer.Controls.Add(this.num_maxMobility);
             this.tab_DataViewer.Controls.Add(this.num_maxBin);
             this.tab_DataViewer.Controls.Add(this.num_minBin);
-            //TODO: //this.tab_DataViewer.Controls.Add(this.plot_TOF);
+            this.tab_DataViewer.Controls.Add(this.plot_TOF);
             this.tab_DataViewer.Controls.Add(this.slide_Threshold);
             this.tab_DataViewer.Controls.Add(this.btn_Reset);
             this.tab_DataViewer.Controls.Add(this.lbl_ExperimentDate);
