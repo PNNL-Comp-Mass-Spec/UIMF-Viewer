@@ -1,7 +1,14 @@
 ﻿using System.Drawing;
+using System.Windows;
+using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
+using System.Windows.Forms.Integration;
+using System.Windows.Media;
 using ZedGraph;
+using UIMF_DataViewer.WpfControls;
+using Color = System.Drawing.Color;
 using Label = System.Windows.Forms.Label;
+using Pen = System.Drawing.Pen;
 
 namespace UIMF_File
 {
@@ -112,7 +119,8 @@ namespace UIMF_File
         private TextBox tb_CalT0;
         private TextBox tb_CalA;
         //private NationalInstruments.UI.WindowsForms.Slide slide_FrameSelect;
-        private TrackBar slide_FrameSelect;
+        private SliderLabeled slide_FrameSelect;
+        private ElementHost elementHost_FrameSelect;
         private Label lbl_FrameRange;
         private NumericUpDown num_FrameRange;
         private Label lbl_FramesShown;
@@ -256,7 +264,8 @@ namespace UIMF_File
             this.hsb_2DMap = new System.Windows.Forms.HScrollBar();
             this.vsb_2DMap = new System.Windows.Forms.VScrollBar();
             //TODO: //this.slide_FrameSelect = new NationalInstruments.UI.WindowsForms.Slide();
-            this.slide_FrameSelect = new TrackBar();
+            this.slide_FrameSelect = new SliderLabeled();
+            this.elementHost_FrameSelect = new ElementHost();
             this.lbl_FrameRange = new System.Windows.Forms.Label();
             this.num_FrameRange = new System.Windows.Forms.NumericUpDown();
             this.lbl_FramesShown = new System.Windows.Forms.Label();
@@ -313,7 +322,6 @@ namespace UIMF_File
             this.tabpages_FrameInfo.SuspendLayout();
             this.tabPage_Cursor.SuspendLayout();
             this.tabPage_Calibration.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.slide_FrameSelect)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_FrameRange)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_TICThreshold)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_FrameCompression)).BeginInit();
@@ -728,6 +736,7 @@ namespace UIMF_File
             //TODO: ////
             //TODO: //this.yAxis_TOF.Mode = NationalInstruments.UI.AxisMode.AutoScaleExact;
             this.plot_TOF.GraphPane.YAxis.Scale.MaxAuto = true;
+            this.plot_TOF.GraphPane.Margin.Top = 50;
             //
             // contextMenu_TOF
             //
@@ -1034,18 +1043,26 @@ namespace UIMF_File
             //TODO: //this.slide_FrameSelect.TabIndex = 50;
             //TODO: //this.slide_FrameSelect.ToolTipFormat = new NationalInstruments.UI.FormatString(NationalInstruments.UI.FormatStringMode.Numeric, "F0");
             //TODO: //this.slide_FrameSelect.Value = 4D;
-            this.slide_FrameSelect.BackColor = System.Drawing.Color.DarkSlateGray;
-            this.slide_FrameSelect.ForeColor = System.Drawing.Color.GhostWhite;
-            this.slide_FrameSelect.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.slide_FrameSelect.Location = new System.Drawing.Point(272, 36);
+            //this.slide_FrameSelect.BackColor = System.Drawing.Color.GhostWhite;
+            //this.slide_FrameSelect.ForeColor = System.Drawing.Color.DarkSlateGray;
+            this.slide_FrameSelect.FontFamily = new System.Windows.Media.FontFamily("Arial");
+            this.slide_FrameSelect.FontWeight = FontWeights.Bold;
+            this.slide_FrameSelect.FontSize = WpfConversions.GetWpfLength("9pt");
             this.slide_FrameSelect.TickFrequency = 1;
             this.slide_FrameSelect.Name = "slide_FrameSelect";
             this.slide_FrameSelect.Minimum = 0;
             this.slide_FrameSelect.Maximum = 5;
-            this.slide_FrameSelect.Orientation = Orientation.Horizontal;
-            this.slide_FrameSelect.Size = new System.Drawing.Size(276, 47);
+            this.slide_FrameSelect.Orientation = System.Windows.Controls.Orientation.Horizontal;
             this.slide_FrameSelect.TabIndex = 50;
             this.slide_FrameSelect.Value = 4;
+            this.slide_FrameSelect.TickPlacement = TickPlacement.TopLeft;
+            this.slide_FrameSelect.IsSnapToTickEnabled = true;
+            this.slide_FrameSelect.IsSelectionRangeEnabled = true;
+            this.slide_FrameSelect.IsMoveToPointEnabled = true;
+            this.slide_FrameSelect.Resources = new ResourceDictionary() {Source = new System.Uri("/UIMF_DataViewer;component/WpfControls/SliderLabeledStyle.xaml", System.UriKind.Relative)};
+            this.elementHost_FrameSelect.Location = new System.Drawing.Point(272, 36);
+            this.elementHost_FrameSelect.Size = new System.Drawing.Size(276, 47);
+            this.elementHost_FrameSelect.Child = slide_FrameSelect;
             //
             // lbl_FrameRange
             //
@@ -1265,7 +1282,7 @@ namespace UIMF_File
             this.pnl_FrameControl.Controls.Add(this.pb_PlayLeftOut);
             this.pnl_FrameControl.Controls.Add(this.pb_PlayRightOut);
             this.pnl_FrameControl.Controls.Add(this.cb_FrameType);
-            this.pnl_FrameControl.Controls.Add(this.slide_FrameSelect);
+            this.pnl_FrameControl.Controls.Add(this.elementHost_FrameSelect);
             this.pnl_FrameControl.Controls.Add(this.num_FrameRange);
             this.pnl_FrameControl.Controls.Add(this.lbl_FrameRange);
             this.pnl_FrameControl.Controls.Add(this.lbl_FramesShown);
@@ -1558,6 +1575,7 @@ namespace UIMF_File
             this.plot_Mobility.GraphPane.XAxis.Scale.Format = "F2";
             this.plot_Mobility.GraphPane.XAxis.Scale.MaxAuto = true;
             this.plot_Mobility.GraphPane.YAxis.Scale.IsLabelsInside = true;
+            this.plot_Mobility.GraphPane.Margin.Right = 50;
             //
             // pb_Shrink
             //
@@ -1697,7 +1715,6 @@ namespace UIMF_File
             this.tabPage_Cursor.ResumeLayout(false);
             this.tabPage_Calibration.ResumeLayout(false);
             this.tabPage_Calibration.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.slide_FrameSelect)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_FrameRange)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_TICThreshold)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_FrameCompression)).EndInit();
