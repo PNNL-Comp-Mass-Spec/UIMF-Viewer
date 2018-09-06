@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2003
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UIMF_Viewer", "UIMF_Viewer.csproj", "{7D1D311C-564F-480F-A8BF-CF648D93DF65}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UIMF_Viewer", "UIMF_Viewer\UIMF_Viewer.csproj", "{7D1D311C-564F-480F-A8BF-CF648D93DF65}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UIMF_DataViewer", "..\UIMF_DataViewer\UIMF_DataViewer.csproj", "{0ACEC402-1936-4664-9524-100052613ECE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UIMF_DataViewer", "UIMF_DataViewer\UIMF_DataViewer.csproj", "{0ACEC402-1936-4664-9524-100052613ECE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
