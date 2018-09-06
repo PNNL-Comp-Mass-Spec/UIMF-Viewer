@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System.Linq;
+using System.Windows.Forms;
 
 namespace IonMobility
 {
@@ -30,13 +31,9 @@ namespace IonMobility
         {
             if (disposing)
             {
-                for (int i = 0; i < this.open_Experiments.Count; i++)
+                foreach (var exp in this.open_Experiments.Where(x => !x.IsDisposed))
                 {
-                    var exp = (UIMF_File.DataViewer)this.open_Experiments[i];
-                    if (!exp.IsDisposed)
-                    {
-                        ((UIMF_File.DataViewer)this.open_Experiments[i]).Close();
-                    }
+                    exp.Close();
                 }
 
                 if (components != null)
