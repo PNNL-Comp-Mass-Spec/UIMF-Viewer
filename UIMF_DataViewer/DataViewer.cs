@@ -4152,7 +4152,7 @@ namespace UIMF_File
 
         private void btn_Reset_Clicked(object sender, System.EventArgs e)
         {
-            this.slide_Threshold.ActualValue = 1;
+            this.slide_Threshold.Value = 1;
             this.slider_PlotBackground.set_Value(30);
             this.slider_ColorMap.reset_Settings();
 
@@ -4627,11 +4627,11 @@ namespace UIMF_File
             double thresholdValue = 0;
             if (this.elementHost_Threshold.InvokeRequired)
             {
-                this.elementHost_Threshold.Invoke(new MethodInvoker(delegate { thresholdValue = this.slide_Threshold.ActualValue; }));
+                this.elementHost_Threshold.Invoke(new MethodInvoker(delegate { thresholdValue = this.slide_Threshold.Value; }));
             }
             else
             {
-                thresholdValue = this.slide_Threshold.ActualValue;
+                thresholdValue = this.slide_Threshold.Value;
             }
 
             int threshold = Convert.ToInt32(thresholdValue) - 1;

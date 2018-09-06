@@ -21,7 +21,7 @@ namespace UIMF_DataViewer.WpfControls
 
         public SliderLabeled()
         {
-            SetActualsBindings();
+            SetWrapperBindings();
         }
 
         // TODO: Add a 'StringFormatter' option?
@@ -32,7 +32,7 @@ namespace UIMF_DataViewer.WpfControls
         }
 
         /// <summary>
-        /// IsLogarithmicScale: if true, use <see cref="ActualValue"/>, <see cref="ActualMinimum"/>, and <see cref="ActualMaximum"/> to access those values appropriately
+        /// IsLogarithmicScale: if true, <see cref="Value"/>, <see cref="Minimum"/>, and <see cref="Maximum"/> are wrapped with a value conversion
         /// </summary>
         public bool IsLogarithmicScale
         {
@@ -41,57 +41,60 @@ namespace UIMF_DataViewer.WpfControls
         }
 
         /// <summary>
-        /// ActualValue property - Value, wrapped by a ValueConverter when <see cref="IsLogarithmicScale"/> is true.
+        /// Value property - Value, wrapped by a ValueConverter when <see cref="IsLogarithmicScale"/> is true.
         /// </summary>
-        public double ActualValue
+        public new double Value
         {
-            get { return (double)GetValue(ActualValueProperty); }
-            set { SetValue(ActualValueProperty, value); }
+            get { return (double)GetValue(WrappedValueProperty); }
+            set { SetValue(WrappedValueProperty, value); }
         }
 
         /// <summary>
-        /// ActualMinimum property - Minimum, wrapped by a ValueConverter when <see cref="IsLogarithmicScale"/> is true.
+        /// Minimum property - Minimum, wrapped by a ValueConverter when <see cref="IsLogarithmicScale"/> is true.
         /// </summary>
-        public double ActualMinimum
+        public new double Minimum
         {
-            get { return (double)GetValue(ActualMinimumProperty); }
-            set { SetValue(ActualMinimumProperty, value); }
+            get { return (double)GetValue(WrappedMinimumProperty); }
+            set { SetValue(WrappedMinimumProperty, value); }
         }
 
         /// <summary>
-        /// ActualMaximum property - Maximum, wrapped by a ValueConverter when <see cref="IsLogarithmicScale"/> is true.
+        /// Maximum property - Maximum, wrapped by a ValueConverter when <see cref="IsLogarithmicScale"/> is true.
         /// </summary>
-        public double ActualMaximum
+        public new double Maximum
         {
-            get { return (double)GetValue(ActualMaximumProperty); }
-            set { SetValue(ActualMaximumProperty, value); }
+            get { return (double)GetValue(WrappedMaximumProperty); }
+            set { SetValue(WrappedMaximumProperty, value); }
         }
 
-        private void SetActualsBindings()
+        private void SetWrapperBindings()
         {
-            var actualValueBinding = new Binding("ActualValue")
+            var wrappedValueBinding = new Binding(nameof(Value))
             {
-                Source = this
+                Source = this,
+                Mode = BindingMode.TwoWay
             };
-            var actualMinimumBinding = new Binding("ActualMinimum")
+            var wrappedMinimumBinding = new Binding(nameof(Minimum))
             {
-                Source = this
+                Source = this,
+                Mode = BindingMode.TwoWay
             };
-            var actualMaximumBinding = new Binding("ActualMaximum")
+            var wrappedMaximumBinding = new Binding(nameof(Maximum))
             {
-                Source = this
+                Source = this,
+                Mode = BindingMode.TwoWay
             };
 
             if (IsLogarithmicScale)
             {
-                actualValueBinding.Converter = new LogConverter();
-                actualMinimumBinding.Converter = new LogConverter();
-                actualMaximumBinding.Converter = new LogConverter();
+                wrappedValueBinding.Converter = new LogConverter();
+                wrappedMinimumBinding.Converter = new LogConverter();
+                wrappedMaximumBinding.Converter = new LogConverter();
             }
 
-            SetBinding(ValueProperty, actualValueBinding);
-            SetBinding(MinimumProperty, actualMinimumBinding);
-            SetBinding(MaximumProperty, actualMaximumBinding);
+            SetBinding(ValueProperty, wrappedValueBinding);
+            SetBinding(MinimumProperty, wrappedMinimumBinding);
+            SetBinding(MaximumProperty, wrappedMaximumBinding);
         }
 
         private bool defaultLogTicks = false;
@@ -103,9 +106,10 @@ namespace UIMF_DataViewer.WpfControls
                 if (Ticks == null || Ticks.Count == 0 || defaultLogTicks)
                 {
                     // Minimum and Maximum: add/subtract 0.5 to guarantee we get a value inside the range
-                    var minInt = (int)Math.Round(Minimum + 0.5, MidpointRounding.AwayFromZero);
-                    var maxInt = (int)Math.Round(Maximum - 0.5, MidpointRounding.AwayFromZero);
-                    Ticks = new DoubleCollection(Enumerable.Range(minInt, maxInt - minInt + 1).Select(x => (double)x));
+                    var minInt = (int)Math.Round(base.Minimum - 0.5, MidpointRounding.AwayFromZero);
+                    var maxInt = (int)Math.Round(base.Maximum + 0.5, MidpointRounding.AwayFromZero);
+                    var count = Math.Max(maxInt - minInt + 1, 0);
+                    Ticks = new DoubleCollection(Enumerable.Range(minInt, count).Select(x => (double)x));
                     defaultLogTicks = true;
                 }
             }
@@ -154,20 +158,20 @@ namespace UIMF_DataViewer.WpfControls
         /// <summary>
         /// ActualValue property - Value, wrapped by a ValueConverter when <see cref="IsLogarithmicScale"/> is true.
         /// </summary>
-        public static readonly DependencyProperty ActualValueProperty =
-            DependencyProperty.Register("ActualValue", typeof(double), typeof(SliderLabeled), new FrameworkPropertyMetadata(0d, FrameworkPropertyMetadataOptions.AffectsArrange | FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
+        public static readonly DependencyProperty WrappedValueProperty =
+            DependencyProperty.Register("Value", typeof(double), typeof(SliderLabeled), new FrameworkPropertyMetadata(0d, FrameworkPropertyMetadataOptions.AffectsArrange | FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, LogarithmicScalePropertyChangedCallback));
 
         /// <summary>
         /// ActualMinimum property - Minimum, wrapped by a ValueConverter when <see cref="IsLogarithmicScale"/> is true.
         /// </summary>
-        public static readonly DependencyProperty ActualMinimumProperty =
-            DependencyProperty.Register("ActualMinimum", typeof(double), typeof(SliderLabeled), new FrameworkPropertyMetadata(0d, FrameworkPropertyMetadataOptions.AffectsArrange | FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender, LogarithmicScalePropertyChangedCallback));
+        public static readonly DependencyProperty WrappedMinimumProperty =
+            DependencyProperty.Register("Minimum", typeof(double), typeof(SliderLabeled), new FrameworkPropertyMetadata(0d, FrameworkPropertyMetadataOptions.AffectsArrange | FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, LogarithmicScalePropertyChangedCallback));
 
         /// <summary>
         /// ActualMaximum property - Maximum, wrapped by a ValueConverter when <see cref="IsLogarithmicScale"/> is true.
         /// </summary>
-        public static readonly DependencyProperty ActualMaximumProperty =
-            DependencyProperty.Register("ActualMaximum", typeof(double), typeof(SliderLabeled), new FrameworkPropertyMetadata(0d, FrameworkPropertyMetadataOptions.AffectsArrange | FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender, LogarithmicScalePropertyChangedCallback));
+        public static readonly DependencyProperty WrappedMaximumProperty =
+            DependencyProperty.Register("Maximum", typeof(double), typeof(SliderLabeled), new FrameworkPropertyMetadata(0d, FrameworkPropertyMetadataOptions.AffectsArrange | FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, LogarithmicScalePropertyChangedCallback));
 
         //public Brush TickFill
         //{
@@ -189,7 +193,7 @@ namespace UIMF_DataViewer.WpfControls
             {
                 if ((bool)e.NewValue)
                 {
-                    sl.SetActualsBindings();
+                    sl.SetWrapperBindings();
                     sl.SetDefaultTicks(e.Property.Name);
                     if (StringFormatProperty.DefaultMetadata.DefaultValue.Equals(sl.StringFormat))
                     {
@@ -198,7 +202,7 @@ namespace UIMF_DataViewer.WpfControls
                 }
                 else
                 {
-                    sl.SetActualsBindings();
+                    sl.SetWrapperBindings();
                     sl.SetDefaultTicks(e.Property.Name);
                     if (DefaultLogScaleFormatString.Equals(sl.StringFormat))
                     {
@@ -206,10 +210,23 @@ namespace UIMF_DataViewer.WpfControls
                     }
                 }
             }
-            else if (e.Property.Name.Equals(nameof(Minimum)) || e.Property.Name.Equals(nameof(Maximum)) || e.Property.Name.Equals(nameof(ActualMinimum)) || e.Property.Name.Equals(nameof(ActualMaximum)))
+            else if (e.Property.Name.Equals(nameof(Minimum)) || e.Property.Name.Equals(nameof(Maximum)))
             {
                 sl.SetDefaultTicks(e.Property.Name);
             }
+        }
+
+        /// <summary>Raises the <see cref="SliderLabeled.ValueChanged" /> routed event. </summary>
+        /// <param name="oldValue">Old value of the <see cref="SliderLabeled.Value" /> property</param>
+        /// <param name="newValue">New value of the <see cref="SliderLabeled.Value" /> property</param>
+        protected override void OnValueChanged(double oldValue, double newValue)
+        {
+            if (IsLogarithmicScale)
+            {
+                oldValue = Math.Pow(10, oldValue);
+                newValue = Math.Pow(10, newValue);
+            }
+            base.OnValueChanged(oldValue, newValue);
         }
     }
 }

@@ -839,12 +839,12 @@ namespace UIMF_File
             this.slide_Threshold.FontWeight = FontWeights.Bold;
             this.slide_Threshold.FontSize = WpfConversions.GetWpfLength("8.25pt");
             this.slide_Threshold.Name = "slide_Threshold";
-            this.slide_Threshold.ActualMinimum = 1;
-            this.slide_Threshold.ActualMaximum = 10000000;
+            this.slide_Threshold.Minimum = 1;
+            this.slide_Threshold.Maximum = 10000000;
             this.slide_Threshold.Orientation = System.Windows.Controls.Orientation.Vertical;
             this.slide_Threshold.IsLogarithmicScale = true;
             this.slide_Threshold.TabIndex = 36;
-            this.slide_Threshold.ActualValue = 1;
+            this.slide_Threshold.Value = 1;
             this.slide_Threshold.TickPlacement = TickPlacement.BottomRight;
             this.slide_Threshold.IsMoveToPointEnabled = true;
             this.slide_Threshold.Resources = new ResourceDictionary() { Source = new System.Uri("/UIMF_DataViewer;component/WpfControls/SliderLabeledStyle.xaml", System.UriKind.Relative) };
