@@ -680,7 +680,7 @@ namespace UIMF_File
                 this.tb_CalA.Leave += new System.EventHandler(this.CalibratorA_Changed);
 
                 this.btn_Reset.Click += new System.EventHandler(this.btn_Reset_Clicked);
-                this.slide_Threshold.ValueChanged += new System.EventHandler(this.slide_Threshold_ValueChanged);
+                this.slide_Threshold.ValueChanged += this.slide_Threshold_ValueChanged;
                 this.btn_revertCalDefaults.Click += new System.EventHandler(this.btn_revertCalDefaults_Click);
 
                 this.pnl_postProcessing.btn_AttemptCalibration.Click += new System.EventHandler(this.btn_CalibrateFrames_Click);
@@ -988,17 +988,17 @@ namespace UIMF_File
             this.slider_PlotBackground.Height = (this.max_plot_height / 3) + 5;
             this.slider_PlotBackground.Top = this.pnl_FrameControl.Top + this.pnl_FrameControl.Height + 10;
 
-            this.slide_Threshold.Height = this.max_plot_height - this.btn_Reset.Height - this.slider_PlotBackground.Height;
-            this.slide_Threshold.Top = this.slider_PlotBackground.Top + this.slider_PlotBackground.Height;
+            this.elementHost_Threshold.Height = this.max_plot_height - this.btn_Reset.Height - this.slider_PlotBackground.Height;
+            this.elementHost_Threshold.Top = this.slider_PlotBackground.Top + this.slider_PlotBackground.Height;
 
-            this.btn_Reset.Top = this.slide_Threshold.Top + this.slide_Threshold.Height;
+            this.btn_Reset.Top = this.elementHost_Threshold.Top + this.elementHost_Threshold.Height;
 
-            this.slider_ColorMap.Height = (this.slide_Threshold.Top + this.slide_Threshold.Height) - this.slider_PlotBackground.Top;
+            this.slider_ColorMap.Height = (this.elementHost_Threshold.Top + this.elementHost_Threshold.Height) - this.slider_PlotBackground.Top;
             this.slider_ColorMap.Top = this.slider_PlotBackground.Top;
 
-            this.slide_Threshold.Left = this.tab_DataViewer.Width - (this.slide_Threshold.Width + 25) - 10;
-            this.slider_PlotBackground.Left = this.slide_Threshold.Left;
-            this.slider_ColorMap.Left = this.slide_Threshold.Left - this.slider_ColorMap.Width - 10;
+            this.elementHost_Threshold.Left = this.tab_DataViewer.Width - (this.elementHost_Threshold.Width + 25) - 10;
+            this.slider_PlotBackground.Left = this.elementHost_Threshold.Left;
+            this.slider_ColorMap.Left = this.elementHost_Threshold.Left - this.slider_ColorMap.Width - 10;
             this.btn_Reset.Left = this.slider_ColorMap.Left + 12;
 
             // Middle Bottom
@@ -4104,7 +4104,7 @@ namespace UIMF_File
         // //////////////////////////////////////////////////////////////////////////
         // Display Settings
         //
-        private void slide_Threshold_ValueChanged(object sender, System.EventArgs e)
+        private void slide_Threshold_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             this.flag_update2DGraph = true;
         }
@@ -4152,7 +4152,7 @@ namespace UIMF_File
 
         private void btn_Reset_Clicked(object sender, System.EventArgs e)
         {
-            this.slide_Threshold.Value = 1;
+            this.slide_Threshold.ActualValue = 1;
             this.slider_PlotBackground.set_Value(30);
             this.slider_ColorMap.reset_Settings();
 
@@ -4624,14 +4624,14 @@ namespace UIMF_File
 
             LockBitmap();
 
-            int thresholdValue = 0;
-            if (this.slide_Threshold.InvokeRequired)
+            double thresholdValue = 0;
+            if (this.elementHost_Threshold.InvokeRequired)
             {
-                this.slide_Threshold.Invoke(new MethodInvoker(delegate { thresholdValue = this.slide_Threshold.Value; }));
+                this.elementHost_Threshold.Invoke(new MethodInvoker(delegate { thresholdValue = this.slide_Threshold.ActualValue; }));
             }
             else
             {
-                thresholdValue = this.slide_Threshold.Value;
+                thresholdValue = this.slide_Threshold.ActualValue;
             }
 
             int threshold = Convert.ToInt32(thresholdValue) - 1;

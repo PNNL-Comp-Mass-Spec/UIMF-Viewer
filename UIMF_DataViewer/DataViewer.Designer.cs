@@ -94,7 +94,8 @@ namespace UIMF_File
         protected System.Windows.Forms.Label label3;
         protected System.Windows.Forms.Label lbl_CursorScanTime;
         //public NationalInstruments.UI.WindowsForms.Slide slide_Threshold;
-        public TrackBar slide_Threshold;
+        public SliderLabeled slide_Threshold;
+        public ElementHost elementHost_Threshold;
         private System.Windows.Forms.MenuItem menuItem1;
         private System.Windows.Forms.MenuItem menuItem_CaptureExperimentFrame;
 
@@ -246,7 +247,8 @@ namespace UIMF_File
             this.num_maxBin = new System.Windows.Forms.NumericUpDown();
             this.num_minBin = new System.Windows.Forms.NumericUpDown();
             //TODO: //this.slide_Threshold = new NationalInstruments.UI.WindowsForms.Slide();
-            this.slide_Threshold = new TrackBar();
+            this.slide_Threshold = new SliderLabeled();
+            this.elementHost_Threshold = new ElementHost();
             this.btn_Reset = new System.Windows.Forms.Button();
             this.lbl_ExperimentDate = new System.Windows.Forms.Label();
             this.tabpages_FrameInfo = new System.Windows.Forms.TabControl();
@@ -318,7 +320,6 @@ namespace UIMF_File
             ((System.ComponentModel.ISupportInitialize)(this.num_maxMobility)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_maxBin)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_minBin)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.slide_Threshold)).BeginInit();
             this.tabpages_FrameInfo.SuspendLayout();
             this.tabPage_Cursor.SuspendLayout();
             this.tabPage_Calibration.SuspendLayout();
@@ -832,18 +833,24 @@ namespace UIMF_File
             //TODO: //this.slide_Threshold.Size = new System.Drawing.Size(64, 280);
             //TODO: //this.slide_Threshold.TabIndex = 36;
             //TODO: //this.slide_Threshold.Value = 1D;
-            this.slide_Threshold.BackColor = System.Drawing.Color.DimGray;
-            this.slide_Threshold.ForeColor = System.Drawing.Color.RoyalBlue;
-            this.slide_Threshold.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.slide_Threshold.Location = new System.Drawing.Point(834, 128);
+            //this.slide_Threshold.BackColor = System.Drawing.Color.DimGray;
+            //this.slide_Threshold.ForeColor = System.Drawing.Color.RoyalBlue;
+            this.slide_Threshold.FontFamily = new System.Windows.Media.FontFamily("Arial");
+            this.slide_Threshold.FontWeight = FontWeights.Bold;
+            this.slide_Threshold.FontSize = WpfConversions.GetWpfLength("8.25pt");
             this.slide_Threshold.Name = "slide_Threshold";
-            this.slide_Threshold.Minimum = 1;
-            this.slide_Threshold.Maximum = 10000000;
-            this.slide_Threshold.Orientation = Orientation.Vertical;
-            //this.slide_Threshold.ScaleType = NationalInstruments.UI.ScaleType.Logarithmic;
-            this.slide_Threshold.Size = new System.Drawing.Size(64, 280);
+            this.slide_Threshold.ActualMinimum = 1;
+            this.slide_Threshold.ActualMaximum = 10000000;
+            this.slide_Threshold.Orientation = System.Windows.Controls.Orientation.Vertical;
+            this.slide_Threshold.IsLogarithmicScale = true;
             this.slide_Threshold.TabIndex = 36;
-            this.slide_Threshold.Value = 1;
+            this.slide_Threshold.ActualValue = 1;
+            this.slide_Threshold.TickPlacement = TickPlacement.BottomRight;
+            this.slide_Threshold.IsMoveToPointEnabled = true;
+            this.slide_Threshold.Resources = new ResourceDictionary() { Source = new System.Uri("/UIMF_DataViewer;component/WpfControls/SliderLabeledStyle.xaml", System.UriKind.Relative) };
+            this.elementHost_Threshold.Location = new System.Drawing.Point(834, 128);
+            this.elementHost_Threshold.Size = new System.Drawing.Size(64, 280);
+            this.elementHost_Threshold.Child = this.slide_Threshold;
             //
             // btn_Reset
             //
@@ -1258,7 +1265,7 @@ namespace UIMF_File
             this.tab_DataViewer.Controls.Add(this.num_maxBin);
             this.tab_DataViewer.Controls.Add(this.num_minBin);
             this.tab_DataViewer.Controls.Add(this.plot_TOF);
-            this.tab_DataViewer.Controls.Add(this.slide_Threshold);
+            this.tab_DataViewer.Controls.Add(this.elementHost_Threshold);
             this.tab_DataViewer.Controls.Add(this.btn_Reset);
             this.tab_DataViewer.Controls.Add(this.lbl_ExperimentDate);
             this.tab_DataViewer.Controls.Add(this.tabpages_FrameInfo);
@@ -1710,7 +1717,6 @@ namespace UIMF_File
             ((System.ComponentModel.ISupportInitialize)(this.num_maxMobility)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_maxBin)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_minBin)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.slide_Threshold)).EndInit();
             this.tabpages_FrameInfo.ResumeLayout(false);
             this.tabPage_Cursor.ResumeLayout(false);
             this.tabPage_Calibration.ResumeLayout(false);
