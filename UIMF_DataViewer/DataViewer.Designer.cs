@@ -1607,7 +1607,6 @@ namespace UIMF_File
             this.plot_Mobility.GraphPane.XAxis.Scale.Format = "F2";
             this.plot_Mobility.GraphPane.XAxis.Scale.MaxAuto = true;
             this.plot_Mobility.GraphPane.YAxis.Scale.IsLabelsInside = true;
-            this.plot_Mobility.IsShowCursorValues = true;
             this.plot_Mobility.GraphPane.IsFontsScaled = false;
             this.plot_Mobility.GraphPane.Margin.Left = -5;
             this.plot_Mobility.GraphPane.Margin.Top = 5;

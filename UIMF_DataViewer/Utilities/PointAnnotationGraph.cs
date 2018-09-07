@@ -10,6 +10,7 @@ namespace UIMF_File.Utilities
 {
     public class PointAnnotationGraph : ZedGraphControl
     {
+        private const string CursorLabel = "PointMarker";
         public SizeF _HitSize = new SizeF(1, 10);
         public int XMax;
 
@@ -30,38 +31,7 @@ namespace UIMF_File.Utilities
             base.MouseDownEvent += OnPlotAreaMouseDown;
             base.MouseMove += OnPlotAreaMouseMove;
             base.MouseUpEvent += OnPlotAreaMouseUp;
-            base.Paint += OnAfterDrawPlot;
-            base.IsShowCursorValues = true;
-            base.CursorValueEvent += OnCursorValueEvent;
             base.GraphPane.IsFontsScaled = false;
-        }
-
-        private string OnCursorValueEvent(ZedGraphControl sender, GraphPane pane, Point mousept)
-        {
-            // Regardless of the cursor location, show the value corresponding to the displayed curve.
-            var curve = ((LineItem) pane.CurveList[0]).Line.BuildPointsArray(pane, pane.CurveList[0], out var points, out int count);
-            var poss = points.FirstOrDefault(x => (int) x.X == mousept.X);
-            var index = points.ToList().IndexOf(poss);
-            if (index < 0 || index >= pane.CurveList[0].Points.Count)
-            {
-                return $"{poss.X:F0}, {poss.Y:F0}";
-            }
-
-            var point = pane.CurveList[0].Points[index];
-            // TODO: draw markers on the line?
-            // Might be possible by adding a new line with just the single point...
-            if (pane.CurveList.Count == 1)
-            {
-                pane.CurveList.Add(new LineItem("", new BasicArrayPointList(new [] {point.X}, new [] {point.Y}), Color.Crimson, SymbolType.XCross));
-            }
-            else
-            {
-                pane.CurveList[1] = new LineItem("", new BasicArrayPointList(new[] { point.X }, new[] { point.Y }), Color.Crimson, SymbolType.XCross);
-            }
-
-           sender.Refresh();
-
-            return $"{point.X:F0}, {point.Y:F0}";
         }
 
         public void StopAnnotating(bool flag)
@@ -265,8 +235,12 @@ namespace UIMF_File.Utilities
 
             if (this.GraphPane.CurveList.Count > 1)
             {
-                this.GraphPane.CurveList.RemoveAt(1);
-                this.Refresh();
+                var curveIndex = this.GraphPane.CurveList.IndexOf(CursorLabel);
+                if (curveIndex >= 0)
+                {
+                    this.GraphPane.CurveList.RemoveAt(curveIndex);
+                    this.Refresh();
+                }
             }
 
             xPosition = -1000;
@@ -275,12 +249,13 @@ namespace UIMF_File.Utilities
             //this.Invalidate();
         }
 
-        protected void OnAfterDrawPlot(object sender, PaintEventArgs e)
+        protected override void OnPaint(PaintEventArgs e)
         {
             if (this.flag_StopAnnotating)
                 return;
 
             //base.OnAfterDrawPlot(e);
+            base.OnPaint(e);
 
             Line plot = ((LineItem)this.GraphPane.CurveList[0]).Line;
             double[] xData;
@@ -299,11 +274,13 @@ namespace UIMF_File.Utilities
 
             if(xData.Length > 0)
             {
-                Rectangle bounds = e.ClipRectangle;
+                //Rectangle bounds = e.ClipRectangle;
+                RectangleF bounds = this.GraphPane.Chart.Rect;
                 PointF[] points; // = plot.MapDataPoints(bounds, xData, yData, false);
                 int count;
                 plot.BuildPointsArray(this.GraphPane, this.GraphPane.CurveList[0], out points, out count);
-                DisplayToolTip(points, xData, yData, e.Graphics, bounds);
+                var data = this.GraphPane.CurveList[0].Points;
+                DisplayToolTip(points, data, e.Graphics, bounds);
             }
 
             if(x2 > 0)
@@ -322,7 +299,7 @@ namespace UIMF_File.Utilities
             }
         }
 
-        private void DisplayToolTip(PointF []points, double []xData, double []yData, Graphics g, Rectangle bounds)
+        private void DisplayToolTip(PointF []points, IPointList dataPoints, Graphics g, RectangleF bounds)
         {
             if (this.flag_StopAnnotating)
                 return;
@@ -339,18 +316,30 @@ namespace UIMF_File.Utilities
                     // if(hitRectangle.Contains(xPosition - PlotAreaBounds.X, yPosition - PlotAreaBounds.Y))
                     if(hitRectangle.Contains(xPosition, yPosition))
                     {
-                        string data = string.Format("x={0:F3}, y={1}", xData[x], yData[x]);
+                        string data = string.Format("x={0:F3}, y={1}", dataPoints[x].X, dataPoints[x].Y);
                         if ((this.flag_isTims) && (x<this.ramp_TIMS.Length))
                             data += "\n         Ramp @ "+ this.ramp_TIMS[x]+" volts";
 
                         // TODO: //this.Cursors[0].XPosition = xData[x];
                         // TODO: //this.Cursors[0].YPosition = yData[x];
+                        var point = dataPoints[x];
+                        // Draw a "cursor" by adding a new line with just the single point...
+                        var line = new LineItem(CursorLabel, new BasicArrayPointList(new[] { point.X }, new[] { point.Y }), Color.Blue, SymbolType.Plus);
+                        if (this.GraphPane.CurveList[CursorLabel] == null)
+                        {
+                            this.GraphPane.CurveList.Add(line);
+                        }
+                        else
+                        {
+                            var curveIndex = this.GraphPane.CurveList.IndexOf(CursorLabel);
+                            this.GraphPane.CurveList[curveIndex] = line;
+                        }
 
                         SizeF sizeString = g.MeasureString(data, Font);
                         int pos_left = ((int) (hitRectangle.Right+sizeString.Width) > bounds.Width ? (int) (bounds.Width - sizeString.Width) : (int) hitRectangle.Right);
                         Rectangle displayRectangle = new Rectangle(new Point(pos_left, (int)(hitRectangle.Top - (sizeString.Height / 2))), sizeString.ToSize());
-                        int offsetX = 0;
-                        int offsetY = 0;
+                        double offsetX = 0;
+                        double offsetY = 0;
 
                         if (displayRectangle.Top < bounds.Top)
                             offsetY = bounds.Top - displayRectangle.Top;
@@ -361,7 +350,7 @@ namespace UIMF_File.Utilities
                         if (displayRectangle.Right > XMax)
                             offsetX = XMax - displayRectangle.Right;
 
-                        displayRectangle.Offset(offsetX, offsetY);
+                        displayRectangle.Offset((int)offsetX, (int)offsetY);
                         using (Brush brush = new SolidBrush(Color.White))
                         {
                             //g.FillRectangle(brush, displayRectangle);
@@ -380,14 +369,6 @@ namespace UIMF_File.Utilities
         {
             ((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this)).EndInit();
-        }
-
-        object stop_painting = new object();
-        public new void OnPaint(PaintEventArgs e)
-        {
-            lock (this.stop_painting)
-            {
-            }
         }
     }
 
