@@ -3,7 +3,6 @@ using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
-using System.Windows.Media;
 using ZedGraph;
 using UIMF_DataViewer.WpfControls;
 using Color = System.Drawing.Color;
@@ -692,7 +691,7 @@ namespace UIMF_File
             this.plot_TOF.IsEnableHEdit = false;
             this.plot_TOF.IsEnableHPan = false;
             this.plot_TOF.IsEnableHZoom = false;
-            this.plot_TOF.IsEnableSelection = true;
+            this.plot_TOF.IsEnableSelection = false;
             this.plot_TOF.IsEnableVEdit = false;
             this.plot_TOF.IsEnableVPan = false;
             this.plot_TOF.IsEnableVZoom = false;
@@ -732,12 +731,26 @@ namespace UIMF_File
             this.plot_TOF.GraphPane.XAxis.MajorGrid.IsVisible = true;
             this.plot_TOF.GraphPane.XAxis.CrossAuto = false;
             this.plot_TOF.GraphPane.XAxis.Cross = 1000000; // TODO: Set automatically
+            this.plot_TOF.GraphPane.IsFontsScaled = false;
+            this.plot_TOF.GraphPane.YAxis.MinorTic.IsInside = false;
+            this.plot_TOF.GraphPane.YAxis.MinorTic.IsCrossInside = false;
+            this.plot_TOF.GraphPane.YAxis.MinorTic.IsOpposite = false;
+            this.plot_TOF.GraphPane.YAxis.MajorTic.IsInside = false;
+            this.plot_TOF.GraphPane.YAxis.MajorTic.IsCrossInside = false;
+            this.plot_TOF.GraphPane.YAxis.MajorTic.IsOpposite = false;
+            this.plot_TOF.GraphPane.XAxis.Scale.FontSpec.Family = "Verdana";
+            this.plot_TOF.GraphPane.XAxis.Scale.FontSpec.Size = 8.25F;
+            this.plot_TOF.GraphPane.YAxis.Scale.FontSpec.Family = "Verdana";
+            this.plot_TOF.GraphPane.YAxis.Scale.FontSpec.Size = 8.25F;
             //TODO: ////
             //TODO: //// yAxis_TOF
             //TODO: ////
             //TODO: //this.yAxis_TOF.Mode = NationalInstruments.UI.AxisMode.AutoScaleExact;
             this.plot_TOF.GraphPane.YAxis.Scale.MaxAuto = true;
-            this.plot_TOF.GraphPane.Margin.Top = 50;
+            this.plot_TOF.GraphPane.Margin.Left -= 5;
+            this.plot_TOF.GraphPane.Margin.Top = 25;
+            this.plot_TOF.GraphPane.Margin.Right = 5;
+            this.plot_TOF.GraphPane.Margin.Bottom = 5;
             //
             // contextMenu_TOF
             //
@@ -835,6 +848,7 @@ namespace UIMF_File
             //TODO: //this.slide_Threshold.Value = 1D;
             //this.slide_Threshold.BackColor = System.Drawing.Color.DimGray;
             //this.slide_Threshold.ForeColor = System.Drawing.Color.RoyalBlue;
+            this.slide_Threshold.Foreground = System.Windows.Media.Brushes.Black;
             this.slide_Threshold.FontFamily = new System.Windows.Media.FontFamily("Arial");
             this.slide_Threshold.FontWeight = FontWeights.Bold;
             this.slide_Threshold.FontSize = WpfConversions.GetWpfLength("8.25pt");
@@ -1052,6 +1066,7 @@ namespace UIMF_File
             //TODO: //this.slide_FrameSelect.Value = 4D;
             //this.slide_FrameSelect.BackColor = System.Drawing.Color.GhostWhite;
             //this.slide_FrameSelect.ForeColor = System.Drawing.Color.DarkSlateGray;
+            this.slide_FrameSelect.Foreground = System.Windows.Media.Brushes.Black;
             this.slide_FrameSelect.FontFamily = new System.Windows.Media.FontFamily("Arial");
             this.slide_FrameSelect.FontWeight = FontWeights.Bold;
             this.slide_FrameSelect.FontSize = WpfConversions.GetWpfLength("9pt");
@@ -1546,6 +1561,16 @@ namespace UIMF_File
             this.plot_Mobility.RangeChanged += new Utilities.RangeEventHandler(this.OnPlotTICRangeChanged);
             this.plot_Mobility.GraphPane.Title.IsVisible = false;
             this.plot_Mobility.GraphPane.Legend.IsVisible = false;
+            this.plot_Mobility.GraphPane.XAxis.MinorTic.IsInside = false;
+            this.plot_Mobility.GraphPane.XAxis.MinorTic.IsCrossInside = false;
+            this.plot_Mobility.GraphPane.XAxis.MinorTic.IsOpposite = false;
+            this.plot_Mobility.GraphPane.XAxis.MajorTic.IsInside = false;
+            this.plot_Mobility.GraphPane.XAxis.MajorTic.IsCrossInside = false;
+            this.plot_Mobility.GraphPane.XAxis.MajorTic.IsOpposite = false;
+            this.plot_Mobility.GraphPane.XAxis.Scale.FontSpec.Family = "Verdana";
+            this.plot_Mobility.GraphPane.XAxis.Scale.FontSpec.Size = 8.25F;
+            this.plot_Mobility.GraphPane.YAxis.Scale.FontSpec.Family = "Verdana";
+            this.plot_Mobility.GraphPane.YAxis.Scale.FontSpec.Size = 8.25F;
             this.tab_DataViewer.Controls.Add(this.plot_Mobility);
             //TODO: ////
             //TODO: //// xyCursor2
@@ -1573,7 +1598,7 @@ namespace UIMF_File
             this.plot_Mobility.IsEnableHEdit = false;
             this.plot_Mobility.IsEnableHPan = false;
             this.plot_Mobility.IsEnableHZoom = false;
-            this.plot_Mobility.IsEnableSelection = true;
+            this.plot_Mobility.IsEnableSelection = false;
             this.plot_Mobility.IsEnableVEdit = false;
             this.plot_Mobility.IsEnableVPan = false;
             this.plot_Mobility.IsEnableVZoom = false;
@@ -1582,7 +1607,12 @@ namespace UIMF_File
             this.plot_Mobility.GraphPane.XAxis.Scale.Format = "F2";
             this.plot_Mobility.GraphPane.XAxis.Scale.MaxAuto = true;
             this.plot_Mobility.GraphPane.YAxis.Scale.IsLabelsInside = true;
-            this.plot_Mobility.GraphPane.Margin.Right = 50;
+            this.plot_Mobility.IsShowCursorValues = true;
+            this.plot_Mobility.GraphPane.IsFontsScaled = false;
+            this.plot_Mobility.GraphPane.Margin.Left = -5;
+            this.plot_Mobility.GraphPane.Margin.Top = 5;
+            this.plot_Mobility.GraphPane.Margin.Right = 30;
+            this.plot_Mobility.GraphPane.Margin.Bottom -= 5;
             //
             // pb_Shrink
             //

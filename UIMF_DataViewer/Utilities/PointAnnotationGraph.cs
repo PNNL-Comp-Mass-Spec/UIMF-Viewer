@@ -27,10 +27,41 @@ namespace UIMF_File.Utilities
 
         public PointAnnotationGraph() : base()
         {
-            base.MouseDown += OnPlotAreaMouseDown;
+            base.MouseDownEvent += OnPlotAreaMouseDown;
             base.MouseMove += OnPlotAreaMouseMove;
-            base.MouseUp += OnPlotAreaMouseUp;
+            base.MouseUpEvent += OnPlotAreaMouseUp;
             base.Paint += OnAfterDrawPlot;
+            base.IsShowCursorValues = true;
+            base.CursorValueEvent += OnCursorValueEvent;
+            base.GraphPane.IsFontsScaled = false;
+        }
+
+        private string OnCursorValueEvent(ZedGraphControl sender, GraphPane pane, Point mousept)
+        {
+            // Regardless of the cursor location, show the value corresponding to the displayed curve.
+            var curve = ((LineItem) pane.CurveList[0]).Line.BuildPointsArray(pane, pane.CurveList[0], out var points, out int count);
+            var poss = points.FirstOrDefault(x => (int) x.X == mousept.X);
+            var index = points.ToList().IndexOf(poss);
+            if (index < 0 || index >= pane.CurveList[0].Points.Count)
+            {
+                return $"{poss.X:F0}, {poss.Y:F0}";
+            }
+
+            var point = pane.CurveList[0].Points[index];
+            // TODO: draw markers on the line?
+            // Might be possible by adding a new line with just the single point...
+            if (pane.CurveList.Count == 1)
+            {
+                pane.CurveList.Add(new LineItem("", new BasicArrayPointList(new [] {point.X}, new [] {point.Y}), Color.Crimson, SymbolType.XCross));
+            }
+            else
+            {
+                pane.CurveList[1] = new LineItem("", new BasicArrayPointList(new[] { point.X }, new[] { point.Y }), Color.Crimson, SymbolType.XCross);
+            }
+
+           sender.Refresh();
+
+            return $"{point.X:F0}, {point.Y:F0}";
         }
 
         public void StopAnnotating(bool flag)
@@ -68,7 +99,7 @@ namespace UIMF_File.Utilities
             Invalidate();
         }
 
-        protected void OnPlotAreaMouseDown(object sender, MouseEventArgs e)
+        protected bool OnPlotAreaMouseDown(ZedGraphControl sender, MouseEventArgs e)
         {
           //  if (this.flag_StopAnnotating)
            //     return;
@@ -89,7 +120,7 @@ namespace UIMF_File.Utilities
                 }
 
                 if (xData.Length <= 1)
-                    return;
+                    return true;
 
                 int tick_width = ((int)this.GraphPane.Chart.Rect.Width / (xData.Length-1));
                 int hitX = e.X + (tick_width/2) - (int)this.GraphPane.Chart.Rect.Left;
@@ -102,6 +133,7 @@ namespace UIMF_File.Utilities
                 x2 = -1;
             }
             this.flag_Selecting = true;
+            return true;
         }
 
         protected void OnPlotAreaMouseMove(object sender, MouseEventArgs e)
@@ -138,10 +170,10 @@ namespace UIMF_File.Utilities
             }
         }
 
-        protected void OnPlotAreaMouseUp(object sender, MouseEventArgs e)
+        protected bool OnPlotAreaMouseUp(ZedGraphControl sender, MouseEventArgs e)
         {
             if (this.flag_StopAnnotating)
-                return;
+                return true;
 
             if(e.Button == MouseButtons.Left)
             {
@@ -172,6 +204,8 @@ namespace UIMF_File.Utilities
                     OnRangeChange(true);
                 }
             }
+
+            return true;
         }
 
         protected override void OnKeyPress(KeyPressEventArgs e)
@@ -228,6 +262,12 @@ namespace UIMF_File.Utilities
                 return;
 
             base.OnMouseLeave(e);
+
+            if (this.GraphPane.CurveList.Count > 1)
+            {
+                this.GraphPane.CurveList.RemoveAt(1);
+                this.Refresh();
+            }
 
             xPosition = -1000;
             yPosition = -1000;

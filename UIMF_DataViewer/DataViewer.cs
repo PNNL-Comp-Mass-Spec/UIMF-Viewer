@@ -549,7 +549,10 @@ namespace UIMF_File
             // left plot
             // TODO: //this.yAxis_TOF.Caption = "Time of Flight";
             // TODO: //this.yAxis_TOF.CaptionFont = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-            this.plot_TOF.GraphPane.XAxis.Title = new AxisLabel("Time of Flight", "Verdana", 8.25F, Color.Black, false, false, false);
+            this.plot_TOF.GraphPane.XAxis.Title.Text = "Time of Flight";
+            this.plot_TOF.GraphPane.XAxis.Title.FontSpec.Family = "Verdana";
+            this.plot_TOF.GraphPane.XAxis.Title.FontSpec.Size = 8.25F;
+            this.plot_TOF.GraphPane.XAxis.Title.IsVisible = false;
 
             // bottom plot
             // TODO: //this.xAxis_Mobility.Caption = "Mobility - Scans";
@@ -557,8 +560,13 @@ namespace UIMF_File
             // TODO: //this.yAxis_Mobility.Caption = "Drift Intensity";
             // TODO: //this.yAxis_Mobility.CaptionFont = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
             // TODO: //this.yAxis_Mobility.Position = NationalInstruments.UI.YAxisPosition.Right;
-            this.plot_Mobility.GraphPane.XAxis.Title = new AxisLabel("Mobility - Scans", "Verdana", 8.25F, Color.Black, false, false, false);
-            this.plot_Mobility.GraphPane.YAxis.Title = new AxisLabel("Drift Intensity", "Verdana", 8.25F, Color.Black, false, false, false);
+            this.plot_Mobility.GraphPane.XAxis.Title.Text = "Mobility - Scans";
+            this.plot_Mobility.GraphPane.XAxis.Title.FontSpec.Family = "Verdana";
+            this.plot_Mobility.GraphPane.XAxis.Title.FontSpec.Size = 8.25F;
+            this.plot_Mobility.GraphPane.YAxis.Title.Text = "Drift Intensity";
+            this.plot_Mobility.GraphPane.YAxis.Title.FontSpec.Family = "Verdana";
+            this.plot_Mobility.GraphPane.YAxis.Title.FontSpec.Size = 8.25F;
+            this.plot_Mobility.GraphPane.YAxis.Title.IsVisible = false;
             this.plot_Mobility.GraphPane.YAxis.Cross = 1000000;
 
             //this.slider_PlotBackground.btn_GreyValue.MouseUp += new MouseEventHandler( this.slider_Background_MouseUp );
@@ -5804,7 +5812,9 @@ namespace UIMF_File
             // TODO: //// left plot
             // TODO: //this.yAxis_TOF.Caption = "Time of Flight";
             // TODO: //this.yAxis_TOF.CaptionFont = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
-            this.plot_TOF.GraphPane.YAxis.Title = new AxisLabel("Time of Flight", "Verdana", 8.25F, Color.Black, false, false, false);
+            this.plot_TOF.GraphPane.XAxis.Title.Text = "Time of Flight";
+            this.plot_TOF.GraphPane.XAxis.Title.FontSpec.Family = "Verdana";
+            this.plot_TOF.GraphPane.XAxis.Title.FontSpec.Size = 8.25F;
 
             this.plot_TOF.GraphPane.Title.IsVisible = false;
             this.plot_TOF.GraphPane.Legend.IsVisible = false;
@@ -5815,13 +5825,23 @@ namespace UIMF_File
             // TODO: //this.yAxis_Mobility.Caption = "Drift Intensity";
             // TODO: //this.yAxis_Mobility.CaptionFont = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
             // TODO: //this.yAxis_Mobility.Position = NationalInstruments.UI.YAxisPosition.Right;
-            this.plot_Mobility.GraphPane.XAxis.Title = new AxisLabel("Mobility - Scans", "Verdana", 8.25F, Color.Black, false, false, false);
-            this.plot_Mobility.GraphPane.YAxis.Title = new AxisLabel("Drift Intensity", "Verdana", 8.25F, Color.Black, false, false, false);
+            this.plot_Mobility.GraphPane.XAxis.Title.Text = "Mobility - Scans";
+            this.plot_Mobility.GraphPane.XAxis.Title.FontSpec.Family = "Verdana";
+            this.plot_Mobility.GraphPane.XAxis.Title.FontSpec.Size = 8.25F;
+            this.plot_Mobility.GraphPane.YAxis.Title.Text = "Drift Intensity";
+            this.plot_Mobility.GraphPane.YAxis.Title.FontSpec.Family = "Verdana";
+            this.plot_Mobility.GraphPane.YAxis.Title.IsVisible = false;
             this.plot_Mobility.GraphPane.YAxis.Cross = 10000000; // TODO: Set automatically
             this.plot_Mobility.GraphPane.YAxis.Scale.IsLabelsInside = true;
 
-            this.plot_TOF.GraphPane.Margin.Top = 50;
-            this.plot_Mobility.GraphPane.Margin.Right = 50;
+            this.plot_TOF.GraphPane.Margin.Left -= 5;
+            this.plot_TOF.GraphPane.Margin.Top = 25;
+            this.plot_TOF.GraphPane.Margin.Right = 5;
+            this.plot_TOF.GraphPane.Margin.Bottom = 5;
+            this.plot_Mobility.GraphPane.Margin.Left = -5;
+            this.plot_Mobility.GraphPane.Margin.Top = 5;
+            this.plot_Mobility.GraphPane.Margin.Right = 30;
+            this.plot_Mobility.GraphPane.Margin.Bottom -= 5;
 
             this.tab_DataViewer.Controls.Add(this.plot_TOF);
             this.tab_DataViewer.Controls.Add(this.plot_Mobility);
