@@ -648,7 +648,8 @@ namespace UIMF_File
                 this.pnl_2DMap.Paint += new System.Windows.Forms.PaintEventHandler(this.pnl_2DMap_Paint);
                 this.pnl_2DMap.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnl_2DMap_MouseUp);
 
-                this.plot_Mobility.MouseDown += new System.Windows.Forms.MouseEventHandler(this.plot_Mobility_MouseDown);
+                //this.plot_Mobility.MouseDown += new System.Windows.Forms.MouseEventHandler(this.plot_Mobility_MouseDown);
+                this.plot_Mobility.ContextMenu = contextMenu_driftTIC;
                 this.plot_Mobility.RangeChanged += new UIMF_File.Utilities.RangeEventHandler(this.OnPlotTICRangeChanged);
                 this.pb_PlayRightIn.Click += new System.EventHandler(this.pb_PlayRightIn_Click);
                 this.pb_PlayLeftOut.Click += new System.EventHandler(this.pb_PlayLeftOut_Click);
@@ -665,7 +666,8 @@ namespace UIMF_File
                 this.num_maxMobility.ValueChanged += new System.EventHandler(this.num_Mobility_ValueChanged);
                 this.num_maxBin.ValueChanged += new System.EventHandler(this.num_maxBin_ValueChanged);
                 this.num_minBin.ValueChanged += new System.EventHandler(this.num_minBin_ValueChanged);
-                this.plot_TOF.MouseDown += new System.Windows.Forms.MouseEventHandler(this.plot_TOF_MouseDown);
+                //this.plot_TOF.MouseDown += new System.Windows.Forms.MouseEventHandler(this.plot_TOF_MouseDown);
+                this.plot_TOF.ContextMenu = contextMenu_TOF;
 
                 this.rb_CompleteChromatogram.CheckedChanged += new System.EventHandler(this.rb_CompleteChromatogram_CheckedChanged);
                 this.rb_PartialChromatogram.CheckedChanged += new System.EventHandler(this.rb_PartialChromatogram_CheckedChanged);
@@ -3789,12 +3791,6 @@ namespace UIMF_File
             Clipboard.SetDataObject(this.pnl_2DMap.BackgroundImage);
         }
 
-        private void plot_Mobility_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Right)
-                contextMenu_driftTIC.Show(this, new Point(e.X + this.plot_Mobility.Left, e.Y + this.plot_Mobility.Top));
-        }
-
         private void menuItem_TOFExport_Click(object sender, System.EventArgs e)
         {
             SaveFileDialog save_dialog = new SaveFileDialog();
@@ -5131,12 +5127,6 @@ namespace UIMF_File
             }
         }
 
-        private void plot_TOF_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Right)
-                contextMenu_TOF.Show(this, new Point(e.X + plot_TOF.Left, e.Y + plot_TOF.Top));
-        }
-
 #if DELEGATE
         delegate void update_axisTOF();
 #endif
@@ -5775,7 +5765,8 @@ namespace UIMF_File
             this.plot_Mobility.GraphPane.CurveList.Add(this.waveform_MobilityPlot);
             this.plot_Mobility.Size = new System.Drawing.Size(510, 111);
             this.plot_Mobility.TabIndex = 24;
-            this.plot_Mobility.MouseDown += new System.Windows.Forms.MouseEventHandler(this.plot_Mobility_MouseDown);
+            //this.plot_Mobility.MouseDown += new System.Windows.Forms.MouseEventHandler(this.plot_Mobility_MouseDown);
+            this.plot_Mobility.ContextMenu = contextMenu_driftTIC;
             this.plot_Mobility.RangeChanged += new Utilities.RangeEventHandler(this.OnPlotTICRangeChanged);
             this.plot_Mobility.GraphPane.Title.IsVisible = false;
             this.plot_Mobility.GraphPane.Legend.IsVisible = false;
@@ -5806,7 +5797,7 @@ namespace UIMF_File
             //this.plot_TOF.SelectionColor = System.Drawing.Color.Lavender;
             this.plot_TOF.Size = new System.Drawing.Size(204, 511);
             this.plot_TOF.TabIndex = 20;
-            this.plot_TOF.MouseDown += new System.Windows.Forms.MouseEventHandler(this.plot_TOF_MouseDown);
+            this.plot_TOF.ContextMenu = contextMenu_TOF;
             // TODO: //// label the axis'
             // TODO: ////
             // TODO: //// left plot

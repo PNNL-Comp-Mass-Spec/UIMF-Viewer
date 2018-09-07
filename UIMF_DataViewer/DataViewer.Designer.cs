@@ -751,6 +751,7 @@ namespace UIMF_File
             this.plot_TOF.GraphPane.Margin.Top = 25;
             this.plot_TOF.GraphPane.Margin.Right = 5;
             this.plot_TOF.GraphPane.Margin.Bottom = 5;
+            this.plot_TOF.ContextMenu = contextMenu_TOF;
             //
             // contextMenu_TOF
             //
@@ -1557,7 +1558,7 @@ namespace UIMF_File
             this.plot_Mobility.GraphPane.CurveList.Add(this.waveform_MobilityPlot);
             this.plot_Mobility.Size = new System.Drawing.Size(510, 111);
             this.plot_Mobility.TabIndex = 24;
-            this.plot_Mobility.MouseDown += new System.Windows.Forms.MouseEventHandler(this.plot_Mobility_MouseDown);
+            this.plot_Mobility.ContextMenu = contextMenu_driftTIC;
             this.plot_Mobility.RangeChanged += new Utilities.RangeEventHandler(this.OnPlotTICRangeChanged);
             this.plot_Mobility.GraphPane.Title.IsVisible = false;
             this.plot_Mobility.GraphPane.Legend.IsVisible = false;
