@@ -31,9 +31,6 @@ namespace UIMF_File
         private int current_frame_type;
         public int[] array_FrameNum = new int[0];
 
-        public bool flag_UseScanMSLevel = false;
-        public Scan_MSLevel scan_MSLevel = 0;
-
         private double[] default_FragVoltages = (double[]) null;
 
         public UIMFLibrary.MZ_Calibrator mzCalibration;
@@ -529,22 +526,8 @@ namespace UIMF_File
             // and returns a two-dimetional array intensities[scan][bin]
             // frameNum is mandatory and all other arguments are optional
             this.m_preparedStatement = this.m_uimfDatabaseConnection.CreateCommand();
-            if (this.flag_UseScanMSLevel)
-            {
-                this.m_preparedStatement.CommandText = "SELECT Frame_Scans.ScanNum, Frame_Scans.Intensities FROM Frame_Scans, Scan_Parameters" +
-                    " WHERE Frame_Scans.FrameNum = " + this.array_FrameNum[frame_index].ToString() +
-                    " AND Frame_Scans.ScanNum = Scan_Parameters.ScanNum AND Scan_Parameters.MS_Level = " + ((int)this.scan_MSLevel).ToString();
-                this.m_sqliteDataReader = this.m_preparedStatement.ExecuteReader();
-
-                // skip through first scans.
-                for (scans_data = 0; ((scans_data < start_scan) && this.m_sqliteDataReader.Read()); scans_data++);
-            }
-            else
-            {
-                this.m_preparedStatement.CommandText = "SELECT ScanNum, Intensities FROM Frame_Scans WHERE FrameNum = " + this.array_FrameNum[frame_index].ToString() + " AND ScanNum >= " + start_scan.ToString() + " AND ScanNum <= " + (start_scan + data_width - 1).ToString();
-
-                this.m_sqliteDataReader = this.m_preparedStatement.ExecuteReader();
-            }
+            this.m_preparedStatement.CommandText = "SELECT ScanNum, Intensities FROM Frame_Scans WHERE FrameNum = " + this.array_FrameNum[frame_index].ToString() + " AND ScanNum >= " + start_scan.ToString() + " AND ScanNum <= " + (start_scan + data_width - 1).ToString();
+            this.m_sqliteDataReader = this.m_preparedStatement.ExecuteReader();
             this.m_preparedStatement.Dispose();
 
             // accumulate the data into the plot_data
@@ -598,10 +581,7 @@ namespace UIMF_File
             {
                 for (scans_data = 0; ((scans_data < data_width) && this.m_sqliteDataReader.Read()); scans_data++)
                 {
-                    if (this.flag_UseScanMSLevel)
-                        current_scan = scans_data;
-                    else
-                        current_scan = Convert.ToInt32(this.m_sqliteDataReader["ScanNum"]) - start_scan;
+                    current_scan = Convert.ToInt32(this.m_sqliteDataReader["ScanNum"]) - start_scan;
 
                     compressed_BinIntensity = (byte[])(this.m_sqliteDataReader["Intensities"]);
 
@@ -815,38 +795,5 @@ namespace UIMF_File
 
             return mobility_data;
         }
-
-        public bool isScanParamtersExist()
-        {
-            bool flag_ScanParametersExist = false;
-
-            // check if table exists
-            this.m_preparedStatement = this.m_uimfDatabaseConnection.CreateCommand();
-            this.m_preparedStatement.CommandText = "SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name = 'Scan_Parameters'";
-
-            this.m_sqliteDataReader = this.m_preparedStatement.ExecuteReader();
-            this.m_preparedStatement.Dispose();
-
-            flag_ScanParametersExist = (Convert.ToInt32(this.m_sqliteDataReader[0]) > 0);
-
-            return flag_ScanParametersExist;
-        }
-
-        public void set_ScanMSLevel(Scan_MSLevel level)
-        {
-            if (level != Scan_MSLevel.All)
-                this.flag_UseScanMSLevel = true;
-            else
-                this.flag_UseScanMSLevel = false;
-
-            this.scan_MSLevel = level;
-        }
-    }
-
-    public enum Scan_MSLevel
-    {
-        All = 0,
-        MS = 1,
-        MSMS = 2
     }
 }

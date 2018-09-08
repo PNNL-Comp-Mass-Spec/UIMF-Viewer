@@ -210,8 +210,6 @@ namespace UIMF_File
 
         private bool flag_isFullscreen = false;
 
-        private bool flag_ScanMSLevel = false;
-
         public DataViewer()
         {
             try
@@ -252,9 +250,6 @@ namespace UIMF_File
             {
                 this.ptr_UIMFDatabase = new UIMFDataWrapper(uimf_file);
                 this.array_Experiments.Add(this.ptr_UIMFDatabase);
-
-                // for Thermo Raw files converted to MSMS
-                this.flag_ScanMSLevel = this.ptr_UIMFDatabase.isScanParamtersExist();
             }
             catch (Exception ex)
             {
@@ -275,17 +270,9 @@ namespace UIMF_File
 
             this.pnl_InstrumentSettings.set_defaultFragmentationVoltages(this.ptr_UIMFDatabase.get_DefaultFragVoltages());
 
-            if (this.flag_ScanMSLevel)
-            {
-                this.cb_FrameType.Items.Add("All Scans");
-                this.cb_FrameType.Items.Add("MS Scans");
-                this.cb_FrameType.Items.Add("MSMS Scans");
-            }
-            else
-            {
-                for (int i = 0; i < 5; i++)
-                    this.cb_FrameType.Items.Add(this.ptr_UIMFDatabase.FrameTypeDescription(i));
-            }
+            for (int i = 0; i < 5; i++)
+                this.cb_FrameType.Items.Add(this.ptr_UIMFDatabase.FrameTypeDescription(i));
+
             //this.slide_FrameSelect.Range = new NationalInstruments.UI.Range(0, this.ptr_UIMFDatabase.UIMF_GlobalParameters.NumFrames);
             this.slide_FrameSelect.Minimum = 0;
             this.slide_FrameSelect.Maximum = this.ptr_UIMFDatabase.UIMF_GlobalParameters.NumFrames;
@@ -7009,10 +6996,7 @@ namespace UIMF_File
         {
             this.flag_CinemaPlot = false;
 
-            if (this.flag_ScanMSLevel)
-                this.ptr_UIMFDatabase.set_ScanMSLevel((UIMF_File.Scan_MSLevel)this.cb_FrameType.SelectedIndex);
-            else
-                this.Filter_FrameType(this.cb_FrameType.SelectedIndex);
+            this.Filter_FrameType(this.cb_FrameType.SelectedIndex);
 
             this.flag_FrameTypeChanged = true;
             this.flag_update2DGraph = true;

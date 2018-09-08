@@ -154,27 +154,6 @@ namespace IonMobility
             }
 
             RemoveClosedForms();
-            if (this.open_Experiments.Count > 4)
-            {
-                MessageBox.Show("You can have 5 experiments open at a time.  Please close an experiment before opening another.");
-                return;
-            }
-
-            if (Path.GetExtension(files[0]).ToUpper() == ".RAW")
-            {
-                if (MessageBox.Show("Convert RAW file to UIMF? ", "File Conversion", MessageBoxButtons.OKCancel) == System.Windows.Forms.DialogResult.OK)
-                {
-                    try
-                    {
-                        UIMF_DataViewer.Raw2UIMF raw2uimf = new Raw2UIMF(files[0]);
-                        raw2uimf.ConvertRAWtoUIMF(Path.Combine(Path.GetDirectoryName(files[0]), Path.GetFileNameWithoutExtension(files[0]) + ".UIMF"));
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.ToString());
-                    }
-                }
-            }
         }
 
         private void IonMobilityAcqMain_DragEnter(object sender, System.Windows.Forms.DragEventArgs e)
