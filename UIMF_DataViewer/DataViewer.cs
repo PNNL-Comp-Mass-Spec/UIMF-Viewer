@@ -5591,6 +5591,10 @@ namespace UIMF_File
             this.plot_Mobility = new Utilities.PointAnnotationGraph();
             this.waveform_MobilityPlot = new ZedGraph.LineItem("Mobility");
 
+            // https://sourceforge.net/p/zedgraph/bugs/81/
+            // ZedGraph does not handle the font size quite properly; scale the numbers to get what we want
+            var zedGraphFontScaleFactor = 96F / 72F;
+
             //
             // plot_TOF
             //
@@ -5624,6 +5628,11 @@ namespace UIMF_File
             this.plot_TOF.GraphPane.XAxis.CrossAuto = false;
             this.plot_TOF.GraphPane.XAxis.Cross = 1000000; // TODO: Set automatically
             this.plot_TOF.GraphPane.IsFontsScaled = false; // TODO:
+            this.plot_TOF.GraphPane.XAxis.Scale.MaxAuto = true;
+            this.plot_TOF.GraphPane.XAxis.Scale.Mag = 0;
+            this.plot_TOF.GraphPane.XAxis.Scale.Format = "0.0E00";
+            this.plot_TOF.GraphPane.XAxis.Scale.LabelGap = 0;
+            this.plot_TOF.GraphPane.YAxis.Scale.Mag = 0;
             this.plot_TOF.GraphPane.YAxis.MinorTic.IsInside = false;
             this.plot_TOF.GraphPane.YAxis.MinorTic.IsCrossInside = false;
             this.plot_TOF.GraphPane.YAxis.MinorTic.IsOpposite = false;
@@ -5632,10 +5641,9 @@ namespace UIMF_File
             this.plot_TOF.GraphPane.YAxis.MajorTic.IsOpposite = false;
             this.plot_TOF.GraphPane.YAxis.Scale.MaxAuto = true; // TODO:
             this.plot_TOF.GraphPane.XAxis.Scale.FontSpec.Family = "Verdana";
-            this.plot_TOF.GraphPane.XAxis.Scale.FontSpec.Size = 8.25F;
+            this.plot_TOF.GraphPane.XAxis.Scale.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
             this.plot_TOF.GraphPane.YAxis.Scale.FontSpec.Family = "Verdana";
-            this.plot_TOF.GraphPane.YAxis.Scale.FontSpec.Size = 8.25F;
-            this.plot_TOF.GraphPane.YAxis.Scale.MaxAuto = true;
+            this.plot_TOF.GraphPane.YAxis.Scale.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
             this.plot_TOF.GraphPane.Margin.Left -= 5;
             this.plot_TOF.GraphPane.Margin.Top = 25;
             this.plot_TOF.GraphPane.Margin.Right = 5;
@@ -5650,7 +5658,7 @@ namespace UIMF_File
             // Label the axis
             this.plot_TOF.GraphPane.XAxis.Title.Text = "Time of Flight";
             this.plot_TOF.GraphPane.XAxis.Title.FontSpec.Family = "Verdana";
-            this.plot_TOF.GraphPane.XAxis.Title.FontSpec.Size = 8.25F;
+            this.plot_TOF.GraphPane.XAxis.Title.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
             this.plot_TOF.GraphPane.XAxis.Title.IsVisible = false;
 
             //
@@ -5658,6 +5666,7 @@ namespace UIMF_File
             //
             this.plot_Mobility.BackColor = System.Drawing.Color.Gainsboro;
             this.plot_Mobility.BorderStyle = BorderStyle.Fixed3D;
+            this.plot_Mobility.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.plot_Mobility.Location = new System.Drawing.Point(242, 572);
             this.plot_Mobility.Name = "plot_DriftPlot";
             this.plot_Mobility.GraphPane.Chart.Fill.Color = System.Drawing.Color.White;
@@ -5668,6 +5677,7 @@ namespace UIMF_File
             this.plot_Mobility.RangeChanged += new Utilities.RangeEventHandler(this.OnPlotTICRangeChanged);
             this.plot_Mobility.GraphPane.Title.IsVisible = false;
             this.plot_Mobility.GraphPane.Legend.IsVisible = false;
+            this.plot_Mobility.GraphPane.XAxis.Scale.Mag = 0;
             this.plot_Mobility.GraphPane.XAxis.MinorTic.IsInside = false;
             this.plot_Mobility.GraphPane.XAxis.MinorTic.IsCrossInside = false;
             this.plot_Mobility.GraphPane.XAxis.MinorTic.IsOpposite = false;
@@ -5676,9 +5686,11 @@ namespace UIMF_File
             this.plot_Mobility.GraphPane.XAxis.MajorTic.IsOpposite = false;
             this.plot_Mobility.GraphPane.XAxis.Scale.MaxAuto = true; // TODO:
             this.plot_Mobility.GraphPane.XAxis.Scale.FontSpec.Family = "Verdana";
-            this.plot_Mobility.GraphPane.XAxis.Scale.FontSpec.Size = 8.25F;
+            this.plot_Mobility.GraphPane.XAxis.Scale.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
             this.plot_Mobility.GraphPane.YAxis.Scale.FontSpec.Family = "Verdana";
-            this.plot_Mobility.GraphPane.YAxis.Scale.FontSpec.Size = 8.25F;
+            this.plot_Mobility.GraphPane.YAxis.Scale.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
+            this.plot_Mobility.GraphPane.YAxis.Scale.MaxAuto = true;
+            this.plot_Mobility.GraphPane.YAxis.Scale.LabelGap = 0;
             this.plot_Mobility.IsEnableHEdit = false;
             this.plot_Mobility.IsEnableHPan = false;
             this.plot_Mobility.IsEnableHZoom = false;
@@ -5692,9 +5704,11 @@ namespace UIMF_File
             this.plot_Mobility.GraphPane.XAxis.Scale.MaxAuto = true;
             this.plot_Mobility.GraphPane.YAxis.Scale.IsLabelsInside = true;
             this.plot_Mobility.GraphPane.IsFontsScaled = false; // TODO:
+            this.plot_Mobility.GraphPane.YAxis.Scale.Mag = 0;
+            this.plot_Mobility.GraphPane.YAxis.Scale.Format = "0.0E00";
             this.plot_Mobility.GraphPane.Margin.Left = -5;
             this.plot_Mobility.GraphPane.Margin.Top = 5;
-            this.plot_Mobility.GraphPane.Margin.Right = 30;
+            this.plot_Mobility.GraphPane.Margin.Right = 40;
             this.plot_Mobility.GraphPane.Margin.Bottom -= 5;
             //
             // waveform_MobilityPlot
@@ -5705,10 +5719,10 @@ namespace UIMF_File
             // Label the axes
             this.plot_Mobility.GraphPane.XAxis.Title.Text = "Mobility - Scans";
             this.plot_Mobility.GraphPane.XAxis.Title.FontSpec.Family = "Verdana";
-            this.plot_Mobility.GraphPane.XAxis.Title.FontSpec.Size = 8.25F;
+            this.plot_Mobility.GraphPane.XAxis.Title.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
             this.plot_Mobility.GraphPane.YAxis.Title.Text = "Drift Intensity";
             this.plot_Mobility.GraphPane.YAxis.Title.FontSpec.Family = "Verdana";
-            this.plot_Mobility.GraphPane.YAxis.Title.FontSpec.Size = 8.25F;
+            this.plot_Mobility.GraphPane.YAxis.Title.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
             this.plot_Mobility.GraphPane.YAxis.Title.IsVisible = false;
             this.plot_Mobility.GraphPane.YAxis.Cross = 1000000;
 
