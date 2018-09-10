@@ -44,10 +44,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Data.SQLite, Version=1.0.65.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>dlls\System.Data.SQLite.dll</HintPath>
-    </Reference>
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
@@ -81,17 +77,9 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="UIMFLibrary\BinCentricTableCreation.cs" />
-    <Compile Include="UIMFLibrary\FrameTypeInfo.cs" />
-    <Compile Include="UIMFLibrary\IntensityPoint.cs" />
-    <Compile Include="UIMFLibrary\LogEntry.cs" />
     <Compile Include="UIMFDataWrapper.cs" />
-    <Compile Include="UIMFLibrary\LZFCompressionUtil.cs" />
-    <Compile Include="UIMFLibrary\SpectrumCache.cs" />
+    <Compile Include="UimfExtensions.cs" />
     <Compile Include="UIMF_BelovTransform.cs" />
-    <Compile Include="UIMFLibrary\ClassDefinitions.cs" />
-    <Compile Include="UIMFLibrary\UIMFDataReader.cs" />
-    <Compile Include="UIMFLibrary\UIMFDataWriter.cs" />
     <Compile Include="DataViewer.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -203,6 +191,12 @@
   <ItemGroup>
     <PackageReference Include="MathNet.Numerics">
       <Version>4.5.1</Version>
+    </PackageReference>
+    <PackageReference Include="System.Data.SQLite.Core">
+      <Version>1.0.97</Version>
+    </PackageReference>
+    <PackageReference Include="UIMFLibrary">
+      <Version>3.6.1</Version>
     </PackageReference>
     <PackageReference Include="ZedGraph">
       <Version>5.1.7</Version>

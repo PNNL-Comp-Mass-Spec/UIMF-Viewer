@@ -87,37 +87,37 @@ namespace UIMF_DataViewer
             }
         }
 
-        public void update_Frame(FrameParameters fp)
+        public void update_Frame(int frameNumber, FrameParams fp)
         {
             // Entrance
-            if (fp.voltEntranceCondLmt < 1.0)
+            if (fp.GetValueDouble(FrameParamKeyType.VoltEntranceCondLmt) < 1.0)
             {
                 this.tb_Value[0].BackColor = Color.DarkGray;
                 this.tb_Value[0].Text = "";
             }
             else
-                this.tb_Value[0].Text = fp.voltEntranceCondLmt.ToString("0.00") + " volts";
-            if (fp.voltTrapOut < 1.0)
+                this.tb_Value[0].Text = fp.GetValueDouble(FrameParamKeyType.VoltEntranceCondLmt).ToString("0.00") + " volts";
+            if (fp.GetValueDouble(FrameParamKeyType.VoltTrapOut) < 1.0)
             {
                 this.tb_Value[1].BackColor = Color.DarkGray;
                 this.tb_Value[1].Text = "";
             }
             else
-                this.tb_Value[1].Text = fp.voltTrapOut.ToString("0.00") + " volts";
-            if (fp.voltTrapIn < 1.0)
+                this.tb_Value[1].Text = fp.GetValueDouble(FrameParamKeyType.VoltTrapOut).ToString("0.00") + " volts";
+            if (fp.GetValueDouble(FrameParamKeyType.VoltTrapIn) < 1.0)
             {
                 this.tb_Value[2].BackColor = Color.DarkGray;
                 this.tb_Value[2].Text = "";
             }
             else
-                this.tb_Value[2].Text = fp.voltTrapIn.ToString("0.00") + " volts";
-            if (fp.ESIVoltage < 1.0)
+                this.tb_Value[2].Text = fp.GetValueDouble(FrameParamKeyType.VoltTrapIn).ToString("0.00") + " volts";
+            if (fp.GetValueDouble(FrameParamKeyType.ESIVoltage) < 1.0)
             {
                 this.tb_Value[3].BackColor = Color.DarkGray;
                 this.tb_Value[3].Text = "";
             }
             else
-                this.tb_Value[3].Text = fp.ESIVoltage.ToString("0.00") + " volts";
+                this.tb_Value[3].Text = fp.GetValueDouble(FrameParamKeyType.ESIVoltage).ToString("0.00") + " volts";
             /*  if (fp.voltJetDist < 1.0)
               {
                             this.tb_Value[4].BackColor = Color.LightGray;
@@ -126,141 +126,143 @@ namespace UIMF_DataViewer
               else
                   this.tb_Value[4].Text = fp.voltJetDist.ToString("0.00") + " volts";
              */
-            if (fp.voltCapInlet < 1.0)
+            if (fp.GetValueDouble(FrameParamKeyType.VoltCapInlet) < 1.0)
             {
                 this.tb_Value[4].BackColor = Color.DarkGray;
                 this.tb_Value[4].Text = "";
             }
             else
-                this.tb_Value[4].Text = fp.voltCapInlet.ToString("0.00") + " volts";
-            if (fp.voltEntranceIFTIn < 1.0)
+                this.tb_Value[4].Text = fp.GetValueDouble(FrameParamKeyType.VoltCapInlet).ToString("0.00") + " volts";
+            if (fp.GetValueDouble(FrameParamKeyType.VoltEntranceHPFIn) < 1.0)
             {
                 this.tb_Value[5].BackColor = Color.DarkGray;
                 this.tb_Value[5].Text = "";
             }
             else
-                this.tb_Value[5].Text = fp.voltEntranceIFTIn.ToString("0.00") + " volts";
-            if (fp.voltEntranceIFTOut < 1.0)
+                this.tb_Value[5].Text = fp.GetValueDouble(FrameParamKeyType.VoltEntranceHPFIn).ToString("0.00") + " volts";
+            if (fp.GetValueDouble(FrameParamKeyType.VoltEntranceHPFOut) < 1.0)
             {
                 this.tb_Value[6].BackColor = Color.DarkGray;
                 this.tb_Value[6].Text = "";
             }
             else
-                this.tb_Value[6].Text = fp.voltEntranceIFTOut.ToString("0.00") + " volts";
+                this.tb_Value[6].Text = fp.GetValueDouble(FrameParamKeyType.VoltEntranceHPFOut).ToString("0.00") + " volts";
 
             // Tube
-            if (fp.Temperature < 1.0)
+            if (fp.GetValueDouble(FrameParamKeyType.AmbientTemperature) < 1.0)
             {
                 this.tb_Value[7].BackColor = Color.DarkGray;
                 this.tb_Value[7].Text = "";
             }
             else
-                this.tb_Value[7].Text = fp.Temperature.ToString("0.0") + " C";
-            if (fp.RearIonFunnelPressure < 1.0)
+                this.tb_Value[7].Text = fp.GetValueDouble(FrameParamKeyType.AmbientTemperature).ToString("0.0") + " C";
+            if (fp.GetValueDouble(FrameParamKeyType.RearIonFunnelPressure) < 1.0)
             {
                 this.tb_Value[8].BackColor = Color.DarkGray;
                 this.tb_Value[8].Text = "";
             }
             else
-                this.tb_Value[8].Text = fp.RearIonFunnelPressure.ToString("0.00") + " mTorr";
-            if (fp.HighPressureFunnelPressure < 1.0)
+                this.tb_Value[8].Text = fp.GetValueDouble(FrameParamKeyType.RearIonFunnelPressure).ToString("0.00") + " mTorr";
+            if (fp.GetValueDouble(FrameParamKeyType.HighPressureFunnelPressure) < 1.0)
             {
                 this.tb_Value[9].BackColor = Color.DarkGray;
                 this.tb_Value[9].Text = "";
             }
             else
-                this.tb_Value[9].Text = fp.HighPressureFunnelPressure.ToString("0.00") + " mTorr";
-            if (fp.IonFunnelTrapPressure < 1.0)
+                this.tb_Value[9].Text = fp.GetValueDouble(FrameParamKeyType.HighPressureFunnelPressure).ToString("0.00") + " mTorr";
+            if (fp.GetValueDouble(FrameParamKeyType.IonFunnelTrapPressure) < 1.0)
             {
                 this.tb_Value[10].BackColor = Color.DarkGray;
                 this.tb_Value[10].Text = "";
             }
             else
-                this.tb_Value[10].Text = fp.IonFunnelTrapPressure.ToString("0.00") + " mTorr";
-            if (fp.QuadrupolePressure < 1.0)
+                this.tb_Value[10].Text = fp.GetValueDouble(FrameParamKeyType.IonFunnelTrapPressure).ToString("0.00") + " mTorr";
+            if (fp.GetValueDouble(FrameParamKeyType.QuadrupolePressure) < 1.0)
             {
                 this.tb_Value[11].BackColor = Color.DarkGray;
                 this.tb_Value[11].Text = "";
             }
             else
-                this.tb_Value[11].Text = fp.QuadrupolePressure.ToString("0.00") + " mTorr";
-            if (fp.FloatVoltage < 1.0)
+                this.tb_Value[11].Text = fp.GetValueDouble(FrameParamKeyType.QuadrupolePressure).ToString("0.00") + " mTorr";
+            if (fp.GetValueDouble(FrameParamKeyType.FloatVoltage) < 1.0)
             {
                 this.tb_Value[12].BackColor = Color.DarkGray;
                 this.tb_Value[12].Text = "";
             }
             else
-                this.tb_Value[12].Text = fp.FloatVoltage.ToString("0.00") + " volts";
+                this.tb_Value[12].Text = fp.GetValueDouble(FrameParamKeyType.FloatVoltage).ToString("0.00") + " volts";
 
             // Exit
-            if (fp.voltIMSOut < 1.0)
+            if (fp.GetValueDouble(FrameParamKeyType.VoltIMSOut) < 1.0)
             {
                 this.tb_Value[13].BackColor = Color.DarkGray;
                 this.tb_Value[13].Text = "";
             }
             else
-                this.tb_Value[13].Text = fp.voltIMSOut.ToString("0.00") + " volts";
-            if (fp.voltExitIFTIn < 1.0)
+                this.tb_Value[13].Text = fp.GetValueDouble(FrameParamKeyType.VoltIMSOut).ToString("0.00") + " volts";
+            if (fp.GetValueDouble(FrameParamKeyType.VoltExitHPFIn) < 1.0)
             {
                 this.tb_Value[14].BackColor = Color.DarkGray;
                 this.tb_Value[14].Text = "";
             }
             else
-                this.tb_Value[14].Text = fp.voltExitIFTIn.ToString("0.00") + " volts";
-            if (fp.voltExitIFTOut < 1.0)
+                this.tb_Value[14].Text = fp.GetValueDouble(FrameParamKeyType.VoltExitHPFIn).ToString("0.00") + " volts";
+            if (fp.GetValueDouble(FrameParamKeyType.VoltExitHPFOut) < 1.0)
             {
                 this.tb_Value[15].BackColor = Color.DarkGray;
                 this.tb_Value[15].Text = "";
             }
             else
-                this.tb_Value[15].Text = fp.voltExitIFTOut.ToString("0.00") + " volts";
-            if (fp.voltExitCondLmt < 1.0)
+                this.tb_Value[15].Text = fp.GetValueDouble(FrameParamKeyType.VoltExitHPFOut).ToString("0.00") + " volts";
+            if (fp.GetValueDouble(FrameParamKeyType.VoltExitCondLmt) < 1.0)
             {
                 this.tb_Value[16].BackColor = Color.DarkGray;
                 this.tb_Value[16].Text = "";
             }
             else
-                this.tb_Value[16].Text = fp.voltExitCondLmt.ToString("0.00") + " volts";
-            if (fp.voltQuad1 < 1.0)
+                this.tb_Value[16].Text = fp.GetValueDouble(FrameParamKeyType.VoltExitCondLmt).ToString("0.00") + " volts";
+            if (fp.GetValueDouble(FrameParamKeyType.VoltQuad1) < 1.0)
             {
                 this.tb_Value[17].BackColor = Color.DarkGray;
                 this.tb_Value[17].Text = "";
             }
             else
-                this.tb_Value[17].Text = fp.voltQuad1.ToString("0.00") + " volts";
-            if (fp.voltCond1 < 1.0)
+                this.tb_Value[17].Text = fp.GetValueDouble(FrameParamKeyType.VoltQuad1).ToString("0.00") + " volts";
+            if (fp.GetValueDouble(FrameParamKeyType.VoltCond1) < 1.0)
             {
                 this.tb_Value[18].BackColor = Color.DarkGray;
                 this.tb_Value[18].Text = "";
             }
             else
-                this.tb_Value[18].Text = fp.voltCond1.ToString("0.00") + " volts";
-            if (fp.voltQuad2 < 1.0)
+                this.tb_Value[18].Text = fp.GetValueDouble(FrameParamKeyType.VoltCond1).ToString("0.00") + " volts";
+            if (fp.GetValueDouble(FrameParamKeyType.VoltQuad2) < 1.0)
             {
                 this.tb_Value[19].BackColor = Color.DarkGray;
                 this.tb_Value[19].Text = "";
             }
             else
-                this.tb_Value[19].Text = fp.voltQuad2.ToString("0.00") + " volts";
-            if (fp.voltCond2 < 1.0)
+                this.tb_Value[19].Text = fp.GetValueDouble(FrameParamKeyType.VoltQuad2).ToString("0.00") + " volts";
+            if (fp.GetValueDouble(FrameParamKeyType.VoltCond2) < 1.0)
             {
                 this.tb_Value[20].BackColor = Color.DarkGray;
                 this.tb_Value[20].Text = "";
             }
             else
-                this.tb_Value[20].Text = fp.voltCond2.ToString("0.00") + " volts";
+                this.tb_Value[20].Text = fp.GetValueDouble(FrameParamKeyType.VoltCond2).ToString("0.00") + " volts";
 
-            this.tb_Value[21].Text = fp.FrameNum.ToString("0");
+            this.tb_Value[21].Text = frameNumber.ToString("0");
             this.tb_Value[22].Text = fp.Scans.ToString("0");
-            this.tb_Value[23].Text = fp.Accumulations.ToString("0");
-            this.tb_Value[24].Text = fp.TOFLosses.ToString("0") + " scans";
+            this.tb_Value[23].Text = fp.GetValueDouble(FrameParamKeyType.Accumulations).ToString("0");
+            this.tb_Value[24].Text = fp.GetValueDouble(FrameParamKeyType.TOFLosses).ToString("0") + " scans";
 
-            if (fp.FragmentationProfile != null)
+            double[] fragProfile = null;
+            if (fp.HasParameter(FrameParamKeyType.FragmentationProfile))
             {
-                this.tb_Value[25].Text = fp.FragmentationProfile[0].ToString("0") + " volts";
-                this.tb_Value[26].Text = fp.FragmentationProfile[1].ToString("0") + " volts";
-                this.tb_Value[27].Text = fp.FragmentationProfile[2].ToString("0") + " volts";
-                this.tb_Value[28].Text = fp.FragmentationProfile[3].ToString("0") + " volts";
+                fragProfile = FrameParamUtilities.ConvertByteArrayToFragmentationSequence(Convert.FromBase64String(fp.GetValueString(FrameParamKeyType.FragmentationProfile)));
+                this.tb_Value[25].Text = fragProfile[0].ToString("0") + " volts";
+                this.tb_Value[26].Text = fragProfile[1].ToString("0") + " volts";
+                this.tb_Value[27].Text = fragProfile[2].ToString("0") + " volts";
+                this.tb_Value[28].Text = fragProfile[3].ToString("0") + " volts";
             }
             else
             {
@@ -271,8 +273,8 @@ namespace UIMF_DataViewer
             }
 
             this.tb_Value[29].Text = fp.FrameType.ToString();
-            if ((this.default_FragmentationVoltages != null) && (fp.FragmentationProfile != null) && ((fp.FragmentationProfile.Length == 4) && (this.default_FragmentationVoltages.Length == 4)))
-                this.tb_Value[30].Text = (fp.FragmentationProfile[0] - this.default_FragmentationVoltages[0]).ToString() + " volts";
+            if ((this.default_FragmentationVoltages != null) && (fragProfile != null) && ((fragProfile.Length == 4) && (this.default_FragmentationVoltages.Length == 4)))
+                this.tb_Value[30].Text = (fragProfile[0] - this.default_FragmentationVoltages[0]).ToString() + " volts";
             else
                 this.tb_Value[30].Text = "N/A";
 

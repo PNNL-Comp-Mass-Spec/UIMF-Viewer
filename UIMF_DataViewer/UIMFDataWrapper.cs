@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using Lzf;
+using System.Data.SQLite;
+using UIMFLibrary;
 
 namespace UIMF_File
 {
@@ -22,8 +19,9 @@ namespace UIMF_File
         private double[] calibration_table;
 
         public string UIMF_DataFile;
-        public UIMFLibrary.GlobalParameters UIMF_GlobalParameters;
-        public UIMFLibrary.FrameParameters UIMF_FrameParameters;
+        public UIMFLibrary.GlobalParams UIMF_GlobalParams;
+        public UIMFLibrary.FrameParams UIMF_FrameParams;
+        public int CurrentFrameNum;
 
         public int current_frame_index;
         public int frame_width;
@@ -33,13 +31,13 @@ namespace UIMF_File
 
         private double[] default_FragVoltages = (double[]) null;
 
-        public UIMFLibrary.MZ_Calibrator mzCalibration;
+        public UIMFLibrary.MzCalibrator mzCalibration;
 
         public UIMFDataWrapper(string uimf_file)
             : base(uimf_file)
         {
             this.UIMF_DataFile = uimf_file;
-            this.UIMF_GlobalParameters = this.GetGlobalParameters();
+            this.UIMF_GlobalParams = this.GetGlobalParams();
 
             this.default_FragVoltages = this.get_DefaultFragVoltages();
 
@@ -70,10 +68,14 @@ namespace UIMF_File
                 {
                     this.load_Frame(0); // will be a MS frame
 
-                    if (this.UIMF_FrameParameters.FragmentationProfile.Length == 4)
-                        default_FragVoltages = this.UIMF_FrameParameters.FragmentationProfile;
-                    else
-                        default_FragVoltages = (double[])null;
+                    if (this.UIMF_FrameParams.HasParameter(FrameParamKeyType.FragmentationProfile))
+                    {
+                        var fragSequence = FrameParamUtilities.ConvertByteArrayToFragmentationSequence(Convert.FromBase64String(this.UIMF_FrameParams.GetValueString(FrameParamKeyType.FragmentationProfile)));
+                        if (fragSequence.Length == 4)
+                            default_FragVoltages = fragSequence;
+                        else
+                            default_FragVoltages = (double[]) null;
+                    }
                 }
 
                 // reset the frame type.
@@ -102,35 +104,6 @@ namespace UIMF_File
             return (int)((((r / new_slope) + new_intercept) * this.m_globalParameters.BinWidth * 10000.0 / this.TenthsOfNanoSecondsPerBin) + .5); // .5 for rounding
         }
 
-        public double get_CE(int frame_index)
-        {
-            if ((this.UIMF_FrameParameters.FragmentationProfile.Length == 4) && (this.default_FragVoltages.Length == 4))
-                return (this.UIMF_FrameParameters.FragmentationProfile[0] - this.default_FragVoltages[0]);
-            else
-                return 0;
-        }
-
-        public double get_AveFrameDuration_Seconds()
-        {
-            double ave_duration;
-
-            m_preparedStatement = m_uimfDatabaseConnection.CreateCommand();
-            m_preparedStatement.CommandText = "SELECT sum(duration) FROM Frame_parameters WHERE FrameType=" + this.current_frame_type.ToString();
-            this.m_sqliteDataReader = this.m_preparedStatement.ExecuteReader();
-
-            double total_duration = Convert.ToInt32(this.m_sqliteDataReader[0]);
-            m_preparedStatement.Dispose();
-
-            double total_frames = (double)set_FrameType(this.current_frame_type, false);
-
-            if (total_frames > 0)
-                ave_duration = total_duration / total_frames;
-            else
-                ave_duration = total_duration;
-
-            return ave_duration;
-        }
-
         public void update_CalibrationCoefficients(int frame_index, float slope, float intercept)
         {
             bool bAutoCalibrating = false;
@@ -148,83 +121,22 @@ namespace UIMF_File
             if (frame_index > this.array_FrameNum.Length)
                 return;
 
-            m_preparedStatement = m_uimfDatabaseConnection.CreateCommand();
-            m_preparedStatement.CommandText = "UPDATE Frame_Parameters " +
-                                             "SET CalibrationSlope = " + slope.ToString() + ", " +
-                                                 "CalibrationIntercept = " + intercept.ToString();
-            if (bAutoCalibrating)
-                m_preparedStatement.CommandText += ", CalibrationDone = 1";
-
-            m_preparedStatement.CommandText += " WHERE FrameNum = " + this.array_FrameNum[frame_index].ToString();
-
-            m_preparedStatement.ExecuteNonQuery();
-            m_preparedStatement.Dispose();
-
-            // Update the new Frame_Params table if it exists
-            if (TableExists("Frame_Params") && TableExists("Frame_Param_Keys"))
+            using (var writer = new DataWriter(this.UIMF_DataFile))
             {
-                var calibSlopeKey = 12;
-                var calibInterceptKey = 13;
-                var calibDoneKey = 6;
-                using (var cmd = m_uimfDatabaseConnection.CreateCommand())
-                {
-                    cmd.CommandText = "SELECT ParamName, ParamID  " +
-                                      "FROM Frame_Param_Keys";
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            switch (reader.GetString(0))
-                            {
-                                case "CalibrationSlope":
-                                    calibSlopeKey = reader.GetInt32(1);
-                                    break;
-                                case "CalibrationIntercept":
-                                    calibInterceptKey = reader.GetInt32(1);
-                                    break;
-                                case "CalibrationDone":
-                                    calibDoneKey = reader.GetInt32(1);
-                                    break;
-                            }
-                        }
-                    }
-                }
-
-                using (var cmd = m_uimfDatabaseConnection.CreateCommand())
-                {
-                    cmd.CommandText = "UPDATE Frame_Params " +
-                                      "SET ParamValue = " + slope + " " +
-                                      "WHERE ParamID = " + calibSlopeKey +
-                                      " AND FrameNum = " + this.array_FrameNum[frame_index];
-                    cmd.ExecuteNonQuery();
-
-                    cmd.CommandText = "UPDATE Frame_Params " +
-                                      "SET ParamValue = " + intercept + " " +
-                                      "WHERE ParamID = " + calibInterceptKey +
-                                      " AND FrameNum = " + this.array_FrameNum[frame_index];
-                    cmd.ExecuteNonQuery();
-
-                    cmd.CommandText = "UPDATE Frame_Params " +
-                                      "SET ParamValue = " + 1 + " " +
-                                      "WHERE ParamID = " + calibDoneKey +
-                                      " AND FrameNum = " + this.array_FrameNum[frame_index];
-                    cmd.ExecuteNonQuery();
-                }
-
+                writer.UpdateCalibrationCoefficients(this.array_FrameNum[frame_index], slope, intercept, bAutoCalibrating);
             }
 
             // Make sure the mz_Calibration object is up-to-date
             // These values will likely also get updated via the call to reset_FrameParameters (which then calls GetFrameParameters)
-            this.mzCalibration.k = slope / 10000.0;
-            this.mzCalibration.t0 = intercept * 10000.0;
+            this.mzCalibration.K = slope / 10000.0;
+            this.mzCalibration.T0 = intercept * 10000.0;
 
             this.reset_FrameParameters();
         }
 
         public void updateAll_CalibrationCoefficients(float slope, float intercept)
         {
-            bool bAutoCalibrating = false;
-            updateAll_CalibrationCoefficients(slope, intercept, bAutoCalibrating);
+            updateAll_CalibrationCoefficients(slope, intercept, false);
         }
 
         /// <summary>
@@ -234,64 +146,9 @@ namespace UIMF_File
         /// <param name="intercept"></param>
         public void updateAll_CalibrationCoefficients(float slope, float intercept, bool bAutoCalibrating)
         {
-            m_preparedStatement = m_uimfDatabaseConnection.CreateCommand();
-            m_preparedStatement.CommandText = "UPDATE Frame_Parameters " +
-                                              "SET CalibrationSlope = " + slope.ToString() + ", " +
-                                              "CalibrationIntercept = " + intercept.ToString();
-            if (bAutoCalibrating)
-                m_preparedStatement.CommandText += ", CalibrationDone = 1";
-
-            m_preparedStatement.ExecuteNonQuery();
-            m_preparedStatement.Dispose();
-
-            // Update the new Frame_Params table if it exists
-            if (TableExists("Frame_Params") && TableExists("Frame_Param_Keys"))
+            using (var writer = new DataWriter(this.UIMF_DataFile))
             {
-                var calibSlopeKey = 12;
-                var calibInterceptKey = 13;
-                var calibDoneKey = 6;
-                using (var cmd = m_uimfDatabaseConnection.CreateCommand())
-                {
-                    cmd.CommandText = "SELECT ParamName, ParamID  " +
-                                      "FROM Frame_Param_Keys";
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            switch (reader.GetString(0))
-                            {
-                                case "CalibrationSlope":
-                                    calibSlopeKey = reader.GetInt32(1);
-                                    break;
-                                case "CalibrationIntercept":
-                                    calibInterceptKey = reader.GetInt32(1);
-                                    break;
-                                case "CalibrationDone":
-                                    calibDoneKey = reader.GetInt32(1);
-                                    break;
-                            }
-                        }
-                    }
-                }
-
-                using (var cmd = m_uimfDatabaseConnection.CreateCommand())
-                {
-                    cmd.CommandText = "UPDATE Frame_Params " +
-                                      "SET ParamValue = " + slope + " " +
-                                      "WHERE ParamID = " + calibSlopeKey;
-                    cmd.ExecuteNonQuery();
-
-                    cmd.CommandText = "UPDATE Frame_Params " +
-                                      "SET ParamValue = " + intercept + " " +
-                                      "WHERE ParamID = " + calibInterceptKey;
-                    cmd.ExecuteNonQuery();
-
-                    cmd.CommandText = "UPDATE Frame_Params " +
-                                      "SET ParamValue = " + 1 + " " +
-                                      "WHERE ParamID = " + calibDoneKey;
-                    cmd.ExecuteNonQuery();
-                }
-
+                writer.UpdateAllCalibrationCoefficients(slope, intercept, bAutoCalibrating);
             }
 
             this.reset_FrameParameters();
@@ -299,33 +156,13 @@ namespace UIMF_File
 
         public void reset_FrameParameters()
         {
-            this.GetFrameParameters(this.array_FrameNum[this.current_frame_index]);
-        }
-
-        public bool TableExists(string tableName)
-        {
-            bool hasRows;
-
-            using (var cmd = m_uimfDatabaseConnection.CreateCommand())
-            {
-                cmd.CommandText = "SELECT name " +
-                              "FROM sqlite_master " +
-                              "WHERE type IN ('table','view') And tbl_name = '" + tableName + "'";
-                using (var reader = cmd.ExecuteReader())
-                {
-                    hasRows = reader.HasRows;
-                }
-            }
-
-            return hasRows;
+            this.UIMF_FrameParams = this.GetFrameParams(this.array_FrameNum[this.current_frame_index]);
+            this.mzCalibration = GetMzCalibrator(UIMF_FrameParams);
         }
 
         public void clear_FrameParametersCache()
         {
-            for (int i = 0; i < this.UIMF_GlobalParameters.NumFrames; i++)
-            {
-                this.m_frameParametersCache[i] = null;
-            }
+            this.m_CachedFrameParameters.Clear();
         }
 
 
@@ -364,7 +201,7 @@ namespace UIMF_File
         /// Set the frame type
         /// </summary>
         /// <param name="frame_type">Frame type to set; see FrameType for types</param>
-        /// <param name="ForceReload">True to force a re-load of the data from the Frame_Parameters table</param>
+        /// <param name="force_reload">True to force a re-load of the data from the Frame_Parameters table</param>
         /// <returns>The number of frames in the file that have the given frame type</returns>
         public int set_FrameType(int frame_type, bool force_reload)
         {
@@ -377,15 +214,16 @@ namespace UIMF_File
 
             current_frame_type = frame_type;
 
-            this.m_preparedStatement = this.m_uimfDatabaseConnection.CreateCommand();
+            var preparedStatement = this.m_dbConnection.CreateCommand();
             if (frame_type == 0)
-                this.m_preparedStatement.CommandText = "SELECT COUNT(FrameNum) FROM Frame_Parameters";
+                preparedStatement.CommandText = "SELECT COUNT(FrameNum) FROM Frame_Parameters";
             else
-                this.m_preparedStatement.CommandText = "SELECT COUNT(FrameNum) FROM Frame_Parameters WHERE FrameType = " + this.current_frame_type.ToString();
-            this.m_sqliteDataReader = this.m_preparedStatement.ExecuteReader();
+                preparedStatement.CommandText = "SELECT COUNT(FrameNum) FROM Frame_Parameters WHERE FrameType = " + this.current_frame_type.ToString();
+            var sqliteDataReader = preparedStatement.ExecuteReader();
 
-            frame_count = Convert.ToInt32(this.m_sqliteDataReader[0]);
-            this.m_sqliteDataReader.Dispose();
+            sqliteDataReader.Read();
+            frame_count = Convert.ToInt32(sqliteDataReader[0]);
+            sqliteDataReader.Dispose();
 
             if (frame_count == 0)
             {
@@ -395,27 +233,28 @@ namespace UIMF_File
 
             // build an array of frame numbers for instant referencing.
             this.array_FrameNum = new int[frame_count];
-            this.m_preparedStatement.Dispose();
+            preparedStatement.Dispose();
 
-            this.m_preparedStatement = this.m_uimfDatabaseConnection.CreateCommand();
+            preparedStatement = this.m_dbConnection.CreateCommand();
             if (frame_type == 0)
-                this.m_preparedStatement.CommandText = "SELECT FrameNum FROM Frame_Parameters ORDER BY FrameNum ASC";
+                preparedStatement.CommandText = "SELECT FrameNum FROM Frame_Parameters ORDER BY FrameNum ASC";
             else
-                this.m_preparedStatement.CommandText = "SELECT FrameNum FROM Frame_Parameters WHERE FrameType = " + this.current_frame_type.ToString() + " ORDER BY FrameNum ASC";
+                preparedStatement.CommandText = "SELECT FrameNum FROM Frame_Parameters WHERE FrameType = " + this.current_frame_type.ToString() + " ORDER BY FrameNum ASC";
 
-            this.m_sqliteDataReader = this.m_preparedStatement.ExecuteReader();
+            sqliteDataReader = preparedStatement.ExecuteReader();
 
             i = 0;
-            while (this.m_sqliteDataReader.Read())
+            while (sqliteDataReader.Read())
             {
-                this.array_FrameNum[i] = Convert.ToInt32(this.m_sqliteDataReader[0]);
+                this.array_FrameNum[i] = Convert.ToInt32(sqliteDataReader[0]);
                 i++;
             }
 
-            this.UIMF_FrameParameters = this.GetFrameParameters(this.array_FrameNum[0]);
-            this.mzCalibration = this.GetMzCalibrator(this.UIMF_FrameParameters);
+            this.CurrentFrameNum = this.array_FrameNum[0];
+            this.UIMF_FrameParams = this.GetFrameParams(this.array_FrameNum[0]);
+            this.mzCalibration = this.GetMzCalibrator(this.UIMF_FrameParams);
 
-            this.m_preparedStatement.Dispose();
+            preparedStatement.Dispose();
 
             //MessageBox.Show(frame_count.ToString());
             return frame_count;
@@ -425,22 +264,14 @@ namespace UIMF_File
         {
             if ((frame_index < this.array_FrameNum.Length) && (frame_index > 0))
             {
-                this.UIMF_FrameParameters = this.GetFrameParameters(this.array_FrameNum[frame_index]);
-                this.mzCalibration = this.GetMzCalibrator(this.UIMF_FrameParameters);
+                this.CurrentFrameNum = this.array_FrameNum[frame_index];
+                this.UIMF_FrameParams = this.GetFrameParams(this.array_FrameNum[frame_index]);
+                this.mzCalibration = this.GetMzCalibrator(this.UIMF_FrameParams);
 
                 return this.array_FrameNum[frame_index];
             }
             else
                 return -1;
-        }
-
-        /// <summary>
-        /// Returns the number of frames for the current frame type
-        /// </summary>
-        /// <returns></returns>
-        public int get_NumFramescurrent_frame_type()
-        {
-            return this.array_FrameNum.Length;
         }
 
         /// <summary>
@@ -453,10 +284,16 @@ namespace UIMF_File
             return this.set_FrameType(frame_type);
         }
 
-        public double get_pixelMZ(int bin)
+        public new double GetBinForPixel(int pixel)
         {
-            if ((this.calibration_table != null) && (bin < this.calibration_table.Length))
-                return this.calibration_table[bin];
+            // TODO: Renamed to "GetBinForPixel", and the UIMFLibrary version returns -1 on error...
+            if (this.calibration_table == null)
+            {
+                // Random, likely safe return value...
+                return 100000;
+            }
+            if (pixel < this.calibration_table.Length)
+                return this.calibration_table[pixel];
             else
                 return this.calibration_table[this.calibration_table.Length - 1]; // return maximum bin
         }
@@ -500,10 +337,11 @@ namespace UIMF_File
             }
 
             // ensure the correct Frame parameters are set
-            if (this.array_FrameNum[frame_index] != this.UIMF_FrameParameters.FrameNum)
+            if (this.array_FrameNum[frame_index] != this.CurrentFrameNum)
             {
-                this.UIMF_FrameParameters = (UIMFLibrary.FrameParameters)this.GetFrameParameters(this.array_FrameNum[frame_index]);
-                this.mzCalibration = this.GetMzCalibrator(this.UIMF_FrameParameters);
+                this.CurrentFrameNum = this.array_FrameNum[frame_index];
+                this.UIMF_FrameParams = this.GetFrameParams(this.array_FrameNum[frame_index]);
+                this.mzCalibration = this.GetMzCalibrator(this.UIMF_FrameParams);
             }
 
             // Create a calibration lookup table -- for speed
@@ -525,10 +363,10 @@ namespace UIMF_File
             // This function extracts intensities from selected scans and bins in a single frame
             // and returns a two-dimetional array intensities[scan][bin]
             // frameNum is mandatory and all other arguments are optional
-            this.m_preparedStatement = this.m_uimfDatabaseConnection.CreateCommand();
-            this.m_preparedStatement.CommandText = "SELECT ScanNum, Intensities FROM Frame_Scans WHERE FrameNum = " + this.array_FrameNum[frame_index].ToString() + " AND ScanNum >= " + start_scan.ToString() + " AND ScanNum <= " + (start_scan + data_width - 1).ToString();
-            this.m_sqliteDataReader = this.m_preparedStatement.ExecuteReader();
-            this.m_preparedStatement.Dispose();
+            var preparedStatement = this.m_dbConnection.CreateCommand();
+            preparedStatement.CommandText = "SELECT ScanNum, Intensities FROM Frame_Scans WHERE FrameNum = " + this.array_FrameNum[frame_index].ToString() + " AND ScanNum >= " + start_scan.ToString() + " AND ScanNum <= " + (start_scan + data_width - 1).ToString();
+            var sqliteDataReader = preparedStatement.ExecuteReader();
+            preparedStatement.Dispose();
 
             // accumulate the data into the plot_data
             if (y_compression < 0)
@@ -537,16 +375,17 @@ namespace UIMF_File
 
                 //MessageBox.Show(start_bin.ToString() + " " + end_bin.ToString());
 
-                for (scans_data = 0; ((scans_data < data_width) && this.m_sqliteDataReader.Read()); scans_data++)
+                for (scans_data = 0; ((scans_data < data_width) && sqliteDataReader.Read()); scans_data++)
                 {
-                    current_scan = Convert.ToInt32(this.m_sqliteDataReader["ScanNum"]) - start_scan;
-                    compressed_BinIntensity = (byte[])(this.m_sqliteDataReader["Intensities"]);
+                    current_scan = Convert.ToInt32(sqliteDataReader["ScanNum"]) - start_scan;
+                    compressed_BinIntensity = (byte[])(sqliteDataReader["Intensities"]);
 
                     if (compressed_BinIntensity.Length == 0)
                         continue;
 
                     index_current_bin = 0;
-                    decompress_length = LZFCompressionUtil.Decompress(ref compressed_BinIntensity, compressed_BinIntensity.Length, ref stream_BinIntensity, this.m_globalParameters.Bins * 4);
+                    //decompress_length = CLZF2.Decompress(compressed_BinIntensity, compressed_BinIntensity.Length, ref stream_BinIntensity, this.m_globalParameters.Bins * 4);
+                    decompress_length = CLZF2.Decompress(compressed_BinIntensity, ref stream_BinIntensity);
 
                     int previousValue = 0;
                     for (bin_data = 0; (bin_data < decompress_length) && (index_current_bin <= end_bin); bin_data += 4)
@@ -579,17 +418,18 @@ namespace UIMF_File
             }
             else    // each pixel accumulates more than 1 bin of data
             {
-                for (scans_data = 0; ((scans_data < data_width) && this.m_sqliteDataReader.Read()); scans_data++)
+                for (scans_data = 0; ((scans_data < data_width) && sqliteDataReader.Read()); scans_data++)
                 {
-                    current_scan = Convert.ToInt32(this.m_sqliteDataReader["ScanNum"]) - start_scan;
+                    current_scan = Convert.ToInt32(sqliteDataReader["ScanNum"]) - start_scan;
 
-                    compressed_BinIntensity = (byte[])(this.m_sqliteDataReader["Intensities"]);
+                    compressed_BinIntensity = (byte[])(sqliteDataReader["Intensities"]);
 
                     if (compressed_BinIntensity.Length == 0)
                         continue;
 
                     index_current_bin = 0;
-                    decompress_length = LZFCompressionUtil.Decompress(ref compressed_BinIntensity, compressed_BinIntensity.Length, ref stream_BinIntensity, this.m_globalParameters.Bins * 4);
+                    //decompress_length = LZFCompressionUtil.Decompress(ref compressed_BinIntensity, compressed_BinIntensity.Length, ref stream_BinIntensity, this.m_globalParameters.Bins * 4);
+                    decompress_length = CLZF2.Decompress(compressed_BinIntensity, ref stream_BinIntensity);
 
                     pixel_y = 1;
 
@@ -634,7 +474,7 @@ namespace UIMF_File
                 }
             }
 
-            this.m_sqliteDataReader.Close();
+            sqliteDataReader.Close();
             return frame_data;
         }
 
@@ -655,32 +495,34 @@ namespace UIMF_File
             int decompress_length;
 
             // ensure the correct Frame parameters are set
-            if (this.array_FrameNum[frame_index] != this.UIMF_FrameParameters.FrameNum)
+            if (this.array_FrameNum[frame_index] != this.CurrentFrameNum)
             {
-                this.UIMF_FrameParameters = (UIMFLibrary.FrameParameters)this.GetFrameParameters(this.array_FrameNum[frame_index]);
-                this.mzCalibration = this.GetMzCalibrator(this.UIMF_FrameParameters);
+                this.CurrentFrameNum = this.array_FrameNum[frame_index];
+                this.UIMF_FrameParams = this.GetFrameParams(this.array_FrameNum[frame_index]);
+                this.mzCalibration = this.GetMzCalibrator(this.UIMF_FrameParams);
             }
 
             // This function extracts intensities from selected scans and bins in a single frame
             // and returns a two-dimetional array intensities[scan][bin]
             // frameNum is mandatory and all other arguments are optional
-            this.m_preparedStatement = this.m_uimfDatabaseConnection.CreateCommand();
-            this.m_preparedStatement.CommandText = "SELECT ScanNum, Intensities FROM Frame_Scans WHERE FrameNum = " + this.array_FrameNum[frame_index].ToString() + " AND ScanNum >= " + start_scan.ToString() + " AND ScanNum <= " + end_scan.ToString();
+            var preparedStatement = this.m_dbConnection.CreateCommand();
+            preparedStatement.CommandText = "SELECT ScanNum, Intensities FROM Frame_Scans WHERE FrameNum = " + this.array_FrameNum[frame_index].ToString() + " AND ScanNum >= " + start_scan.ToString() + " AND ScanNum <= " + end_scan.ToString();
 
             // MessageBox.Show("ss: "+this.array_FrameNum[frame_index].ToString());
 
-            this.m_sqliteDataReader = this.m_preparedStatement.ExecuteReader();
-            this.m_preparedStatement.Dispose();
+            var sqliteDataReader = preparedStatement.ExecuteReader();
+            preparedStatement.Dispose();
 
-            for (scans_data = start_scan; ((scans_data <= end_scan) && this.m_sqliteDataReader.Read()); scans_data++)
+            for (scans_data = start_scan; ((scans_data <= end_scan) && sqliteDataReader.Read()); scans_data++)
             {
-                compressed_BinIntensity = (byte[])(this.m_sqliteDataReader["Intensities"]);
+                compressed_BinIntensity = (byte[])(sqliteDataReader["Intensities"]);
 
                 if (compressed_BinIntensity.Length == 0)
                     continue;
 
                 index_current_bin = 0;
-                decompress_length = LZFCompressionUtil.Decompress(ref compressed_BinIntensity, compressed_BinIntensity.Length, ref stream_BinIntensity, this.m_globalParameters.Bins * 4);
+                //decompress_length = LZFCompressionUtil.Decompress(ref compressed_BinIntensity, compressed_BinIntensity.Length, ref stream_BinIntensity, this.m_globalParameters.Bins * 4);
+                decompress_length = CLZF2.Decompress(compressed_BinIntensity, ref stream_BinIntensity);
 
                 int previousValue = 0;
                 for (bin_data = 0; (bin_data < decompress_length); bin_data += 4)
@@ -707,7 +549,7 @@ namespace UIMF_File
                 }
             }
 
-            this.m_sqliteDataReader.Close();
+            sqliteDataReader.Close();
             return TOF_Array;
         }
 
@@ -731,27 +573,28 @@ namespace UIMF_File
             try
             {
                 this.load_Frame(frame_index);
-                mobility_data = new int[this.UIMF_FrameParameters.Scans];
+                mobility_data = new int[this.UIMF_FrameParams.Scans];
 
                 // This function extracts intensities from selected scans and bins in a single frame
-                // and returns a two-dimetional array intensities[scan][bin]
+                // and returns a two-dimensional array intensities[scan][bin]
                 // frameNum is mandatory and all other arguments are optional
-                this.m_preparedStatement = this.m_uimfDatabaseConnection.CreateCommand();
-                this.m_preparedStatement.CommandText = "SELECT ScanNum, Intensities FROM Frame_Scans WHERE FrameNum = " + this.array_FrameNum[frame_index].ToString();// +" AND ScanNum >= " + start_scan.ToString() + " AND ScanNum <= " + (start_scan + data_width).ToString();
+                var preparedStatement = this.m_dbConnection.CreateCommand();
+                preparedStatement.CommandText = "SELECT ScanNum, Intensities FROM Frame_Scans WHERE FrameNum = " + this.array_FrameNum[frame_index].ToString();// +" AND ScanNum >= " + start_scan.ToString() + " AND ScanNum <= " + (start_scan + data_width).ToString();
 
-                this.m_sqliteDataReader = this.m_preparedStatement.ExecuteReader();
-                this.m_preparedStatement.Dispose();
+                var sqliteDataReader = preparedStatement.ExecuteReader();
+                preparedStatement.Dispose();
 
-                for (mobility_index = 0; ((mobility_index < this.UIMF_FrameParameters.Scans) && this.m_sqliteDataReader.Read()); mobility_index++)
+                for (mobility_index = 0; ((mobility_index < this.UIMF_FrameParams.Scans) && sqliteDataReader.Read()); mobility_index++)
                 {
-                    current_scan = Convert.ToInt32(this.m_sqliteDataReader["ScanNum"]);
-                    compressed_BinIntensity = (byte[])(this.m_sqliteDataReader["Intensities"]);
+                    current_scan = Convert.ToInt32(sqliteDataReader["ScanNum"]);
+                    compressed_BinIntensity = (byte[])(sqliteDataReader["Intensities"]);
 
-                    if ((compressed_BinIntensity.Length == 0) || (current_scan >= this.UIMF_FrameParameters.Scans))
+                    if ((compressed_BinIntensity.Length == 0) || (current_scan >= this.UIMF_FrameParams.Scans))
                         continue;
 
                     index_current_bin = 0;
-                    decompress_length = LZFCompressionUtil.Decompress(ref compressed_BinIntensity, compressed_BinIntensity.Length, ref stream_BinIntensity, this.m_globalParameters.Bins * 4);
+                    //decompress_length = CLZF2.lzf_decompress(compressed_BinIntensity, compressed_BinIntensity.Length, ref stream_BinIntensity, this.m_globalParameters.Bins * 4);
+                    decompress_length = CLZF2.Decompress(compressed_BinIntensity, ref stream_BinIntensity);
 
                     int previousValue = 0;
                     for (bin_index = 0; (bin_index < decompress_length); bin_index += 4)
