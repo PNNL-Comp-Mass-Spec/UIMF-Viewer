@@ -42,14 +42,8 @@ namespace UIMF_File
         private System.Windows.Forms.MenuItem menuItem_Time_driftTIC;
         private System.Windows.Forms.MenuItem menuItem9;
         private System.Windows.Forms.MenuItem menuItem_Exportnew_driftTIC;
-        //TODO: //protected NationalInstruments.UI.WindowsForms.WaveformGraph plot_TOF;
         protected ZedGraph.ZedGraphControl plot_TOF;
-        // private NationalInstruments.UI.XAxis axis_xTOF;
-        // private NationalInstruments.UI.YAxis axis_yTOF;
         protected System.Windows.Forms.Label label2;
-        //TODO: //private NationalInstruments.UI.XAxis xAxis2;
-        //TODO: //private NationalInstruments.UI.YAxis yAxis2;
-        //TODO: //private NationalInstruments.UI.XYCursor xyCursor1;
         // private UIMF_File.Utilities.VerticalLabel verticalLabel_Threshold;
         private System.Windows.Forms.MenuItem menuItem_ExportCompressed;
         private System.Windows.Forms.MenuItem menuItem_ExportComplete;
@@ -62,14 +56,10 @@ namespace UIMF_File
         private System.Windows.Forms.MenuItem menuItem_Mobility;
         private System.Windows.Forms.MenuItem menuItem_ScanTime;
         protected UIMF_File.Utilities.PointAnnotationGraph plot_Mobility;
-        //TODO: //private NationalInstruments.UI.XYCursor xyCursor2;
         private System.Windows.Forms.ContextMenu contextMenu_TOF;
         private System.Windows.Forms.MenuItem menuItem_TOFExport;
         private System.Windows.Forms.MenuItem menuItem_TOFMaximum;
         private System.Windows.Forms.PictureBox pb_SliderBackground;
-        //TODO: //protected NationalInstruments.UI.XAxis xAxis_Mobility;
-        //TODO: //private NationalInstruments.UI.YAxis yAxis_Mobility;
-        //TODO: //protected NationalInstruments.UI.YAxis yAxis_TOF;
         protected System.Windows.Forms.Label lbl_TimeOffset;
         protected System.Windows.Forms.NumericUpDown num_minMobility;
         protected System.Windows.Forms.NumericUpDown num_maxMobility;
@@ -79,8 +69,6 @@ namespace UIMF_File
         protected System.Windows.Forms.Label lbl_CursorMobility;
         protected System.Windows.Forms.Label lbl_CursorTOF;
         protected System.Windows.Forms.Label lbl_CursorMZ;
-        //TODO: //protected NationalInstruments.UI.WaveformPlot waveform_TOFPlot;
-        //TODO: //protected NationalInstruments.UI.WaveformPlot waveform_MobilityPlot;
         protected ZedGraph.LineItem waveform_TOFPlot;
         protected ZedGraph.LineItem waveform_MobilityPlot;
 
@@ -88,7 +76,6 @@ namespace UIMF_File
         #endregion
 
 
-        //TODO: //private NationalInstruments.UI.XAxis xAxis_TOF;
         protected System.Windows.Forms.Label label5;
         protected System.Windows.Forms.Label label3;
         protected System.Windows.Forms.Label lbl_CursorScanTime;
@@ -223,8 +210,6 @@ namespace UIMF_File
             this.menuItem_UseScans = new System.Windows.Forms.MenuItem();
             this.menuItem_UseDriftTime = new System.Windows.Forms.MenuItem();
             this.menuItem2 = new System.Windows.Forms.MenuItem();
-            //TODO: //this.xAxis2 = new NationalInstruments.UI.XAxis();
-            //TODO: //this.yAxis2 = new NationalInstruments.UI.YAxis();
             this.contextMenu_driftTIC = new System.Windows.Forms.ContextMenu();
             this.menuItem_Frame_driftTIC = new System.Windows.Forms.MenuItem();
             this.menuItem_Time_driftTIC = new System.Windows.Forms.MenuItem();
@@ -232,12 +217,6 @@ namespace UIMF_File
             this.menuItem_Exportnew_driftTIC = new System.Windows.Forms.MenuItem();
             this.menuItem9 = new System.Windows.Forms.MenuItem();
             this.menuItem8 = new System.Windows.Forms.MenuItem();
-            //TODO: //this.plot_TOF = new NationalInstruments.UI.WindowsForms.WaveformGraph();
-            //TODO: //this.waveform_TOFPlot = new NationalInstruments.UI.WaveformPlot();
-            this.plot_TOF = new ZedGraph.ZedGraphControl();
-            this.waveform_TOFPlot = new ZedGraph.LineItem("TOF");
-            //TODO: //this.xAxis_TOF = new NationalInstruments.UI.XAxis();
-            //TODO: //this.yAxis_TOF = new NationalInstruments.UI.YAxis();
             this.contextMenu_TOF = new System.Windows.Forms.ContextMenu();
             this.menuItem_TOFExport = new System.Windows.Forms.MenuItem();
             this.menuItem_TOFMaximum = new System.Windows.Forms.MenuItem();
@@ -245,7 +224,6 @@ namespace UIMF_File
             this.num_maxMobility = new System.Windows.Forms.NumericUpDown();
             this.num_maxBin = new System.Windows.Forms.NumericUpDown();
             this.num_minBin = new System.Windows.Forms.NumericUpDown();
-            //TODO: //this.slide_Threshold = new NationalInstruments.UI.WindowsForms.Slide();
             this.slide_Threshold = new SliderLabeled();
             this.elementHost_Threshold = new ElementHost();
             this.btn_Reset = new System.Windows.Forms.Button();
@@ -264,7 +242,6 @@ namespace UIMF_File
             this.btn_revertCalDefaults = new System.Windows.Forms.Button();
             this.hsb_2DMap = new System.Windows.Forms.HScrollBar();
             this.vsb_2DMap = new System.Windows.Forms.VScrollBar();
-            //TODO: //this.slide_FrameSelect = new NationalInstruments.UI.WindowsForms.Slide();
             this.slide_FrameSelect = new SliderLabeled();
             this.elementHost_FrameSelect = new ElementHost();
             this.lbl_FrameRange = new System.Windows.Forms.Label();
@@ -297,12 +274,6 @@ namespace UIMF_File
             this.pnl_2DMap = new System.Windows.Forms.Panel();
             this.tab_InstrumentSettings = new System.Windows.Forms.TabPage();
             this.tab_PostProcessing = new System.Windows.Forms.TabPage();
-            //TODO: //this.xyCursor2 = new NationalInstruments.UI.XYCursor(); // drift scan chromatogram tracker
-            //TODO: //this.waveform_MobilityPlot = new NationalInstruments.UI.WaveformPlot();
-            this.plot_Mobility = new Utilities.PointAnnotationGraph();
-            this.waveform_MobilityPlot = new ZedGraph.LineItem("Mobility");
-            //TODO: //this.xAxis_Mobility = new NationalInstruments.UI.XAxis();
-            //TODO: //this.yAxis_Mobility = new NationalInstruments.UI.YAxis();
             this.pb_Shrink = new System.Windows.Forms.PictureBox();
             this.pb_Expand = new System.Windows.Forms.PictureBox();
             this.pb_PlayLeftIn = new System.Windows.Forms.PictureBox();
@@ -314,7 +285,6 @@ namespace UIMF_File
             this.pb_PlayUpIn = new System.Windows.Forms.PictureBox();
             this.pb_PlayUpOut = new System.Windows.Forms.PictureBox();
             this.pb_SliderBackground = new System.Windows.Forms.PictureBox();
-            //TODO: //((System.ComponentModel.ISupportInitialize)(this.plot_TOF)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_minMobility)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_maxMobility)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_maxBin)).BeginInit();
@@ -333,7 +303,6 @@ namespace UIMF_File
             this.gb_MZRange.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.num_PPM)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_MZ)).BeginInit();
-            //TODO: //((System.ComponentModel.ISupportInitialize)(this.xyCursor2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Shrink)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Expand)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_PlayLeftIn)).BeginInit();
@@ -613,14 +582,6 @@ namespace UIMF_File
             //
             this.menuItem2.Index = 2;
             this.menuItem2.Text = "-";
-            //TODO: ////
-            //TODO: //// xAxis2
-            //TODO: ////
-            //TODO: //this.xAxis2.Visible = false;
-            //TODO: ////
-            //TODO: //// yAxis2
-            //TODO: ////
-            //TODO: //this.yAxis2.Visible = false;
             //
             // contextMenu_driftTIC
             //
@@ -661,97 +622,6 @@ namespace UIMF_File
             //
             this.menuItem8.Index = 5;
             this.menuItem8.Text = "Copy Full TIC Image to Clipboard";
-            //TODO: ////
-            //TODO: //// plot_TOF
-            //TODO: ////
-            //TODO: //this.plot_TOF.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            //TODO: //this.plot_TOF.BackColor = System.Drawing.Color.Gainsboro;
-            //TODO: //this.plot_TOF.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            //TODO: //this.plot_TOF.Border = NationalInstruments.UI.Border.RaisedLite;
-            //TODO: //this.plot_TOF.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            //TODO: //this.plot_TOF.InteractionMode = NationalInstruments.UI.GraphInteractionModes.None;
-            //TODO: //this.plot_TOF.Location = new System.Drawing.Point(18, 102);
-            //TODO: //this.plot_TOF.Name = "plot_TOF";
-            //TODO: //this.plot_TOF.PlotAreaColor = System.Drawing.Color.White;
-            //TODO: //this.plot_TOF.Plots.AddRange(new NationalInstruments.UI.WaveformPlot[] {
-            //TODO: //this.waveform_TOFPlot});
-            //TODO: //this.plot_TOF.SelectionColor = System.Drawing.Color.Lavender;
-            //TODO: //this.plot_TOF.Size = new System.Drawing.Size(204, 440);
-            //TODO: //this.plot_TOF.TabIndex = 20;
-            //TODO: //this.plot_TOF.TabStop = false;
-            //TODO: //this.plot_TOF.XAxes.AddRange(new NationalInstruments.UI.XAxis[] {
-            //TODO: //this.xAxis_TOF});
-            //TODO: //this.plot_TOF.YAxes.AddRange(new NationalInstruments.UI.YAxis[] {
-            //TODO: //this.yAxis_TOF});
-            this.plot_TOF.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.plot_TOF.BackColor = System.Drawing.Color.Gainsboro;
-            this.plot_TOF.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.plot_TOF.BorderStyle = BorderStyle.Fixed3D;
-            this.plot_TOF.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.plot_TOF.IsEnableHEdit = false;
-            this.plot_TOF.IsEnableHPan = false;
-            this.plot_TOF.IsEnableHZoom = false;
-            this.plot_TOF.IsEnableSelection = false;
-            this.plot_TOF.IsEnableVEdit = false;
-            this.plot_TOF.IsEnableVPan = false;
-            this.plot_TOF.IsEnableVZoom = false;
-            this.plot_TOF.IsEnableZoom = false;
-            this.plot_TOF.IsEnableWheelZoom = false;
-            this.plot_TOF.Location = new System.Drawing.Point(18, 102);
-            this.plot_TOF.Name = "plot_TOF";
-            this.plot_TOF.GraphPane.Chart.Fill.Color = System.Drawing.Color.White;
-            this.plot_TOF.GraphPane.CurveList.Add(this.waveform_TOFPlot);
-            //this.plot_TOF.SelectionColor = System.Drawing.Color.Lavender;
-            this.plot_TOF.Size = new System.Drawing.Size(204, 440);
-            this.plot_TOF.TabIndex = 20;
-            this.plot_TOF.TabStop = false;
-            this.plot_TOF.GraphPane.Title.IsVisible = false;
-            this.plot_TOF.GraphPane.Legend.IsVisible = false;
-            //TODO: ////
-            //TODO: //// waveform_TOFPlot
-            //TODO: ////
-            //TODO: //this.waveform_TOFPlot.LineColor = System.Drawing.Color.DarkBlue;
-            //TODO: //this.waveform_TOFPlot.LineColorPrecedence = NationalInstruments.UI.ColorPrecedence.UserDefinedColor;
-            //TODO: //this.waveform_TOFPlot.XAxis = this.xAxis_TOF;
-            //TODO: //this.waveform_TOFPlot.YAxis = this.yAxis_TOF;
-            this.waveform_TOFPlot.Color = System.Drawing.Color.DarkBlue;
-            this.waveform_TOFPlot.Symbol = new Symbol(SymbolType.None, Color.Transparent);
-            //TODO: ////
-            //TODO: //// xAxis_TOF
-            //TODO: ////
-            //TODO: //this.xAxis_TOF.Inverted = true;
-            //TODO: //this.xAxis_TOF.MinorDivisions.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            //TODO: //this.xAxis_TOF.MinorDivisions.GridLineStyle = NationalInstruments.UI.LineStyle.Dot;
-            //TODO: //this.xAxis_TOF.MinorDivisions.GridVisible = true;
-            //TODO: //this.xAxis_TOF.MinorDivisions.TickVisible = true;
-            //TODO: //this.xAxis_TOF.Position = NationalInstruments.UI.XAxisPosition.Top;
-            this.plot_TOF.GraphPane.XAxis.Scale.IsReverse = true;
-            this.plot_TOF.GraphPane.XAxis.Scale.IsLabelsInside = true;
-            this.plot_TOF.GraphPane.XAxis.MajorGrid.Color = System.Drawing.Color.FromArgb(((int) (((byte) (224)))), ((int) (((byte) (224)))), ((int) (((byte) (224)))));
-            this.plot_TOF.GraphPane.XAxis.MajorGrid.IsVisible = true;
-            this.plot_TOF.GraphPane.XAxis.CrossAuto = false;
-            this.plot_TOF.GraphPane.XAxis.Cross = 1000000; // TODO: Set automatically
-            this.plot_TOF.GraphPane.IsFontsScaled = false;
-            this.plot_TOF.GraphPane.YAxis.MinorTic.IsInside = false;
-            this.plot_TOF.GraphPane.YAxis.MinorTic.IsCrossInside = false;
-            this.plot_TOF.GraphPane.YAxis.MinorTic.IsOpposite = false;
-            this.plot_TOF.GraphPane.YAxis.MajorTic.IsInside = false;
-            this.plot_TOF.GraphPane.YAxis.MajorTic.IsCrossInside = false;
-            this.plot_TOF.GraphPane.YAxis.MajorTic.IsOpposite = false;
-            this.plot_TOF.GraphPane.XAxis.Scale.FontSpec.Family = "Verdana";
-            this.plot_TOF.GraphPane.XAxis.Scale.FontSpec.Size = 8.25F;
-            this.plot_TOF.GraphPane.YAxis.Scale.FontSpec.Family = "Verdana";
-            this.plot_TOF.GraphPane.YAxis.Scale.FontSpec.Size = 8.25F;
-            //TODO: ////
-            //TODO: //// yAxis_TOF
-            //TODO: ////
-            //TODO: //this.yAxis_TOF.Mode = NationalInstruments.UI.AxisMode.AutoScaleExact;
-            this.plot_TOF.GraphPane.YAxis.Scale.MaxAuto = true;
-            this.plot_TOF.GraphPane.Margin.Left -= 5;
-            this.plot_TOF.GraphPane.Margin.Top = 25;
-            this.plot_TOF.GraphPane.Margin.Right = 5;
-            this.plot_TOF.GraphPane.Margin.Bottom = 5;
-            this.plot_TOF.ContextMenu = contextMenu_TOF;
             //
             // contextMenu_TOF
             //
@@ -831,22 +701,9 @@ namespace UIMF_File
             //
             // slide_Threshold
             //
-            //TODO: //this.slide_Threshold.Caption = "Threshold";
-            //TODO: //this.slide_Threshold.CaptionBackColor = System.Drawing.Color.Transparent;
-            //TODO: //this.slide_Threshold.CaptionFont = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            //TODO: //this.slide_Threshold.CaptionVisible = false;
             //TODO: //this.slide_Threshold.FillBackColor = System.Drawing.Color.DimGray;
             //TODO: //this.slide_Threshold.FillColor = System.Drawing.Color.RoyalBlue;
             //TODO: //this.slide_Threshold.FillStyle = NationalInstruments.UI.FillStyle.VerticalGradient;
-            //TODO: //this.slide_Threshold.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            //TODO: //this.slide_Threshold.Location = new System.Drawing.Point(834, 128);
-            //TODO: //this.slide_Threshold.Name = "slide_Threshold";
-            //TODO: //this.slide_Threshold.Range = new NationalInstruments.UI.Range(1D, 10000000D);
-            //TODO: //this.slide_Threshold.ScalePosition = NationalInstruments.UI.NumericScalePosition.Right;
-            //TODO: //this.slide_Threshold.ScaleType = NationalInstruments.UI.ScaleType.Logarithmic;
-            //TODO: //this.slide_Threshold.Size = new System.Drawing.Size(64, 280);
-            //TODO: //this.slide_Threshold.TabIndex = 36;
-            //TODO: //this.slide_Threshold.Value = 1D;
             //this.slide_Threshold.BackColor = System.Drawing.Color.DimGray;
             //this.slide_Threshold.ForeColor = System.Drawing.Color.RoyalBlue;
             this.slide_Threshold.Foreground = System.Windows.Media.Brushes.Black;
@@ -1044,27 +901,10 @@ namespace UIMF_File
             //
             // slide_FrameSelect
             //
-            //TODO: //this.slide_FrameSelect.AutoDivisionSpacing = false;
-            //TODO: //this.slide_FrameSelect.EditRangeNumericFormatMode = NationalInstruments.UI.NumericFormatMode.CreateGenericMode("F0");
             //TODO: //this.slide_FrameSelect.FillBackColor = System.Drawing.Color.DarkSlateGray;
             //TODO: //this.slide_FrameSelect.FillBaseValue = 3D;
             //TODO: //this.slide_FrameSelect.FillColor = System.Drawing.Color.GhostWhite;
             //TODO: //this.slide_FrameSelect.FillMode = NationalInstruments.UI.NumericFillMode.ToBaseValue;
-            //TODO: //this.slide_FrameSelect.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            //TODO: //this.slide_FrameSelect.InteractionMode = ((NationalInstruments.UI.LinearNumericPointerInteractionModes)(((NationalInstruments.UI.LinearNumericPointerInteractionModes.DragPointer | NationalInstruments.UI.LinearNumericPointerInteractionModes.SnapPointer)
-            //TODO: //| NationalInstruments.UI.LinearNumericPointerInteractionModes.EditRange)));
-            //TODO: //this.slide_FrameSelect.Location = new System.Drawing.Point(272, 36);
-            //TODO: //this.slide_FrameSelect.MajorDivisions.Interval = 1D;
-            //TODO: //this.slide_FrameSelect.MajorDivisions.LabelFormat = new NationalInstruments.UI.FormatString(NationalInstruments.UI.FormatStringMode.Numeric, "F0");
-            //TODO: //this.slide_FrameSelect.MinorDivisions.Interval = 5D;
-            //TODO: //this.slide_FrameSelect.MinorDivisions.TickVisible = false;
-            //TODO: //this.slide_FrameSelect.Name = "slide_FrameSelect";
-            //TODO: //this.slide_FrameSelect.Range = new NationalInstruments.UI.Range(0D, 5D);
-            //TODO: //this.slide_FrameSelect.ScalePosition = NationalInstruments.UI.NumericScalePosition.Top;
-            //TODO: //this.slide_FrameSelect.Size = new System.Drawing.Size(276, 47);
-            //TODO: //this.slide_FrameSelect.TabIndex = 50;
-            //TODO: //this.slide_FrameSelect.ToolTipFormat = new NationalInstruments.UI.FormatString(NationalInstruments.UI.FormatStringMode.Numeric, "F0");
-            //TODO: //this.slide_FrameSelect.Value = 4D;
             //this.slide_FrameSelect.BackColor = System.Drawing.Color.GhostWhite;
             //this.slide_FrameSelect.ForeColor = System.Drawing.Color.DarkSlateGray;
             this.slide_FrameSelect.Foreground = System.Windows.Media.Brushes.Black;
@@ -1280,7 +1120,6 @@ namespace UIMF_File
             this.tab_DataViewer.Controls.Add(this.num_maxMobility);
             this.tab_DataViewer.Controls.Add(this.num_maxBin);
             this.tab_DataViewer.Controls.Add(this.num_minBin);
-            this.tab_DataViewer.Controls.Add(this.plot_TOF);
             this.tab_DataViewer.Controls.Add(this.elementHost_Threshold);
             this.tab_DataViewer.Controls.Add(this.btn_Reset);
             this.tab_DataViewer.Controls.Add(this.lbl_ExperimentDate);
@@ -1529,90 +1368,6 @@ namespace UIMF_File
             this.tab_PostProcessing.TabIndex = 2;
             this.tab_PostProcessing.Text = "   Post Processing    ";
             this.tab_PostProcessing.UseVisualStyleBackColor = true;
-            //TODO: ////
-            //TODO: //// plot_Mobility
-            //TODO: ////
-            //TODO: //this.plot_Mobility.BackColor = System.Drawing.Color.Gainsboro;
-            //TODO: //this.plot_Mobility.Border = NationalInstruments.UI.Border.RaisedLite;
-            //TODO: //this.plot_Mobility.Cursors.AddRange(new NationalInstruments.UI.XYCursor[] {
-            //TODO: //    this.xyCursor2});
-            //TODO: //this.plot_Mobility.Location = new System.Drawing.Point(242, 572);
-            //TODO: //this.plot_Mobility.Name = "plot_DriftPlot";
-            //TODO: //this.plot_Mobility.PlotAreaColor = System.Drawing.Color.White;
-            //TODO: //this.plot_Mobility.Plots.AddRange(new NationalInstruments.UI.WaveformPlot[] {
-            //TODO: //    this.waveform_MobilityPlot});
-            //TODO: //this.plot_Mobility.Size = new System.Drawing.Size(510, 111);
-            //TODO: //this.plot_Mobility.TabIndex = 24;
-            //TODO: //this.plot_Mobility.XAxes.AddRange(new NationalInstruments.UI.XAxis[] {
-            //TODO: //    this.xAxis_Mobility});
-            //TODO: //this.plot_Mobility.YAxes.AddRange(new NationalInstruments.UI.YAxis[] {
-            //TODO: //    this.yAxis_Mobility});
-            //TODO: //this.plot_Mobility.MouseDown += new System.Windows.Forms.MouseEventHandler(this.plot_Mobility_MouseDown);
-            //TODO: //this.plot_Mobility.RangeChanged += new Utilities.RangeEventHandler(this.OnPlotTICRangeChanged);
-            //TODO: //this.tab_DataViewer.Controls.Add(this.plot_Mobility);
-            this.plot_Mobility.BackColor = System.Drawing.Color.Gainsboro;
-            this.plot_Mobility.BorderStyle = BorderStyle.Fixed3D;
-            this.plot_Mobility.Location = new System.Drawing.Point(242, 572);
-            this.plot_Mobility.Name = "plot_DriftPlot";
-            this.plot_Mobility.GraphPane.Chart.Fill.Color = System.Drawing.Color.White;
-            this.plot_Mobility.GraphPane.CurveList.Add(this.waveform_MobilityPlot);
-            this.plot_Mobility.Size = new System.Drawing.Size(510, 111);
-            this.plot_Mobility.TabIndex = 24;
-            this.plot_Mobility.ContextMenu = contextMenu_driftTIC;
-            this.plot_Mobility.RangeChanged += new Utilities.RangeEventHandler(this.OnPlotTICRangeChanged);
-            this.plot_Mobility.GraphPane.Title.IsVisible = false;
-            this.plot_Mobility.GraphPane.Legend.IsVisible = false;
-            this.plot_Mobility.GraphPane.XAxis.MinorTic.IsInside = false;
-            this.plot_Mobility.GraphPane.XAxis.MinorTic.IsCrossInside = false;
-            this.plot_Mobility.GraphPane.XAxis.MinorTic.IsOpposite = false;
-            this.plot_Mobility.GraphPane.XAxis.MajorTic.IsInside = false;
-            this.plot_Mobility.GraphPane.XAxis.MajorTic.IsCrossInside = false;
-            this.plot_Mobility.GraphPane.XAxis.MajorTic.IsOpposite = false;
-            this.plot_Mobility.GraphPane.XAxis.Scale.FontSpec.Family = "Verdana";
-            this.plot_Mobility.GraphPane.XAxis.Scale.FontSpec.Size = 8.25F;
-            this.plot_Mobility.GraphPane.YAxis.Scale.FontSpec.Family = "Verdana";
-            this.plot_Mobility.GraphPane.YAxis.Scale.FontSpec.Size = 8.25F;
-            this.tab_DataViewer.Controls.Add(this.plot_Mobility);
-            //TODO: ////
-            //TODO: //// xyCursor2
-            //TODO: ////
-            //TODO: //this.xyCursor2.HorizontalCrosshairMode = NationalInstruments.UI.CursorCrosshairMode.None;
-            //TODO: //this.xyCursor2.Plot = this.waveform_MobilityPlot;
-            //TODO: //this.xyCursor2.PointStyle = NationalInstruments.UI.PointStyle.Plus;
-            //TODO: //this.xyCursor2.VerticalCrosshairMode = NationalInstruments.UI.CursorCrosshairMode.None;
-            //TODO: ////
-            //TODO: //// waveform_MobilityPlot
-            //TODO: ////
-            //TODO: //this.waveform_MobilityPlot.LineColor = System.Drawing.Color.Crimson;
-            //TODO: //this.waveform_MobilityPlot.LineColorPrecedence = NationalInstruments.UI.ColorPrecedence.UserDefinedColor;
-            //TODO: //this.waveform_MobilityPlot.PointColor = System.Drawing.Color.Salmon;
-            //TODO: //this.waveform_MobilityPlot.XAxis = this.xAxis_Mobility;
-            //TODO: //this.waveform_MobilityPlot.YAxis = this.yAxis_Mobility;
-            this.waveform_MobilityPlot.Color = System.Drawing.Color.Crimson;
-            this.waveform_MobilityPlot.Symbol = new Symbol(SymbolType.None, System.Drawing.Color.Salmon);
-            //TODO: ////
-            //TODO: //// xAxis_Mobility
-            //TODO: ////
-            //TODO: //this.xAxis_Mobility.InteractionMode = NationalInstruments.UI.ScaleInteractionMode.None;
-            //TODO: //this.xAxis_Mobility.MajorDivisions.LabelFormat = new NationalInstruments.UI.FormatString(NationalInstruments.UI.FormatStringMode.Numeric, "F2");
-            //TODO: //this.xAxis_Mobility.Mode = NationalInstruments.UI.AxisMode.AutoScaleExact;
-            this.plot_Mobility.IsEnableHEdit = false;
-            this.plot_Mobility.IsEnableHPan = false;
-            this.plot_Mobility.IsEnableHZoom = false;
-            this.plot_Mobility.IsEnableSelection = false;
-            this.plot_Mobility.IsEnableVEdit = false;
-            this.plot_Mobility.IsEnableVPan = false;
-            this.plot_Mobility.IsEnableVZoom = false;
-            this.plot_Mobility.IsEnableZoom = false;
-            this.plot_Mobility.IsEnableWheelZoom = false;
-            this.plot_Mobility.GraphPane.XAxis.Scale.Format = "F2";
-            this.plot_Mobility.GraphPane.XAxis.Scale.MaxAuto = true;
-            this.plot_Mobility.GraphPane.YAxis.Scale.IsLabelsInside = true;
-            this.plot_Mobility.GraphPane.IsFontsScaled = false;
-            this.plot_Mobility.GraphPane.Margin.Left = -5;
-            this.plot_Mobility.GraphPane.Margin.Top = 5;
-            this.plot_Mobility.GraphPane.Margin.Right = 30;
-            this.plot_Mobility.GraphPane.Margin.Bottom -= 5;
             //
             // pb_Shrink
             //
@@ -1742,7 +1497,6 @@ namespace UIMF_File
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Experiment name";
-            //TODO: //((System.ComponentModel.ISupportInitialize)(this.plot_TOF)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_minMobility)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_maxMobility)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_maxBin)).EndInit();
@@ -1765,7 +1519,6 @@ namespace UIMF_File
             this.gb_MZRange.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.num_PPM)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_MZ)).EndInit();
-            //TODO: //((System.ComponentModel.ISupportInitialize)(this.xyCursor2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Shrink)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Expand)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_PlayLeftIn)).EndInit();
