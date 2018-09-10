@@ -15,22 +15,11 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using System.Threading;
 using System.IO;
-using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using UIMFLibrary;
 using System.Diagnostics;
 using System.Linq;
-using System.Windows;
 using ZedGraph;
-using Application = System.Windows.Forms.Application;
-using Clipboard = System.Windows.Forms.Clipboard;
-using DataFormats = System.Windows.Forms.DataFormats;
-using DragDropEffects = System.Windows.Forms.DragDropEffects;
-using FontStyle = System.Drawing.FontStyle;
-using MessageBox = System.Windows.Forms.MessageBox;
-using Point = System.Drawing.Point;
-using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
-using Size = System.Drawing.Size;
 
 #if STOP_WATCH
 using System.Diagnostics;
@@ -670,7 +659,7 @@ namespace UIMF_File
             Invoke(new ThreadStart(this.ResizeThis));
         }
 
-        private static RegistryKey MainKey
+        private static Microsoft.Win32.RegistryKey MainKey
         {
             get { return Application.UserAppDataRegistry; }
         }
@@ -743,7 +732,7 @@ namespace UIMF_File
             this.flag_Alive = false;
             this.flag_Closing = true;
 
-            RegistrySave(Registry.CurrentUser.CreateSubKey("Software").CreateSubKey(AppDomain.CurrentDomain.FriendlyName));
+            RegistrySave(Microsoft.Win32.Registry.CurrentUser.CreateSubKey("Software").CreateSubKey(AppDomain.CurrentDomain.FriendlyName));
             this.pnl_postProcessing.Save_Registry();
 
             if (this.flag_CinemaPlot)
@@ -3311,7 +3300,7 @@ namespace UIMF_File
 
         private void IonMobilityDataView_Closed(object sender, System.EventArgs e)
         {
-            RegistrySave(Registry.CurrentUser.CreateSubKey("Software").CreateSubKey(AppDomain.CurrentDomain.FriendlyName));
+            RegistrySave(Microsoft.Win32.Registry.CurrentUser.CreateSubKey("Software").CreateSubKey(AppDomain.CurrentDomain.FriendlyName));
             ptr_UIMFDatabase.Dispose();
         }
 
@@ -4031,7 +4020,7 @@ namespace UIMF_File
             this.slide_FrameSelect.Value = Convert.ToDouble(this.num_FrameIndex.Value);
         }
 
-        private void slide_FrameSelect_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void slide_FrameSelect_ValueChanged(object sender, System.Windows.RoutedPropertyChangedEventArgs<double> e)
         {
             if (this.slide_FrameSelect.Value - Convert.ToDouble(this.num_FrameRange.Value) < 0)
                 this.slide_FrameSelect.Value = Convert.ToDouble(this.num_FrameRange.Value) - 1.0;
@@ -4047,7 +4036,7 @@ namespace UIMF_File
         // //////////////////////////////////////////////////////////////////////////
         // Display Settings
         //
-        private void slide_Threshold_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void slide_Threshold_ValueChanged(object sender, System.Windows.RoutedPropertyChangedEventArgs<double> e)
         {
             this.flag_update2DGraph = true;
         }
@@ -7027,18 +7016,18 @@ namespace UIMF_File
             }
         }
 
-        private void RegistrySave(RegistryKey key)
+        private void RegistrySave(Microsoft.Win32.RegistryKey key)
         {
-            using (RegistryKey sk = key.CreateSubKey(this.Name))
+            using (Microsoft.Win32.RegistryKey sk = key.CreateSubKey(this.Name))
             {
             }
         }
 
-        private void RegistryLoad(RegistryKey key)
+        private void RegistryLoad(Microsoft.Win32.RegistryKey key)
         {
             try
             {
-                using (RegistryKey sk = key.OpenSubKey(this.Name))
+                using (Microsoft.Win32.RegistryKey sk = key.OpenSubKey(this.Name))
                 {
                 }
             }
@@ -7289,14 +7278,5 @@ namespace UIMF_File
             this.flag_update2DGraph = true;
         }
 #endif
-    }
-}
-
-namespace UIMF_File
-{
-    public interface IRegistryPersist
-    {
-        void RegistrySave(RegistryKey key);
-        void RegistryLoad(RegistryKey key);
     }
 }
