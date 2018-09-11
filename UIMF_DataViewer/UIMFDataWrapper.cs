@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Data.SQLite;
 using System.Linq;
 using UIMFLibrary;
@@ -279,11 +280,6 @@ namespace UIMF_File
                 return this.calibrationTable[this.calibrationTable.Length - 1]; // return maximum bin
         }
 
-        public int[][] AccumulateFrameDataUncompressed(int frameIndex, bool flagTOF, int startScan, int startBin, int[][] frameData)
-        {
-            return this.AccumulateFrameData(frameIndex, flagTOF, startScan, startBin, 0, this.m_globalParameters.Bins, frameData, -1);
-        }
-
         public int[][] AccumulateFrameData(int frameIndex, bool flagTOF, int startScan, int startBin, int minMzBin, int maxMzBin, int[][] frameData, int yCompression)
         {
             if ((frameIndex < 0) || (frameIndex >= this.ArrayFrameNum.Length))
@@ -457,6 +453,354 @@ namespace UIMF_File
 
             sqliteDataReader.Close();
             return frameData;
+        }
+
+        /// <summary>
+        /// Retrieves a given frame (or frames) and sums them in order to be viewed on a heatmap view or other 2D representation visually.
+        /// </summary>
+        /// <param name="startFrameNumber">
+        /// </param>
+        /// <param name="endFrameNumber">
+        /// </param>
+        /// <param name="flagTOF">
+        /// </param>
+        /// <param name="startScan">
+        /// </param>
+        /// <param name="scanCount">
+        /// </param>
+        /// <param name="startBin">
+        /// </param>
+        /// <param name="binCount">
+        /// </param>
+        /// <param name="yCompression">
+        /// </param>
+        /// <param name="frameData"></param>
+        /// <param name="maxMzBin"></param>
+        /// <param name="zeroOutData"></param>
+        /// <param name="xCompression">
+        /// </param>
+        /// <param name="minMzBin"></param>
+        /// <returns>
+        /// Frame data to be utilized in visualization as a multidimensional array
+        /// </returns>
+        /// <remarks>
+        /// This function is used by the UIMF Viewer and by Atreyu
+        /// </remarks>
+        public int[][] AccumulateFrameDataByCount(int startFrameNumber, int endFrameNumber, bool flagTOF, int startScan, int scanCount, int startBin, int binCount,
+            int yCompression = -1, int[][] frameData = null, int minMzBin = -1, int maxMzBin = -1, bool zeroOutData = true, int xCompression = -1)
+        {
+            var endScan = startScan + scanCount - 1;
+            var endBin = startBin + binCount - 1;
+            if (yCompression >= 0)
+            {
+                endBin = startBin - 1 + binCount * yCompression;
+            }
+            return AccumulateFrameData(startFrameNumber, endFrameNumber, flagTOF, startScan, endScan, startBin, endBin, false, yCompression, frameData,
+                minMzBin, maxMzBin, zeroOutData, xCompression);
+        }
+
+        /// <summary>
+        /// Retrieves a given frame (or frames) and sums them in order to be viewed on a heatmap view or other 2D representation visually.
+        /// </summary>
+        /// <param name="startFrameNumber">
+        /// </param>
+        /// <param name="endFrameNumber">
+        /// </param>
+        /// <param name="flagTOF">
+        /// </param>
+        /// <param name="startScan">
+        /// </param>
+        /// <param name="endScan">
+        /// </param>
+        /// <param name="startBin">
+        /// </param>
+        /// <param name="endBin">
+        /// </param>
+        /// <param name="yCompression">
+        /// </param>
+        /// <param name="frameData"></param>
+        /// <param name="maxMzBin"></param>
+        /// <param name="zeroOutData"></param>
+        /// <param name="xCompression">
+        /// </param>
+        /// <param name="minMzBin"></param>
+        /// <returns>
+        /// Frame data to be utilized in visualization as a multidimensional array
+        /// </returns>
+        /// <remarks>
+        /// This function is used by the UIMF Viewer and by Atreyu
+        /// </remarks>
+        public int[][] AccumulateFrameData(int startFrameNumber, int endFrameNumber, bool flagTOF, int startScan, int endScan, int startBin, int endBin,
+            int yCompression = -1, int[][] frameData = null, int minMzBin = -1, int maxMzBin = -1, bool zeroOutData = true, int xCompression = -1)
+        {
+            return AccumulateFrameData(startFrameNumber, endFrameNumber, flagTOF, startScan, endScan, startBin, endBin, false, yCompression, frameData,
+                minMzBin, maxMzBin, zeroOutData, xCompression);
+        }
+
+        /// <summary>
+        /// Retrieves a given frame (or frames) and sums them in order to be viewed on a heatmap view or other 2D representation visually.
+        /// </summary>
+        /// <param name="startFrameNumber">
+        /// </param>
+        /// <param name="endFrameNumber">
+        /// </param>
+        /// <param name="flagTOF">
+        /// </param>
+        /// <param name="startScan">
+        /// </param>
+        /// <param name="endScan">
+        /// </param>
+        /// <param name="startBin">
+        /// </param>
+        /// <param name="endBin">
+        /// </param>
+        /// <param name="noScale"></param>
+        /// <param name="yCompression">
+        /// </param>
+        /// <param name="frameData"></param>
+        /// <param name="maxMzBin"></param>
+        /// <param name="zeroOutData"></param>
+        /// <param name="xCompression">
+        /// </param>
+        /// <param name="minMzBin"></param>
+        /// <returns>
+        /// Frame data to be utilized in visualization as a multidimensional array
+        /// </returns>
+        /// <remarks>
+        /// This function is used by the UIMF Viewer and by Atreyu
+        /// </remarks>
+        private int[][] AccumulateFrameData(int startFrameNumber, int endFrameNumber, bool flagTOF, int startScan, int endScan, int startBin, int endBin,
+            bool noScale, int yCompression = -1, int[][] frameData = null, int minMzBin = -1, int maxMzBin = -1, bool zeroOutData = true, int xCompression = -1)
+        {
+            if (endFrameNumber - startFrameNumber < 0)
+            {
+                throw new ArgumentException("Start frame cannot be greater than end frame", nameof(endFrameNumber));
+            }
+
+            var width = endScan - startScan + 1;
+            var height = endBin - startBin + 1;
+            if (yCompression > 1 && !noScale)
+            {
+                height = (int)Math.Round((double)height / yCompression);
+            }
+
+            if (frameData == null || width != frameData.Length || height != frameData[0].Length)
+            {
+                try
+                {
+                    frameData = new int[width][];
+                    for (var i = 0; i < width; i++)
+                    {
+                        frameData[i] = new int[height];
+                    }
+                }
+                catch (OutOfMemoryException ex)
+                {
+                    throw new OutOfMemoryException("2D frameData array is too large with dimensions " + width + " by " + height, ex);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Exception instantiating 2D frameData array of size " + width + " by " + height + ": " + ex.Message, ex);
+                }
+            }
+            else if (zeroOutData)
+            {
+                for (var i = 0; i < width; i++)
+                for (var j = 0; j < height; j++)
+                {
+                    frameData[i][j] = 0;
+                }
+            }
+
+            if (minMzBin < 0)
+            {
+                minMzBin = 0;
+            }
+
+            if (maxMzBin < 0)
+            {
+                maxMzBin = this.m_globalParameters.Bins;
+            }
+
+            if (maxMzBin < minMzBin)
+            {
+                maxMzBin = minMzBin;
+            }
+
+            // ensure the correct Frame parameters are set
+            if (endFrameNumber != this.CurrentFrameNum)
+            {
+                this.CurrentFrameNum = endFrameNumber;
+                this.UimfFrameParams = this.GetFrameParams(endFrameNumber);
+                this.MzCalibration = this.GetMzCalibrator(this.UimfFrameParams);
+            }
+
+            for (var currentFrameNumber = startFrameNumber; currentFrameNumber <= endFrameNumber; currentFrameNumber++)
+            {
+
+                // Create a calibration lookup table -- for speed
+                calibrationTable = new double[height];
+                if (flagTOF)
+                {
+                    for (var i = 0; i < height; i++)
+                    {
+                        calibrationTable[i] = startBin + (i * (double)(endBin - startBin) / height);
+                    }
+                }
+                else
+                {
+                    var frameParams = GetFrameParams(currentFrameNumber);
+                    var mzCalibrator = GetMzCalibrator(frameParams);
+
+                    if (Math.Abs(frameParams.CalibrationSlope) < float.Epsilon)
+                        Console.WriteLine(" ... Warning, CalibrationSlope is 0 for frame " + currentFrameNumber);
+
+                    var mzMin = mzCalibrator.BinToMZ(startBin);
+                    var mzMax = mzCalibrator.BinToMZ(endBin);
+
+                    for (var i = 0; i < height; i++)
+                    {
+                        calibrationTable[i] = mzCalibrator.MZtoBin(mzMin + (i * (mzMax - mzMin) / height));
+                    }
+                }
+
+                // This function extracts intensities from selected scans and bins in a single frame
+                // and returns a two-dimensional array intensities[scan][bin]
+                // frameNum is mandatory and all other arguments are optional
+                using (var dbCommand = m_dbConnection.CreateCommand())
+                {
+                    // The ScanNum cast here is required to support UIMF files that list the ScanNum field as SMALLINT yet have scan number values > 32765
+                    dbCommand.CommandText = "SELECT Cast(ScanNum as Integer) AS ScanNum, Intensities " +
+                                            "FROM Frame_Scans " +
+                                            "WHERE FrameNum = " + currentFrameNumber +
+                                            " AND ScanNum >= " + startScan +
+                                            " AND ScanNum <= " + (startScan + width - 1);
+
+                    using (var reader = dbCommand.ExecuteReader())
+                    {
+
+                        // accumulate the data into the plot_data
+                        if (yCompression <= 1)
+                        {
+                            AccumulateFrameDataNoCompression(reader, width, startScan, startBin, endBin, ref frameData, minMzBin, maxMzBin);
+                        }
+                        else
+                        {
+                            AccumulateFrameDataWithCompression(reader, width, height, startScan, startBin, endBin, ref frameData, minMzBin, maxMzBin);
+                        }
+                    }
+                }
+            }
+
+            return frameData;
+        }
+
+        private void AccumulateFrameDataNoCompression(
+            IDataReader reader,
+            int width,
+            int startScan,
+            int startBin,
+            int endBin,
+            ref int[][] frameData,
+            int minMzBin,
+            int maxMzBin)
+        {
+            for (var scansData = 0; (scansData < width) && reader.Read(); scansData++)
+            {
+                var scanNum = GetInt32(reader, "ScanNum");
+                ValidateScanNumber(scanNum);
+
+                var currentScan = scanNum - startScan;
+                var compressedBinIntensity = (byte[])(reader["Intensities"]);
+
+                if (compressedBinIntensity.Length == 0)
+                {
+                    continue;
+                }
+
+                var binIntensities = IntensityConverterCLZF.Decompress(compressedBinIntensity, out int _);
+
+                foreach (var binIntensity in binIntensities)
+                {
+                    var binIndex = binIntensity.Item1;
+                    if (binIndex < startBin || binIndex < minMzBin)
+                    {
+                        continue;
+                    }
+                    if (binIndex > endBin || binIndex > maxMzBin)
+                    {
+                        break;
+                    }
+                    frameData[currentScan][binIndex - startBin] += binIntensity.Item2;
+                }
+            }
+        }
+
+        private void AccumulateFrameDataWithCompression(
+            IDataReader reader,
+            int width,
+            int height,
+            int startScan,
+            int startBin,
+            int endBin,
+            ref int[][] frameData,
+            int minMzBin,
+            int maxMzBin)
+        {
+            // each pixel accumulates more than 1 bin of data
+            for (var scansData = 0; scansData < width && reader.Read(); scansData++)
+            {
+                var scanNum = GetInt32(reader, "ScanNum");
+                ValidateScanNumber(scanNum);
+
+                var currentScan = scanNum - startScan;
+                var compressedBinIntensity = (byte[])(reader["Intensities"]);
+
+                if (compressedBinIntensity.Length == 0)
+                {
+                    continue;
+                }
+
+                var pixelY = 1;
+
+                var binIntensities = IntensityConverterCLZF.Decompress(compressedBinIntensity, out int _);
+
+                foreach (var binIntensity in binIntensities)
+                {
+                    var binIndex = binIntensity.Item1;
+                    if (binIndex < startBin || binIndex < minMzBin)
+                    {
+                        continue;
+                    }
+                    if (binIndex > endBin || binIndex > maxMzBin)
+                    {
+                        break;
+                    }
+
+                    double calibratedBin = binIndex;
+
+                    for (var j = pixelY; j < height; j++)
+                    {
+                        if (calibrationTable[j] > calibratedBin)
+                        {
+                            pixelY = j;
+                            frameData[currentScan][pixelY] += binIntensity.Item2;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ValidateScanNumber(int scanNum)
+        {
+            if (scanNum < 0)
+            {
+                // The .UIMF file was created with an old version of the writer that used SMALLINT for the ScanNum field in the Frame_Params table, thus limiting the scan range to 0 to 32765
+                // In May 2016 we switched to a 32-bit integer for ScanNum
+                var msg = "Scan number larger than 32765 for file with the ScanNum field as a SMALLINT; change the field type to INTEGER";
+                throw new Exception(msg);
+            }
         }
 
         /// <summary>

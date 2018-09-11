@@ -1494,9 +1494,11 @@ namespace UIMF_File
             else
                 data_height = this.pnl_2DMap.Height;
 
+#if OLD // TODO:
             this.data_2D = new int[data_width][];
             for (int n = 0; n < data_width; n++)
                 this.data_2D[n] = new int[data_height];
+#endif
 
             // show frame range
             var frameSelectValue = 0.0;
@@ -1533,6 +1535,7 @@ namespace UIMF_File
                     }
 
                     // collect the data
+#if OLD // TODO:
                     for (frames = start_index; (frames <= end_index) && !this.flag_Closing; frames++)
                     {
                         // this.lbl_ExperimentDate.Text = "accumulate_FrameData: " + (++count_times).ToString() + "  "+start_index.ToString()+"<"+end_index.ToString();
@@ -1547,53 +1550,62 @@ namespace UIMF_File
                         {
                             MessageBox.Show("accumulate_FrameData:  " + ex.ToString());
                         }
+                    }
+#endif
+                    /*/
+                    this.data_2D = this.ptr_UIMFDatabase.AccumulateFrameData(this.ptr_UIMFDatabase.ArrayFrameNum[start_index], this.ptr_UIMFDatabase.ArrayFrameNum[end_index], this.flag_display_as_TOF,
+                        this.current_minMobility, this.current_minMobility + data_width, this.current_minBin, this.current_minBin + (data_height * this.current_valuesPerPixelY),
+                        this.current_valuesPerPixelY, this.data_2D, min_MZRange_bin, max_MZRange_bin);
+                    /*/
+                    this.data_2D = this.ptr_UIMFDatabase.AccumulateFrameDataByCount(this.ptr_UIMFDatabase.ArrayFrameNum[start_index], this.ptr_UIMFDatabase.ArrayFrameNum[end_index], this.flag_display_as_TOF,
+                        this.current_minMobility, data_width, this.current_minBin, data_height, this.current_valuesPerPixelY, this.data_2D, min_MZRange_bin, max_MZRange_bin);
+                    /**/
 
-                        try
+                    try
+                    {
+                        int sel_min;
+                        int sel_max;
+                        if (this.flag_viewMobility)
                         {
-                            int sel_min;
-                            int sel_max;
-                            if (this.flag_viewMobility)
-                            {
-                                sel_min = (this.selection_min_drift - this.current_minMobility);
-                                sel_max = (this.selection_max_drift - this.current_minMobility);
-                            }
-                            else
-                            {
-                                sel_min = (int)((this.selection_min_drift - (int)(this.current_minMobility * (this.mean_TOFScanTime / 1000000))));
-                                sel_max = (int)((this.selection_max_drift - (int)(this.current_minMobility * (this.mean_TOFScanTime / 1000000)))); //  * (this.mean_TOFScanTime / 100000));
-                            }
+                            sel_min = (this.selection_min_drift - this.current_minMobility);
+                            sel_max = (this.selection_max_drift - this.current_minMobility);
+                        }
+                        else
+                        {
+                            sel_min = (int)((this.selection_min_drift - (int)(this.current_minMobility * (this.mean_TOFScanTime / 1000000))));
+                            sel_max = (int)((this.selection_max_drift - (int)(this.current_minMobility * (this.mean_TOFScanTime / 1000000)))); //  * (this.mean_TOFScanTime / 100000));
+                        }
 
-                            int current_scan;
-                            int bin_value;
-                            this.data_maxIntensity = 0;
-                            this.data_driftTIC = new double[data_width];
-                            this.data_tofTIC = new double[data_height];
+                        int current_scan;
+                        int bin_value;
+                        this.data_maxIntensity = 0;
+                        this.data_driftTIC = new double[data_width];
+                        this.data_tofTIC = new double[data_height];
 
-                            for (current_scan = 0; current_scan < data_width; current_scan++)
+                        for (current_scan = 0; current_scan < data_width; current_scan++)
+                        {
+                            for (bin_value = 0; bin_value < data_height; bin_value++)
                             {
-                                for (bin_value = 0; bin_value < data_height; bin_value++)
+                                if (this.inside_Polygon_Pixel(current_scan, bin_value))
                                 {
-                                    if (this.inside_Polygon_Pixel(current_scan, bin_value))
+                                    this.data_driftTIC[current_scan] += this.data_2D[current_scan][bin_value];
+
+                                    if (!flag_selection_drift || ((current_scan >= sel_min) && (current_scan <= sel_max)))
+                                        this.data_tofTIC[bin_value] += data_2D[current_scan][bin_value];
+
+                                    if (this.data_2D[current_scan][bin_value] > this.data_maxIntensity)
                                     {
-                                        this.data_driftTIC[current_scan] += this.data_2D[current_scan][bin_value];
-
-                                        if (!flag_selection_drift || ((current_scan >= sel_min) && (current_scan <= sel_max)))
-                                            this.data_tofTIC[bin_value] += data_2D[current_scan][bin_value];
-
-                                        if (this.data_2D[current_scan][bin_value] > this.data_maxIntensity)
-                                        {
-                                            this.data_maxIntensity = this.data_2D[current_scan][bin_value];
-                                            this.posX_MaxIntensity = current_scan;
-                                            this.posY_MaxIntensity = bin_value;
-                                        }
+                                        this.data_maxIntensity = this.data_2D[current_scan][bin_value];
+                                        this.posX_MaxIntensity = current_scan;
+                                        this.posY_MaxIntensity = bin_value;
                                     }
                                 }
                             }
                         }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.ToString());
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.ToString());
                     }
 
                     this.update_CalibrationCoefficients();
@@ -3652,24 +3664,30 @@ namespace UIMF_File
                 }
             }
 
-           // MessageBox.Show(minbin.ToString() + "  mz " + this.ptr_UIMFDatabase.mzCalibration.TOFtoMZ(((double)i) * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin).ToString());
+            // MessageBox.Show(minbin.ToString() + "  mz " + this.ptr_UIMFDatabase.mzCalibration.TOFtoMZ(((double)i) * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin).ToString());
+            var export_data = this.ptr_UIMFDatabase.AccumulateFrameData(this.ptr_UIMFDatabase.CurrentFrameNum, this.ptr_UIMFDatabase.CurrentFrameNum,
+                this.flag_display_as_TOF, minmobility, maxmobility, minbin, maxbin);
+#if false // TODO: OLD
             int[][] export_data = new int[total_scans][];
             for (i = 0; i < total_scans; i++)
             {
                 export_data[i] = new int[total_bins];
             }
             export_data = this.ptr_UIMFDatabase.AccumulateFrameDataUncompressed(this.ptr_UIMFDatabase.CurrentFrameIndex, this.flag_display_as_TOF, minmobility, minbin, export_data);
+#endif
 
             // if masking, clear everything outside of mask to zero.
             if (this.menuItem_SelectionCorners.Checked)
             {
                 int tics = 0;
                 for (i = 0; i < total_scans; i++)
-                    for (j = 0; j < total_bins; j++)
-                        tics += export_data[i][j];
-                        //if (!this.inside_Polygon((minmobility + i) * this.pnl_2DMap.Width / (this.current_maxMobility - this.current_minMobility), (minbin + j) * this.pnl_2DMap.Height / (this.current_maxBin - this.current_minBin)))
-                        //    export_data[i][j] = 0;
-               // MessageBox.Show(tics.ToString());
+                for (j = 0; j < total_bins; j++)
+                {
+                    tics += export_data[i][j];
+                    //if (!this.inside_Polygon((minmobility + i) * this.pnl_2DMap.Width / (this.current_maxMobility - this.current_minMobility), (minbin + j) * this.pnl_2DMap.Height / (this.current_maxBin - this.current_minBin)))
+                    //    export_data[i][j] = 0;
+                    // MessageBox.Show(tics.ToString());
+                }
             }
 
             Utilities.TextExport tex = new Utilities.TextExport();
