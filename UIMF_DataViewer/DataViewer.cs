@@ -246,7 +246,7 @@ namespace UIMF_File
             }
 
             this.current_minBin = 0;
-            this.current_maxBin = this.maximum_Bins = this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins;
+            this.current_maxBin = this.maximum_Bins = this.ptr_UIMFDatabase.UimfGlobalParams.Bins;
 
             try
             {
@@ -257,14 +257,14 @@ namespace UIMF_File
                 MessageBox.Show("failed to build interface()\n\n" + ex.ToString());
             }
 
-            this.pnl_InstrumentSettings.set_defaultFragmentationVoltages(this.ptr_UIMFDatabase.get_DefaultFragVoltages());
+            this.pnl_InstrumentSettings.set_defaultFragmentationVoltages(this.ptr_UIMFDatabase.GetDefaultFragVoltages());
 
             for (int i = 0; i < 5; i++)
                 this.cb_FrameType.Items.Add(this.ptr_UIMFDatabase.FrameTypeDescription(i));
 
             //this.slide_FrameSelect.Range = new NationalInstruments.UI.Range(0, this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames);
             this.slide_FrameSelect.Minimum = 0;
-            this.slide_FrameSelect.Maximum = this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames;
+            this.slide_FrameSelect.Maximum = this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames;
 
 #if SCROLLBAR_BUSY
             this.hsb_2DMap.Leave += new System.EventHandler(this.leave_Scrollbar);
@@ -276,13 +276,13 @@ namespace UIMF_File
             this.current_minBin = 0;
             this.current_maxBin = 10;
 
-            this.lb_DragDropFiles.Items.Add(this.ptr_UIMFDatabase.UIMF_DataFile);
-            this.cb_ExperimentControlled.Items.Add(Path.GetFileName(this.ptr_UIMFDatabase.UIMF_DataFile));
+            this.lb_DragDropFiles.Items.Add(this.ptr_UIMFDatabase.UimfDataFile);
+            this.cb_ExperimentControlled.Items.Add(Path.GetFileName(this.ptr_UIMFDatabase.UimfDataFile));
             this.cb_ExperimentControlled.SelectedIndex = 0;
 
             this.cb_FrameType.SelectedIndex = this.ptr_UIMFDatabase.get_FrameType();
             this.Filter_FrameType(this.ptr_UIMFDatabase.get_FrameType());
-            this.ptr_UIMFDatabase.current_frame_index = 0;
+            this.ptr_UIMFDatabase.CurrentFrameIndex = 0;
 
             this.ptr_UIMFDatabase.set_FrameType(current_frame_type, true);
             this.cb_FrameType.SelectedIndexChanged += new System.EventHandler(this.cb_FrameType_SelectedIndexChanged);
@@ -290,13 +290,13 @@ namespace UIMF_File
             Generate2DIntensityArray();
             this.GraphFrame(this.data_2D, flag_enablecontrols);
 
-            if (!string.IsNullOrWhiteSpace(this.ptr_UIMFDatabase.UIMF_GlobalParams.GetValue(GlobalParamKeyType.InstrumentName, "")))
+            if (!string.IsNullOrWhiteSpace(this.ptr_UIMFDatabase.UimfGlobalParams.GetValue(GlobalParamKeyType.InstrumentName, "")))
             {
-                this.flag_isTIMS = (this.ptr_UIMFDatabase.UIMF_GlobalParams.GetValue(GlobalParamKeyType.InstrumentName, "").StartsWith("TIMS") ? true : false);
+                this.flag_isTIMS = (this.ptr_UIMFDatabase.UimfGlobalParams.GetValue(GlobalParamKeyType.InstrumentName, "").StartsWith("TIMS") ? true : false);
                 if (this.flag_isTIMS)
-                    this.plot_Mobility.set_TIMSRamp(this.ptr_UIMFDatabase.UIMF_FrameParams.MassCalibrationCoefficients.a2, this.ptr_UIMFDatabase.UIMF_FrameParams.MassCalibrationCoefficients.b2,
-                        this.ptr_UIMFDatabase.UIMF_FrameParams.MassCalibrationCoefficients.c2, this.ptr_UIMFDatabase.UIMF_FrameParams.Scans,
-                        (int)(7500000.0 / this.ptr_UIMFDatabase.UIMF_FrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength))); // msec gap
+                    this.plot_Mobility.set_TIMSRamp(this.ptr_UIMFDatabase.UimfFrameParams.MassCalibrationCoefficients.a2, this.ptr_UIMFDatabase.UimfFrameParams.MassCalibrationCoefficients.b2,
+                        this.ptr_UIMFDatabase.UimfFrameParams.MassCalibrationCoefficients.c2, this.ptr_UIMFDatabase.UimfFrameParams.Scans,
+                        (int)(7500000.0 / this.ptr_UIMFDatabase.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength))); // msec gap
             }
             else
                 this.flag_isTIMS = false;
@@ -304,31 +304,31 @@ namespace UIMF_File
             this.num_TICThreshold.Visible = false;
             this.btn_TIC.Visible = false;
 
-            if (this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames > DESIRED_WIDTH_CHROMATOGRAM)
-                this.num_FrameCompression.Value = this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames / DESIRED_WIDTH_CHROMATOGRAM;
+            if (this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames > DESIRED_WIDTH_CHROMATOGRAM)
+                this.num_FrameCompression.Value = this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames / DESIRED_WIDTH_CHROMATOGRAM;
             else
                 this.num_FrameCompression.Value = 1;
             this.current_frame_compression = Convert.ToInt32(this.num_FrameCompression.Value);
 
-            this.Width = this.pnl_2DMap.Left + this.ptr_UIMFDatabase.UIMF_FrameParams.Scans + 170;
+            this.Width = this.pnl_2DMap.Left + this.ptr_UIMFDatabase.UimfFrameParams.Scans + 170;
 
 #if COMPRESS_TO_100K
             // MessageBox.Show("initializeCalibrants: " + this.UIMF_DataReader.mz_Calibration.k.ToString());
-            this.pnl_postProcessing.InitializeCalibrants(1, this.ptr_UIMFDatabase.UIMF_FrameParams.CalibrationSlope, this.ptr_UIMFDatabase.UIMF_FrameParams.CalibrationIntercept);
+            this.pnl_postProcessing.InitializeCalibrants(1, this.ptr_UIMFDatabase.UimfFrameParams.CalibrationSlope, this.ptr_UIMFDatabase.UimfFrameParams.CalibrationIntercept);
 #else
             this.pnl_postProcessing.InitializeCalibrants(this.UIMF_GlobalParams.BinWidth, this.UIMF_DataReader.m_frameParameters.CalibrationSlope, this.UIMF_DataReader.m_frameParameters.CalibrationIntercept);
 #endif
 
-            this.pnl_postProcessing.tb_SaveDecodeFilename.Text = Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UIMF_DataFile);
-            this.pnl_postProcessing.tb_SaveDecodeDirectory.Text = Path.GetDirectoryName(this.ptr_UIMFDatabase.UIMF_DataFile);
+            this.pnl_postProcessing.tb_SaveDecodeFilename.Text = Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UimfDataFile);
+            this.pnl_postProcessing.tb_SaveDecodeDirectory.Text = Path.GetDirectoryName(this.ptr_UIMFDatabase.UimfDataFile);
 
-            if (this.ptr_UIMFDatabase.UIMF_GlobalParams.BinWidth != .25)
+            if (this.ptr_UIMFDatabase.UimfGlobalParams.BinWidth != .25)
                 this.pnl_postProcessing.gb_Compress4GHz.Hide();
             else
             {
                 this.pnl_postProcessing.btn_Compress1GHz.Click += new System.EventHandler(this.btn_Compress1GHz_Click);
-                this.pnl_postProcessing.tb_SaveCompressFilename.Text = Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UIMF_DataFile);
-                this.pnl_postProcessing.tb_SaveCompressDirectory.Text = Path.GetDirectoryName(this.ptr_UIMFDatabase.UIMF_DataFile);
+                this.pnl_postProcessing.tb_SaveCompressFilename.Text = Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UimfDataFile);
+                this.pnl_postProcessing.tb_SaveCompressDirectory.Text = Path.GetDirectoryName(this.ptr_UIMFDatabase.UimfDataFile);
             }
         }
 #if false
@@ -676,7 +676,7 @@ namespace UIMF_File
             }
             else if (this.tabpages_Main.SelectedTab == this.tab_InstrumentSettings)
             {
-                this.pnl_InstrumentSettings.update_Frame(this.ptr_UIMFDatabase.current_frame_index, this.ptr_UIMFDatabase.GetFrameParams(this.ptr_UIMFDatabase.current_frame_index));
+                this.pnl_InstrumentSettings.update_Frame(this.ptr_UIMFDatabase.CurrentFrameIndex, this.ptr_UIMFDatabase.GetFrameParams(this.ptr_UIMFDatabase.CurrentFrameIndex));
             }
          /* wfd - don't do this, for some reason it does not work when switching the tabs.  Besides not necessary.
             else
@@ -1039,14 +1039,14 @@ namespace UIMF_File
             {
                 this.flag_selection_drift = false;
 
-                this.lbl_ExperimentDate.Text = this.ptr_UIMFDatabase.UIMF_GlobalParams.GetValue(GlobalParamKeyType.DateStarted, "");
+                this.lbl_ExperimentDate.Text = this.ptr_UIMFDatabase.UimfGlobalParams.GetValue(GlobalParamKeyType.DateStarted, "");
                 this.update_CalibrationCoefficients();
 
                 // Initialize boundaries
                 new_minMobility = 0;
-                new_maxMobility = this.ptr_UIMFDatabase.UIMF_FrameParams.Scans - 1; //  this.imfReader.Experiment_Properties.TOFSpectraPerFrame-1;
+                new_maxMobility = this.ptr_UIMFDatabase.UimfFrameParams.Scans - 1; //  this.imfReader.Experiment_Properties.TOFSpectraPerFrame-1;
                 new_minBin = 0;
-                new_maxBin = this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins - 1;
+                new_maxBin = this.ptr_UIMFDatabase.UimfGlobalParams.Bins - 1;
 
                 this.maximum_Mobility = new_maxMobility;
                 this.maximum_Bins = new_maxBin;
@@ -1067,7 +1067,7 @@ namespace UIMF_File
 
                 try
                 {
-                    this.mean_TOFScanTime = this.ptr_UIMFDatabase.UIMF_FrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength);
+                    this.mean_TOFScanTime = this.ptr_UIMFDatabase.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength);
                     // MessageBox.Show("mean_tof = " + this.mean_TOFScanTime.ToString());
                     decimal val = Convert.ToDecimal(this.mean_TOFScanTime);
                 }
@@ -1083,7 +1083,7 @@ namespace UIMF_File
                 this.current_minMobility = this.new_minMobility;
                 this.current_maxMobility = this.new_maxMobility;
 
-                if (this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames < 2)
+                if (this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames < 2)
                 {
                     this.elementHost_FrameSelect.Hide();
                     this.num_FrameRange.Hide();
@@ -1117,7 +1117,7 @@ namespace UIMF_File
                 this.num_minMobility.Minimum = Convert.ToDecimal(0);
                 this.num_minMobility.Maximum = Convert.ToDecimal(this.maximum_Mobility);
 
-                this.Text = Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UIMF_DataFile);
+                this.Text = Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UimfDataFile);
 
                 this.AutoScrollPosition = new Point(0, 0);
 
@@ -1232,18 +1232,18 @@ namespace UIMF_File
             this.slide_FrameSelect.Dispatcher.Invoke(() => frameSelectValue = this.slide_FrameSelect.Value);
 
             // Determine the frame size
-            if (this.ptr_UIMFDatabase.current_frame_index != Convert.ToInt32(frameSelectValue))
+            if (this.ptr_UIMFDatabase.CurrentFrameIndex != Convert.ToInt32(frameSelectValue))
             {
                 flag_newframe = true;
-                this.ptr_UIMFDatabase.current_frame_index = Convert.ToInt32(frameSelectValue);
+                this.ptr_UIMFDatabase.CurrentFrameIndex = Convert.ToInt32(frameSelectValue);
             }
 
             this.get_ViewableIntensities();
 
             if (flag_newframe && this.flag_isTIMS)
-                this.plot_Mobility.set_TIMSRamp(this.ptr_UIMFDatabase.UIMF_FrameParams.MassCalibrationCoefficients.a2, this.ptr_UIMFDatabase.UIMF_FrameParams.MassCalibrationCoefficients.b2,
-                    this.ptr_UIMFDatabase.UIMF_FrameParams.MassCalibrationCoefficients.c2, this.ptr_UIMFDatabase.UIMF_FrameParams.Scans,
-                    (int) (7500000.0/this.ptr_UIMFDatabase.UIMF_FrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength))); // msec gap
+                this.plot_Mobility.set_TIMSRamp(this.ptr_UIMFDatabase.UimfFrameParams.MassCalibrationCoefficients.a2, this.ptr_UIMFDatabase.UimfFrameParams.MassCalibrationCoefficients.b2,
+                    this.ptr_UIMFDatabase.UimfFrameParams.MassCalibrationCoefficients.c2, this.ptr_UIMFDatabase.UimfFrameParams.Scans,
+                    (int) (7500000.0/this.ptr_UIMFDatabase.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength))); // msec gap
 
 
             if (this.flag_Closing)
@@ -1294,16 +1294,16 @@ namespace UIMF_File
             {
                 // min_TOF = (this.current_minBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin * 1e-4);
 
-                min_MZRange_bin = (int)(((double)this.ptr_UIMFDatabase.mzCalibration.MZtoTOF(select_MZ - select_PPM)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-                max_MZRange_bin = (int)(((double)this.ptr_UIMFDatabase.mzCalibration.MZtoTOF(select_MZ + select_PPM)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                min_MZRange_bin = (int)(((double)this.ptr_UIMFDatabase.MzCalibration.MZtoTOF(select_MZ - select_PPM)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                max_MZRange_bin = (int)(((double)this.ptr_UIMFDatabase.MzCalibration.MZtoTOF(select_MZ + select_PPM)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
 
-                this.current_minBin = (int)(((double)this.ptr_UIMFDatabase.mzCalibration.MZtoTOF((float)(select_MZ - (select_PPM * 1.5)))) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-                this.current_maxBin = (int)(((double)this.ptr_UIMFDatabase.mzCalibration.MZtoTOF((float)(select_MZ + (select_PPM * 1.5)))) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                this.current_minBin = (int)(((double)this.ptr_UIMFDatabase.MzCalibration.MZtoTOF((float)(select_MZ - (select_PPM * 1.5)))) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                this.current_maxBin = (int)(((double)this.ptr_UIMFDatabase.MzCalibration.MZtoTOF((float)(select_MZ + (select_PPM * 1.5)))) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
             }
             else
             {
                 min_MZRange_bin = 0;
-                max_MZRange_bin = this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins;
+                max_MZRange_bin = this.ptr_UIMFDatabase.UimfGlobalParams.Bins;
             }
 
             if (this.current_maxBin < this.current_minBin)
@@ -1520,8 +1520,8 @@ namespace UIMF_File
                 {
                     this.ptr_UIMFDatabase = (UIMFDataWrapper)this.array_Experiments[exp_index];
 
-                    start_index = this.ptr_UIMFDatabase.current_frame_index - (this.ptr_UIMFDatabase.frame_width - 1);
-                    end_index = this.ptr_UIMFDatabase.current_frame_index;
+                    start_index = this.ptr_UIMFDatabase.CurrentFrameIndex - (this.ptr_UIMFDatabase.FrameWidth - 1);
+                    end_index = this.ptr_UIMFDatabase.CurrentFrameIndex;
 
                     if (Convert.ToInt32(this.num_FrameRange.Value) > 1)
                     {
@@ -1541,7 +1541,7 @@ namespace UIMF_File
                         {
                             if (this.data_2D == null)
                                 MessageBox.Show("null");
-                            this.data_2D = this.ptr_UIMFDatabase.accumulate_FrameData(frames, this.flag_display_as_TOF, this.current_minMobility, this.current_minBin, min_MZRange_bin, max_MZRange_bin, this.data_2D, this.current_valuesPerPixelY);
+                            this.data_2D = this.ptr_UIMFDatabase.AccumulateFrameData(frames, this.flag_display_as_TOF, this.current_minMobility, this.current_minBin, min_MZRange_bin, max_MZRange_bin, this.data_2D, this.current_valuesPerPixelY);
                         }
                         catch (Exception ex)
                         {
@@ -2158,7 +2158,7 @@ namespace UIMF_File
             int compression;
             int compression_collection;
             int total_frames = this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType());
-            int total_scans = this.ptr_UIMFDatabase.UIMF_FrameParams.Scans;
+            int total_scans = this.ptr_UIMFDatabase.UimfFrameParams.Scans;
 
             int data_height;
             int data_width = total_frames / Convert.ToInt32(this.num_FrameCompression.Value);
@@ -2172,15 +2172,15 @@ namespace UIMF_File
 
             if (this.cb_EnableMZRange.Checked)
             {
-                min_MZRange_bin = (int) (((double) this.ptr_UIMFDatabase.mzCalibration.MZtoTOF(select_MZ - select_PPM)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-                max_MZRange_bin = (int) (((double) this.ptr_UIMFDatabase.mzCalibration.MZtoTOF(select_MZ + select_PPM)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                min_MZRange_bin = (int) (((double) this.ptr_UIMFDatabase.MzCalibration.MZtoTOF(select_MZ - select_PPM)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                max_MZRange_bin = (int) (((double) this.ptr_UIMFDatabase.MzCalibration.MZtoTOF(select_MZ + select_PPM)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
 
                 // MessageBox.Show(min_MZRange_bin.ToString() + "<" + max_MZRange_bin.ToString());
             }
             else
             {
                 min_MZRange_bin = 0;
-                max_MZRange_bin = this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins;
+                max_MZRange_bin = this.ptr_UIMFDatabase.UimfGlobalParams.Bins;
             }
 
             if (!this.flag_chromatograph_collected_COMPLETE && !this.flag_chromatograph_collected_PARTIAL)
@@ -2209,7 +2209,7 @@ namespace UIMF_File
                         frame_index = (mobility_index * Convert.ToInt32(this.num_FrameCompression.Value)) + compression;
                         //MessageBox.Show(frame_index.ToString());
 
-                        mobility_data = this.ptr_UIMFDatabase.get_MobilityData(frame_index, min_MZRange_bin, max_MZRange_bin);
+                        mobility_data = this.ptr_UIMFDatabase.GetDriftChromatogram(frame_index, min_MZRange_bin, max_MZRange_bin);
                         for (i = 0; i < mobility_data.Length; i++)
                             this.chromat_data[mobility_index][i] += mobility_data[i];
                     }
@@ -2669,8 +2669,8 @@ namespace UIMF_File
 
             // to find the y_pixel, the mz is linearized vertically.
             double height = this.pnl_2DMap.Height;
-            double mzMax = this.ptr_UIMFDatabase.mzCalibration.TOFtoMZ(this.current_maxBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-            double mzMin = this.ptr_UIMFDatabase.mzCalibration.TOFtoMZ(this.current_minBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+            double mzMax = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ(this.current_maxBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+            double mzMin = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ(this.current_minBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
             y_pixel = (int)(height * (mz-mzMin) / (mzMax - mzMin));
 
             return this.inside_Polygon_Pixel(x_pixel, y_pixel);
@@ -2840,8 +2840,8 @@ namespace UIMF_File
                   //  MessageBox.Show("wfd: " + maxframe_Data_number.ToString() + " - " + minframe_Data_number.ToString() + " + 1");
                     if (minframe_Data_number < 1)
                         minframe_Data_number = 1;
-                    if (maxframe_Data_number > this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames)
-                        maxframe_Data_number = this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames;
+                    if (maxframe_Data_number > this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames)
+                        maxframe_Data_number = this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames;
                     this.slide_FrameSelect.Value = maxframe_Data_number;
 
                   //  MessageBox.Show("wfd: "+maxframe_Data_number.ToString()+" - "+minframe_Data_number.ToString()+" + 1");
@@ -2906,7 +2906,7 @@ namespace UIMF_File
 #if RESIZE
                     this.ResizeThis();
 #endif
-                    this.ptr_UIMFDatabase.current_frame_index = (int)this.slide_FrameSelect.Value;
+                    this.ptr_UIMFDatabase.CurrentFrameIndex = (int)this.slide_FrameSelect.Value;
 
                     this.Chromatogram_CheckedChanged();
                 }
@@ -2955,7 +2955,7 @@ namespace UIMF_File
             {
                 if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
                 {
-                    w = this.pnl_2DMap.Width / this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames;
+                    w = this.pnl_2DMap.Width / this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames;
                     xl = (this.selection_min_drift * w);
 
                     // if (this.current_valuesPerPixelX < 0)
@@ -3185,9 +3185,9 @@ namespace UIMF_File
         private const Int32 SRCCOPY = 0xCC0020;
         private void menuItem_CaptureExperimentFrame_Click(object sender, System.EventArgs e)
         {
-            string folder = Path.GetDirectoryName(this.ptr_UIMFDatabase.UIMF_DataFile);
-            string exp_name = Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UIMF_DataFile);
-            string filename = folder + "\\" + exp_name + ".Accum_" + this.ptr_UIMFDatabase.current_frame_index.ToString("0000") + ".BMP";
+            string folder = Path.GetDirectoryName(this.ptr_UIMFDatabase.UimfDataFile);
+            string exp_name = Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UimfDataFile);
+            string filename = folder + "\\" + exp_name + ".Accum_" + this.ptr_UIMFDatabase.CurrentFrameIndex.ToString("0000") + ".BMP";
             this.SaveExperimentGUI(filename);
 
             MessageBox.Show(this, "Image capture for Frame saved to Desktop in file: \n" + filename);
@@ -3279,7 +3279,7 @@ namespace UIMF_File
                 System.IO.StreamWriter w = new System.IO.StreamWriter(save_dialog.FileName);
                 if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
                 {
-                    double increment_MobilityValue = this.mean_TOFScanTime * (this.maximum_Mobility + 1) * this.ptr_UIMFDatabase.UIMF_FrameParams.GetValueInt32(FrameParamKeyType.Accumulations) / 1000000.0 / 1000.0;
+                    double increment_MobilityValue = this.mean_TOFScanTime * (this.maximum_Mobility + 1) * this.ptr_UIMFDatabase.UimfFrameParams.GetValueInt32(FrameParamKeyType.Accumulations) / 1000000.0 / 1000.0;
                     for (int i = 0; i < tic_Mobility.Length; i++)
                     {
                         w.WriteLine("{0},{1}", (i*increment_MobilityValue) + this.minFrame_Chromatogram, tic_Mobility[i]);
@@ -3321,7 +3321,7 @@ namespace UIMF_File
 
             if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
             {
-                this.Width = this.pnl_2DMap.Left + this.ptr_UIMFDatabase.UIMF_FrameParams.Scans + 170;
+                this.Width = this.pnl_2DMap.Left + this.ptr_UIMFDatabase.UimfFrameParams.Scans + 170;
 
                 this.rb_PartialChromatogram.Checked = false;
                 this.rb_CompleteChromatogram.Checked = false;
@@ -3349,7 +3349,7 @@ namespace UIMF_File
 
                 this.slide_FrameSelect.Value = frame_number;
 
-                this.ptr_UIMFDatabase.current_frame_index = (int)this.slide_FrameSelect.Value;
+                this.ptr_UIMFDatabase.CurrentFrameIndex = (int)this.slide_FrameSelect.Value;
                 this.plot_Mobility.ClearRange();
                 this.num_FrameRange.Value = 1;
 
@@ -3357,7 +3357,7 @@ namespace UIMF_File
                 this.hsb_2DMap.Show();
 
                 // this.imf_ReadFrame(this.new_frame_index, out frame_Data);
-                this.max_plot_width = this.ptr_UIMFDatabase.UIMF_FrameParams.Scans;
+                this.max_plot_width = this.ptr_UIMFDatabase.UimfFrameParams.Scans;
                 this.flag_update2DGraph = true;
             }
             else
@@ -3470,13 +3470,13 @@ namespace UIMF_File
         {
             int frames_width = this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType());
             double[] frames_axis = new double[frames_width];
-            int mob_height = this.ptr_UIMFDatabase.UIMF_FrameParams.Scans;
+            int mob_height = this.ptr_UIMFDatabase.UimfFrameParams.Scans;
             double[] drift_axis = new double[mob_height];
 
             int [][]dump_chromatogram = new int[frames_width][];
             for (int i=0; i<frames_width; i++)
             {
-                dump_chromatogram[i] = this.ptr_UIMFDatabase.get_MobilityData(i);
+                dump_chromatogram[i] = this.ptr_UIMFDatabase.GetDriftChromatogram(i);
             }
 
 
@@ -3628,7 +3628,7 @@ namespace UIMF_File
             double increment;
             //int bin_value;
 
-            increment = (((double)(this.ptr_UIMFDatabase.UIMF_FrameParams.Scans)) * this.mean_TOFScanTime) / this.ptr_UIMFDatabase.UIMF_FrameParams.Scans / 1000000.0;
+            increment = (((double)(this.ptr_UIMFDatabase.UimfFrameParams.Scans)) * this.mean_TOFScanTime) / this.ptr_UIMFDatabase.UimfFrameParams.Scans / 1000000.0;
 
             drift_axis[0] = ((double)minmobility) * increment;
 
@@ -3648,7 +3648,7 @@ namespace UIMF_File
                 // calculate the mz, then convert to TOF for all the values.
                 for (i = minbin; i <= maxbin; i++)
                 {
-                    tof_axis[i - minbin] = this.ptr_UIMFDatabase.mzCalibration.TOFtoMZ(((double)i) * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                    tof_axis[i - minbin] = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ(((double)i) * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
                 }
             }
 
@@ -3658,7 +3658,7 @@ namespace UIMF_File
             {
                 export_data[i] = new int[total_bins];
             }
-            export_data = this.ptr_UIMFDatabase.accumulate_FrameData(this.ptr_UIMFDatabase.current_frame_index, this.flag_display_as_TOF, minmobility, minbin, export_data, -1);
+            export_data = this.ptr_UIMFDatabase.AccumulateFrameDataUncompressed(this.ptr_UIMFDatabase.CurrentFrameIndex, this.flag_display_as_TOF, minmobility, minbin, export_data);
 
             // if masking, clear everything outside of mask to zero.
             if (this.menuItem_SelectionCorners.Checked)
@@ -3754,23 +3754,23 @@ namespace UIMF_File
                     }
                     else
                     {
-                        int[] saved_intensities = new int[this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins];
+                        int[] saved_intensities = new int[this.ptr_UIMFDatabase.UimfGlobalParams.Bins];
                         int[] frame_intensities;
                         double mz = 0.0;
 
-                        for (int i = this.ptr_UIMFDatabase.current_frame_index - this.ptr_UIMFDatabase.frame_width + 1; i <= this.ptr_UIMFDatabase.current_frame_index; i++)
+                        for (int i = this.ptr_UIMFDatabase.CurrentFrameIndex - this.ptr_UIMFDatabase.FrameWidth + 1; i <= this.ptr_UIMFDatabase.CurrentFrameIndex; i++)
                         {
-                            frame_intensities = this.ptr_UIMFDatabase.Get_SumScans(i, this.current_minMobility, this.current_maxMobility);
+                            frame_intensities = this.ptr_UIMFDatabase.GetSumScans(i, this.current_minMobility, this.current_maxMobility);
 
-                            for (int j = 0; j < this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins; j++)
+                            for (int j = 0; j < this.ptr_UIMFDatabase.UimfGlobalParams.Bins; j++)
                                 saved_intensities[j] += frame_intensities[j];
                         }
 
-                        double mzMax = this.ptr_UIMFDatabase.mzCalibration.TOFtoMZ(this.current_maxBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-                        double mzMin = this.ptr_UIMFDatabase.mzCalibration.TOFtoMZ(this.current_minBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                        double mzMax = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ(this.current_maxBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                        double mzMin = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ(this.current_minBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
                         for (int i = 0; i < saved_intensities.Length; i++)
                         {
-                            mz = this.ptr_UIMFDatabase.mzCalibration.TOFtoMZ((double)i * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                            mz = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ((double)i * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
                             if ((mz >= mzMin) && (mz <= mzMax))
                                 sw_TOF.WriteLine("{0},{1}", mz, saved_intensities[i]);
                         }
@@ -3849,9 +3849,9 @@ namespace UIMF_File
                     this.maxMobility_Chromatogram = this.minMobility_Chromatogram + 10;
                     this.num_maxBin.Value = this.maxMobility_Chromatogram;
                 }
-                if (this.maxMobility_Chromatogram > this.ptr_UIMFDatabase.UIMF_FrameParams.Scans - 1)
+                if (this.maxMobility_Chromatogram > this.ptr_UIMFDatabase.UimfFrameParams.Scans - 1)
                 {
-                    this.maxMobility_Chromatogram = this.ptr_UIMFDatabase.UIMF_FrameParams.Scans - 1;
+                    this.maxMobility_Chromatogram = this.ptr_UIMFDatabase.UimfFrameParams.Scans - 1;
                     this.minMobility_Chromatogram = this.maxMobility_Chromatogram - 10;
 
                     this.num_minBin.Value = this.minMobility_Chromatogram;
@@ -3875,8 +3875,8 @@ namespace UIMF_File
                 }
                 else
                 {
-                    min = this.ptr_UIMFDatabase.mzCalibration.MZtoTOF(Convert.ToDouble(this.num_minBin.Value)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin;
-                    max = this.ptr_UIMFDatabase.mzCalibration.MZtoTOF(Convert.ToDouble(this.num_maxBin.Value)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin;
+                    min = this.ptr_UIMFDatabase.MzCalibration.MZtoTOF(Convert.ToDouble(this.num_minBin.Value)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin;
+                    max = this.ptr_UIMFDatabase.MzCalibration.MZtoTOF(Convert.ToDouble(this.num_maxBin.Value)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin;
                 }
 
                 bin_diff = ((max - min + 1.0) / this.pnl_2DMap.Height);
@@ -3914,8 +3914,8 @@ namespace UIMF_File
             if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
             {
                 this.maxMobility_Chromatogram = Convert.ToInt32(this.num_maxBin.Value);
-                if (this.maxMobility_Chromatogram > this.ptr_UIMFDatabase.UIMF_FrameParams.Scans - 1)
-                    this.maxMobility_Chromatogram = this.ptr_UIMFDatabase.UIMF_FrameParams.Scans - 1;
+                if (this.maxMobility_Chromatogram > this.ptr_UIMFDatabase.UimfFrameParams.Scans - 1)
+                    this.maxMobility_Chromatogram = this.ptr_UIMFDatabase.UimfFrameParams.Scans - 1;
 
                 if (this.maxMobility_Chromatogram - this.minMobility_Chromatogram < 10)
                 {
@@ -3948,8 +3948,8 @@ namespace UIMF_File
                 }
                 else
                 {
-                    min = this.ptr_UIMFDatabase.mzCalibration.MZtoTOF(Convert.ToDouble(this.num_minBin.Value)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin;
-                    max = this.ptr_UIMFDatabase.mzCalibration.MZtoTOF(Convert.ToDouble(this.num_maxBin.Value)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin;
+                    min = this.ptr_UIMFDatabase.MzCalibration.MZtoTOF(Convert.ToDouble(this.num_minBin.Value)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin;
+                    max = this.ptr_UIMFDatabase.MzCalibration.MZtoTOF(Convert.ToDouble(this.num_maxBin.Value)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin;
                 }
 
                 bin_diff = (int)((max - min + 1) / this.pnl_2DMap.Height);
@@ -3993,7 +3993,7 @@ namespace UIMF_File
                 this.num_FrameRange.Value = Convert.ToDecimal(this.slide_FrameSelect.Maximum+1);
                 return;
             }
-            this.ptr_UIMFDatabase.frame_width = Convert.ToInt32(this.num_FrameRange.Value);
+            this.ptr_UIMFDatabase.FrameWidth = Convert.ToInt32(this.num_FrameRange.Value);
 
             if (this.slide_FrameSelect.Value < Convert.ToDouble(this.num_FrameRange.Value))
             {
@@ -4137,7 +4137,7 @@ namespace UIMF_File
                         {
                             this.flag_FrameTypeChanged = false;
                             this.Filter_FrameType(this.ptr_UIMFDatabase.get_FrameType());
-                            this.ptr_UIMFDatabase.current_frame_index = 0;
+                            this.ptr_UIMFDatabase.CurrentFrameIndex = 0;
                         }
 
                         if (this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType()) <= 0)
@@ -4153,7 +4153,7 @@ namespace UIMF_File
                             break;
                         }
 
-                        current_frame_number = this.ptr_UIMFDatabase.load_Frame(this.ptr_UIMFDatabase.current_frame_index);
+                        current_frame_number = this.ptr_UIMFDatabase.LoadFrame(this.ptr_UIMFDatabase.CurrentFrameIndex);
                         if (new_frame_number != current_frame_number)
                         {
                             new_frame_number = current_frame_number;
@@ -4161,14 +4161,14 @@ namespace UIMF_File
                             this.update_CalibrationCoefficients();
                         }
 
-                        if (this.ptr_UIMFDatabase.current_frame_index < this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType()))
+                        if (this.ptr_UIMFDatabase.CurrentFrameIndex < this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType()))
                         {
                             //#if false
                             if (this.menuItem_ScanTime.Checked)
                             {
                                 // MessageBox.Show("tof scan time: " + this.mean_TOFScanTime.ToString());
                                 // Get the mean TOF scan time
-                                this.mean_TOFScanTime = this.ptr_UIMFDatabase.UIMF_FrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength);
+                                this.mean_TOFScanTime = this.ptr_UIMFDatabase.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength);
                                 if (this.mean_TOFScanTime <= 0)
                                 {
                                     this.menuItem_Mobility.PerformClick();
@@ -4273,7 +4273,7 @@ namespace UIMF_File
         //
         public void Graph_2DPlot()
         {
-            int frame_index = this.ptr_UIMFDatabase.current_frame_index;
+            int frame_index = this.ptr_UIMFDatabase.CurrentFrameIndex;
             if (frame_index >= this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType()))
             {
                 MessageBox.Show("Graph_2DPlot: "+frame_index+"\n\nAttempting to graph frame beyond list");
@@ -4312,7 +4312,7 @@ namespace UIMF_File
 
                     // For initial viz., don't want to expand widths of datasets with few TOFs
                     // if(current_maxMobility == this.imfReader.Experiment_Properties.TOFSpectraPerFrame-1 && current_minMobility== 0)
-                    if (current_maxMobility == this.ptr_UIMFDatabase.UIMF_FrameParams.Scans - 1 && current_minMobility == 0)
+                    if (current_maxMobility == this.ptr_UIMFDatabase.UimfFrameParams.Scans - 1 && current_minMobility == 0)
                         current_valuesPerPixelX = 1;
 
                     current_valuesPerPixelY = ((current_maxBin - current_minBin + 1 < this.pnl_2DMap.Height) ?
@@ -4476,7 +4476,7 @@ namespace UIMF_File
                     tof_bin--;   // wfd:  This is a Cheat!!! not sure what side of this belongs MZ or TOF
 
                     this.lbl_CursorTOF.Text = (tof_bin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin * 1e-4).ToString();
-                    this.lbl_CursorMZ.Text = this.ptr_UIMFDatabase.mzCalibration.TOFtoMZ((float)(tof_bin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin)).ToString();
+                    this.lbl_CursorMZ.Text = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ((float)(tof_bin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin)).ToString();
                 }
                 else
                 {
@@ -4484,20 +4484,20 @@ namespace UIMF_File
                     //
                     // linearize the mz and find the cursor.
                     // calculate the mz, then convert to TOF for all the values.
-                    double mzMax = this.ptr_UIMFDatabase.mzCalibration.TOFtoMZ(this.current_maxBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-                    double mzMin = this.ptr_UIMFDatabase.mzCalibration.TOFtoMZ(this.current_minBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                    double mzMax = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ(this.current_maxBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                    double mzMin = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ(this.current_minBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
 
                     double diffMZ = mzMax - mzMin;
                     double rangeTOF = this.current_maxBin - this.current_minBin;
                     double indexY = (current_valuesPerPixelY > 0) ? (this.pnl_2DMap.Height - e.Y - 1) * current_valuesPerPixelY : (this.pnl_2DMap.Height - e.Y - 1) / (-current_valuesPerPixelY);
                     double mz = (indexY / rangeTOF) * diffMZ + mzMin;
-                    double tof_value = this.ptr_UIMFDatabase.mzCalibration.MZtoTOF(mz);
+                    double tof_value = this.ptr_UIMFDatabase.MzCalibration.MZtoTOF(mz);
 
                     this.lbl_CursorMZ.Text = mz.ToString();
                     this.lbl_CursorTOF.Text = (tof_value * 1e-4).ToString(); // convert to usec
                 }
 
-                this.lbl_TimeOffset.Text = "Time Offset = " + this.ptr_UIMFDatabase.UIMF_GlobalParams.GetValue(GlobalParamKeyType.TimeOffset, 0).ToString() + " nsec";
+                this.lbl_TimeOffset.Text = "Time Offset = " + this.ptr_UIMFDatabase.UimfGlobalParams.GetValue(GlobalParamKeyType.TimeOffset, 0).ToString() + " nsec";
 
                 if (current_valuesPerPixelY < 0)
                 {
@@ -4827,7 +4827,7 @@ namespace UIMF_File
             this.progress_ReadingFile.Top = this.pnl_2DMap.Top + this.pnl_2DMap.Height / 2;
             this.progress_ReadingFile.Left = this.pnl_2DMap.Left;
             this.progress_ReadingFile.Width = this.pnl_2DMap.Width;
-            this.progress_ReadingFile.Maximum = (this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames / Convert.ToInt32(this.num_FrameCompression.Value)) + 1;
+            this.progress_ReadingFile.Maximum = (this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames / Convert.ToInt32(this.num_FrameCompression.Value)) + 1;
             this.progress_ReadingFile.Show();
 
             this.progress_ReadingFile.BringToFront();
@@ -4917,7 +4917,7 @@ namespace UIMF_File
 
                     this.flag_enterMobilityRange = true;
 #if !NEEDS_WORK
-                    this.maxFrame_Chromatogram = this.ptr_UIMFDatabase.load_Frame((int)this.slide_FrameSelect.Maximum);
+                    this.maxFrame_Chromatogram = this.ptr_UIMFDatabase.LoadFrame((int)this.slide_FrameSelect.Maximum);
                     this.num_maxMobility.Value = this.num_maxMobility.Maximum = this.maxFrame_Chromatogram;
 #else // needs work
                     if (this.minFrame_Chromatogram < 0)
@@ -4965,7 +4965,7 @@ namespace UIMF_File
                     }
                     else
                     {
-                        increment_MobilityValue = this.mean_TOFScanTime * (this.maximum_Mobility + 1) * this.ptr_UIMFDatabase.UIMF_FrameParams.GetValueInt32(FrameParamKeyType.Accumulations) / 1000000.0 / 1000.0;
+                        increment_MobilityValue = this.mean_TOFScanTime * (this.maximum_Mobility + 1) * this.ptr_UIMFDatabase.UimfFrameParams.GetValueInt32(FrameParamKeyType.Accumulations) / 1000000.0 / 1000.0;
                         //this.plot_Mobility.PlotY(tic_Mobility, (double)this.minFrame_Chromatogram * increment_MobilityValue, increment_MobilityValue);
                         this.plot_Mobility.GraphPane.CurveList[0].Points = new BasicArrayPointList(Enumerable.Range(0, tic_Mobility.Length).Select(x => x * increment_MobilityValue + this.minFrame_Chromatogram * increment_MobilityValue).ToArray(), tic_Mobility);
 
@@ -5120,8 +5120,8 @@ namespace UIMF_File
                         this.minMobility_Chromatogram = 0;
                     this.num_minBin.Value = Convert.ToDecimal(this.minMobility_Chromatogram);
 
-                    if (this.maxMobility_Chromatogram > this.ptr_UIMFDatabase.UIMF_FrameParams.Scans - 1)
-                        this.maxMobility_Chromatogram = this.ptr_UIMFDatabase.UIMF_FrameParams.Scans - 1;
+                    if (this.maxMobility_Chromatogram > this.ptr_UIMFDatabase.UimfFrameParams.Scans - 1)
+                        this.maxMobility_Chromatogram = this.ptr_UIMFDatabase.UimfFrameParams.Scans - 1;
                     this.num_maxBin.Value = Convert.ToDecimal(this.maxMobility_Chromatogram);
 
                     if (this.flag_viewMobility)
@@ -5135,10 +5135,10 @@ namespace UIMF_File
                     else
                     {
                         //this.plot_TOF.PlotX(tic_TOF, this.minMobility_Chromatogram, this.ptr_UIMFDatabase.UIMF_FrameParameters.AverageTOFLength / 1000000.0);
-                        this.waveform_TOFPlot.Points = new BasicArrayPointList(tic_TOF, Enumerable.Range(0, tic_TOF.Length).Select(x => this.ptr_UIMFDatabase.UIMF_FrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength) / 1000000.0 * x + this.minMobility_Chromatogram).ToArray());
+                        this.waveform_TOFPlot.Points = new BasicArrayPointList(tic_TOF, Enumerable.Range(0, tic_TOF.Length).Select(x => this.ptr_UIMFDatabase.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength) / 1000000.0 * x + this.minMobility_Chromatogram).ToArray());
 
                         minY = this.minMobility_Chromatogram;
-                        maxY = this.ptr_UIMFDatabase.UIMF_FrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength) / 1000000.0 * (tic_TOF.Length - 1) + this.minMobility_Chromatogram;
+                        maxY = this.ptr_UIMFDatabase.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength) / 1000000.0 * (tic_TOF.Length - 1) + this.minMobility_Chromatogram;
                     }
                 }
                 else
@@ -5170,8 +5170,8 @@ namespace UIMF_File
                     {
                         // Confirmed working... 061213
                         // Much more difficult to find where the mz <-> TOF index correlation
-                        double mzMin = this.ptr_UIMFDatabase.mzCalibration.TOFtoMZ(this.current_minBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-                        double mzMax = this.ptr_UIMFDatabase.mzCalibration.TOFtoMZ(this.current_maxBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                        double mzMin = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ(this.current_minBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                        double mzMax = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ(this.current_maxBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
 
                         double increment_TOF = (mzMax - mzMin) / (double)this.pnl_2DMap.Height;
                         if (current_valuesPerPixelY < 0)
@@ -5407,7 +5407,7 @@ namespace UIMF_File
 
             if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
             {
-                this.Width = this.pnl_2DMap.Left + this.ptr_UIMFDatabase.UIMF_FrameParams.Scans + 170;
+                this.Width = this.pnl_2DMap.Left + this.ptr_UIMFDatabase.UimfFrameParams.Scans + 170;
 
                 this.rb_PartialChromatogram.Checked = false;
                 this.rb_CompleteChromatogram.Checked = false;
@@ -5416,7 +5416,7 @@ namespace UIMF_File
 
                 this.Chromatogram_CheckedChanged();
 
-                this.ptr_UIMFDatabase.current_frame_index = (int)this.slide_FrameSelect.Value;
+                this.ptr_UIMFDatabase.CurrentFrameIndex = (int)this.slide_FrameSelect.Value;
                 this.plot_Mobility.ClearRange();
                 this.num_FrameRange.Value = 1;
 
@@ -5493,15 +5493,15 @@ namespace UIMF_File
                     this.lbl_FramesShown.Hide();
             }
             */
-            if (this.ptr_UIMFDatabase.current_frame_index < this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames - 1)
+            if (this.ptr_UIMFDatabase.CurrentFrameIndex < this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames - 1)
                 this.num_FrameIndex.Value = 0;
-            this.num_FrameIndex.Maximum = this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames - 1;
-            this.num_FrameIndex.Value = this.ptr_UIMFDatabase.current_frame_index;
+            this.num_FrameIndex.Maximum = this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames - 1;
+            this.num_FrameIndex.Value = this.ptr_UIMFDatabase.CurrentFrameIndex;
 
             if (this.num_FrameIndex.Maximum > 0)
             {
                 this.slide_FrameSelect.Minimum = 0;
-                this.slide_FrameSelect.Maximum = this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames - 1;
+                this.slide_FrameSelect.Maximum = this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames - 1;
             }
             else
                 this.elementHost_FrameSelect.Hide();  // hidden elsewhere; but if there is only one frame this needs to disappear.
@@ -5554,7 +5554,7 @@ namespace UIMF_File
                         this.cb_ExperimentControlled.SelectedIndex = this.cb_ExperimentControlled.Items.Count - 1;
 
                         this.Filter_FrameType(this.ptr_UIMFDatabase.get_FrameType());
-                        this.ptr_UIMFDatabase.current_frame_index = 0;
+                        this.ptr_UIMFDatabase.CurrentFrameIndex = 0;
                         this.ptr_UIMFDatabase.set_FrameType(current_frame_type, true);
 
                         Generate2DIntensityArray();
@@ -5810,9 +5810,7 @@ namespace UIMF_File
             int i;
             int time_offset = 0;
             int b;
-            int[] bins;
             int[] mapped_bins;
-            int[] values;
             int total_bins;
             int scan;
             FrameParams fp;
@@ -5827,8 +5825,8 @@ namespace UIMF_File
             int new_bin;
             double new_mz;
 
-            fp = this.ptr_UIMFDatabase.UIMF_FrameParams.Clone();
-            total_bins = this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins;
+            fp = this.ptr_UIMFDatabase.UimfFrameParams.Clone();
+            total_bins = this.ptr_UIMFDatabase.UimfGlobalParams.Bins;
 
             fp.Values.Remove(FrameParamKeyType.Accumulations);
             fp.Values.Remove(FrameParamKeyType.DurationSeconds);
@@ -5865,8 +5863,8 @@ namespace UIMF_File
             //MessageBox.Show(this.current_valuesPerPixelX.ToString() + ", " + this.current_valuesPerPixelY.ToString());
 
             mapped_bins = new int[total_bins];
-            mapped_intercept = this.ptr_UIMFDatabase.UIMF_FrameParams.CalibrationIntercept;
-            mapped_slope = this.ptr_UIMFDatabase.UIMF_FrameParams.CalibrationSlope;
+            mapped_intercept = this.ptr_UIMFDatabase.UimfFrameParams.CalibrationIntercept;
+            mapped_slope = this.ptr_UIMFDatabase.UimfFrameParams.CalibrationSlope;
             for (scan = 0; scan < fp.Scans; scan++)
             {
                 // zero out the mapped bins
@@ -5880,19 +5878,19 @@ namespace UIMF_File
                     {
                         this.ptr_UIMFDatabase = (UIMFDataWrapper)this.array_Experiments[exp_index];
 
-                        start_index = this.ptr_UIMFDatabase.current_frame_index - (this.ptr_UIMFDatabase.frame_width - 1);
-                        end_index = this.ptr_UIMFDatabase.current_frame_index;
+                        start_index = this.ptr_UIMFDatabase.CurrentFrameIndex - (this.ptr_UIMFDatabase.FrameWidth - 1);
+                        end_index = this.ptr_UIMFDatabase.CurrentFrameIndex;
 
                         // collect the data
                         for (frames = start_index; (frames <= end_index) && !this.flag_Closing; frames++)
                         {
                             // this is in bin resolution.
-                            scan_data = this.ptr_UIMFDatabase.Get_SumScans(frames, scan, scan);
+                            scan_data = this.ptr_UIMFDatabase.GetSumScans(frames, scan, scan);
 
                             // convert to mz resolution then map into bin resolution - sum into mapped_bins[]
                             for (i = 0; i < scan_data.Length; i++)
                             {
-                                new_bin = this.ptr_UIMFDatabase.map_BinCalibration(i, mapped_slope, mapped_intercept);
+                                new_bin = this.ptr_UIMFDatabase.MapBinCalibration(i, mapped_slope, mapped_intercept);
 
                                 if (new_bin < mapped_bins.Length)
                                 {
@@ -5903,7 +5901,7 @@ namespace UIMF_File
                                     }
                                     else
                                     {
-                                        new_mz = this.ptr_UIMFDatabase.mzCalibration.TOFtoMZ((double)i * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                                        new_mz = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ((double)i * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
                                         if (this.inside_Polygon(scan, new_mz))
                                             mapped_bins[new_bin] += scan_data[i];
                                     }
@@ -5921,23 +5919,18 @@ namespace UIMF_File
                 }
 
                 var nzVals = new Tuple<int, int>[nonzero_bins];
-                bins = new int[nonzero_bins];
-                values = new int[nonzero_bins];
 
                 // collect the data
                 b = 0;
                 for (i = time_offset; (i < total_bins) && (b < nonzero_bins); i++)
                     if (mapped_bins[i] != 0)
                     {
-                        bins[b] = i - time_offset;
-                        values[b] = mapped_bins[i];
                         nzVals[b] = new Tuple<int, int>(i - time_offset, mapped_bins[i]);
 
                         b++;
                     }
 
-                //UIMF_Writer.InsertScan(fp, scan, bins, values, this.ptr_UIMFDatabase.UIMF_GlobalParams.BinWidth, 0);
-                UIMF_Writer.InsertScan(frame_number, fp, scan, nzVals, this.ptr_UIMFDatabase.UIMF_GlobalParams.BinWidth, 0);
+                UIMF_Writer.InsertScan(frame_number, fp, scan, nzVals, this.ptr_UIMFDatabase.UimfGlobalParams.BinWidth, 0);
             }
         }
 
@@ -5983,7 +5976,7 @@ namespace UIMF_File
             //this.flag_Halt = true;
             try
             {
-                for (int i = 1; i <= ((this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames - merge) / step) + 1; i++)
+                for (int i = 1; i <= ((this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames - merge) / step) + 1; i++)
                 {
                     //  MessageBox.Show((i * step).ToString());
                     //  continue;
@@ -6002,7 +5995,7 @@ namespace UIMF_File
             }
 
             //this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames = ((this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames - merge) / step) + 1;
-            this.ptr_UIMFDatabase.UIMF_GlobalParams.AddUpdateValue(GlobalParamKeyType.NumFrames, ((this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames - merge) / step) + 1);
+            this.ptr_UIMFDatabase.UimfGlobalParams.AddUpdateValue(GlobalParamKeyType.NumFrames, ((this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames - merge) / step) + 1);
             this.Enabled = true;
 
             this.form_ExportExperiment.Dispose();
@@ -6094,7 +6087,7 @@ namespace UIMF_File
 
            // this.flag_update2DGraph = true;
 
-            this.ptr_UIMFDatabase.current_frame_index = (int)this.slide_FrameSelect.Value;
+            this.ptr_UIMFDatabase.CurrentFrameIndex = (int)this.slide_FrameSelect.Value;
             this.plot_Mobility.StopAnnotating(true);
 
             this.flag_selection_drift = false;
@@ -6204,7 +6197,7 @@ namespace UIMF_File
 
         public void Chromatogram_CheckedChanged()
         {
-            if (this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames < 2)
+            if (this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames < 2)
             {
                 if (!this.rb_CompleteChromatogram.Checked && !this.rb_PartialChromatogram.Checked)
                     return;
@@ -6229,7 +6222,7 @@ namespace UIMF_File
 
                 this.hsb_2DMap.Value = 0;
 
-                this.ptr_UIMFDatabase.current_frame_index = (int)this.slide_FrameSelect.Value;
+                this.ptr_UIMFDatabase.CurrentFrameIndex = (int)this.slide_FrameSelect.Value;
                 this.plot_Mobility.StopAnnotating(true);
 
                 this.flag_selection_drift = false;
@@ -6276,7 +6269,7 @@ namespace UIMF_File
                 this.lbl_Chromatogram.Text = "Frame:  ";
                 this.lbl_Chromatogram.ForeColor = Color.Black;
                 this.num_FrameIndex.Show();
-                if (this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames > 1)
+                if (this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames > 1)
                 {
                     this.elementHost_FrameSelect.Show();
 
@@ -6335,10 +6328,10 @@ namespace UIMF_File
             int bin_compression; // due to dropping down to .25 nsec bins
 #endif
 
-            file_accum_IMF = Path.Combine(Path.GetDirectoryName(this.ptr_UIMFDatabase.UIMF_DataFile), Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UIMF_DataFile) + ".Accum_" + this.ptr_UIMFDatabase.CurrentFrameNum.ToString() + ".IMF");
+            file_accum_IMF = Path.Combine(Path.GetDirectoryName(this.ptr_UIMFDatabase.UimfDataFile), Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UimfDataFile) + ".Accum_" + this.ptr_UIMFDatabase.CurrentFrameNum.ToString() + ".IMF");
 
-            num_BinTICs = new int[this.ptr_UIMFDatabase.UIMF_FrameParams.Scans];
-            bytes_Bin = new int[this.ptr_UIMFDatabase.UIMF_FrameParams.Scans];
+            num_BinTICs = new int[this.ptr_UIMFDatabase.UimfFrameParams.Scans];
+            bytes_Bin = new int[this.ptr_UIMFDatabase.UimfFrameParams.Scans];
 
 #if false
             if (this.UIMF_GlobalParams.BinWidth == .25)
@@ -6352,7 +6345,7 @@ namespace UIMF_File
                 bin_compression = 1;
             }
 #else
-            bin_width = this.ptr_UIMFDatabase.UIMF_GlobalParams.BinWidth;
+            bin_width = this.ptr_UIMFDatabase.UimfGlobalParams.BinWidth;
 #endif
             /////////////////////////////////////////////////////////
             //////                                             //////
@@ -6364,29 +6357,29 @@ namespace UIMF_File
             StreamWriter sw_IMF = new StreamWriter(file_accum_IMF, false);
             sw_IMF.WriteLine("DataType: 11");
             sw_IMF.WriteLine("DataSubType: int");
-            sw_IMF.WriteLine("TOFSpectra: " + this.ptr_UIMFDatabase.UIMF_FrameParams.Scans.ToString());
+            sw_IMF.WriteLine("TOFSpectra: " + this.ptr_UIMFDatabase.UimfFrameParams.Scans.ToString());
 #if false
             sw_IMF.WriteLine("NumBins: " + (this.UIMF_GlobalParams.Bins / bin_compression).ToString());
 #else
-            sw_IMF.WriteLine("NumBins: " + this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins.ToString());
+            sw_IMF.WriteLine("NumBins: " + this.ptr_UIMFDatabase.UimfGlobalParams.Bins.ToString());
 #endif
             sw_IMF.WriteLine("BinWidth: " + bin_width.ToString("0.00") + " ns");
-            sw_IMF.WriteLine("Accumulations: " + this.ptr_UIMFDatabase.UIMF_FrameParams.GetValueInt32(FrameParamKeyType.Accumulations).ToString());
-            sw_IMF.WriteLine("TimeOffset: " + this.ptr_UIMFDatabase.UIMF_GlobalParams.GetValue(GlobalParamKeyType.TimeOffset, 0).ToString());
+            sw_IMF.WriteLine("Accumulations: " + this.ptr_UIMFDatabase.UimfFrameParams.GetValueInt32(FrameParamKeyType.Accumulations).ToString());
+            sw_IMF.WriteLine("TimeOffset: " + this.ptr_UIMFDatabase.UimfGlobalParams.GetValue(GlobalParamKeyType.TimeOffset, 0).ToString());
 
-            sw_IMF.WriteLine("CalibrationSlope: " + this.ptr_UIMFDatabase.UIMF_FrameParams.CalibrationSlope);
-            sw_IMF.WriteLine("CalibrationIntercept: " + this.ptr_UIMFDatabase.UIMF_FrameParams.CalibrationIntercept);
+            sw_IMF.WriteLine("CalibrationSlope: " + this.ptr_UIMFDatabase.UimfFrameParams.CalibrationSlope);
+            sw_IMF.WriteLine("CalibrationIntercept: " + this.ptr_UIMFDatabase.UimfFrameParams.CalibrationIntercept);
 
             sw_IMF.WriteLine("FrameNumber: " + this.ptr_UIMFDatabase.CurrentFrameNum.ToString());
-            sw_IMF.WriteLine("AverageTOFLength: " + this.ptr_UIMFDatabase.UIMF_FrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength).ToString("0.00") + " ns");
+            sw_IMF.WriteLine("AverageTOFLength: " + this.ptr_UIMFDatabase.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength).ToString("0.00") + " ns");
 
-            if (string.IsNullOrWhiteSpace(this.ptr_UIMFDatabase.UIMF_FrameParams.GetValue(FrameParamKeyType.MultiplexingEncodingSequence, "")))
+            if (string.IsNullOrWhiteSpace(this.ptr_UIMFDatabase.UimfFrameParams.GetValue(FrameParamKeyType.MultiplexingEncodingSequence, "")))
             {
                 MessageBox.Show("menuitem_SaveIMF_Click - putting in IMFProfile...");
                 sw_IMF.WriteLine("MultiplexingProfile: 4Bit_24OS.txt"); //this.uimf_FrameParameters.MPBitOrder + "BitOrder");
             }
             else
-                sw_IMF.WriteLine("MultiplexingProfile: " + this.ptr_UIMFDatabase.UIMF_FrameParams.GetValue(FrameParamKeyType.MultiplexingEncodingSequence, "")); //this.uimf_FrameParameters.MPBitOrder + "BitOrder");
+                sw_IMF.WriteLine("MultiplexingProfile: " + this.ptr_UIMFDatabase.UimfFrameParams.GetValue(FrameParamKeyType.MultiplexingEncodingSequence, "")); //this.uimf_FrameParameters.MPBitOrder + "BitOrder");
 
             sw_IMF.WriteLine("End");
             sw_IMF.Flush();
@@ -6402,21 +6395,21 @@ namespace UIMF_File
 
             // Write number of accumulated TOFSpectra within the Accum Frame
             // Accumulation file will therefore be self-contained
-            bw_IMF.Write((int)this.ptr_UIMFDatabase.UIMF_FrameParams.Scans);
+            bw_IMF.Write((int)this.ptr_UIMFDatabase.UimfFrameParams.Scans);
 
             // Write counter_TIC values and the channel data size (Nodes * sizeof(Node values)]for each channel
             // Each record is made up of [Int32 TOFValue, Int16 Count]
-            for (i = 0; i < this.ptr_UIMFDatabase.UIMF_FrameParams.Scans * 2; i++)
+            for (i = 0; i < this.ptr_UIMFDatabase.UimfFrameParams.Scans * 2; i++)
                 bw_IMF.Write(Convert.ToInt32(0));
 
             double[] spectrum_array = new double[0];
             int[] bins_array = new int[0];
 
-            num_BinTICs = new int[this.ptr_UIMFDatabase.UIMF_FrameParams.Scans];
-            bytes_Bin = new int[this.ptr_UIMFDatabase.UIMF_FrameParams.Scans];
+            num_BinTICs = new int[this.ptr_UIMFDatabase.UimfFrameParams.Scans];
+            bytes_Bin = new int[this.ptr_UIMFDatabase.UimfFrameParams.Scans];
 
             //MessageBox.Show(this.uimf_FrameParameters.FrameNum.ToString());
-            for (k = 0; k < this.ptr_UIMFDatabase.UIMF_FrameParams.Scans; k++)
+            for (k = 0; k < this.ptr_UIMFDatabase.UimfFrameParams.Scans; k++)
             {
                 counter_TIC = 0;
                 counter_bin = 0;
@@ -6434,7 +6427,7 @@ namespace UIMF_File
                 {
                     counter_bin++;
                     counter_TIC += bins_array[j];
-                    bw_IMF.Write((spectrum_array[j] - this.ptr_UIMFDatabase.UIMF_GlobalParams.GetValue(GlobalParamKeyType.TimeOffset, 0)) * 10); // * binWidth);
+                    bw_IMF.Write((spectrum_array[j] - this.ptr_UIMFDatabase.UimfGlobalParams.GetValue(GlobalParamKeyType.TimeOffset, 0)) * 10); // * binWidth);
                     bw_IMF.Write(bins_array[j]);
                 }
 
@@ -6446,7 +6439,7 @@ namespace UIMF_File
             // Go back to the Escape Position, then pass the number of TOFSpectraPerFrame
             bw_IMF.Seek((int)escape_position + 4, SeekOrigin.Begin);
 
-            for (k = 0; k < this.ptr_UIMFDatabase.UIMF_FrameParams.Scans; k++)
+            for (k = 0; k < this.ptr_UIMFDatabase.UimfFrameParams.Scans; k++)
             {
                 bw_IMF.Write(num_BinTICs[k]);
                 bw_IMF.Write(bytes_Bin[k] * 8);
@@ -6490,7 +6483,7 @@ namespace UIMF_File
             // modify the view; but not the file.
             try
             {
-                this.ptr_UIMFDatabase.mzCalibration.K = (float)Convert.ToDouble(this.tb_CalA.Text);
+                this.ptr_UIMFDatabase.MzCalibration.K = (float)Convert.ToDouble(this.tb_CalA.Text);
                 Calibrator_Changed();
             }
             catch (Exception ex)
@@ -6504,7 +6497,7 @@ namespace UIMF_File
         {
             try
             {
-                this.ptr_UIMFDatabase.mzCalibration.T0 = (float)Convert.ToDouble(this.tb_CalT0.Text);
+                this.ptr_UIMFDatabase.MzCalibration.T0 = (float)Convert.ToDouble(this.tb_CalT0.Text);
                 Calibrator_Changed();
             }
             catch (Exception ex)
@@ -6516,8 +6509,8 @@ namespace UIMF_File
 
         public void Calibrator_Changed()
         {
-            if ((Convert.ToDouble(this.tb_CalA.Text) != this.ptr_UIMFDatabase.mzCalibration.K) ||
-                (Convert.ToDouble(this.tb_CalT0) != this.ptr_UIMFDatabase.mzCalibration.T0))
+            if ((Convert.ToDouble(this.tb_CalA.Text) != this.ptr_UIMFDatabase.MzCalibration.K) ||
+                (Convert.ToDouble(this.tb_CalT0) != this.ptr_UIMFDatabase.MzCalibration.T0))
             {
                // this.m_frameParameters.CalibrationSlope = Convert.ToDouble(this.tb_CalA.Text); //this.UIMF_DataReader.mz_Calibration.k * 10000.0;
               //  this.m_frameParameters.CalibrationIntercept = Convert.ToDouble(this.tb_CalT0.Text); // this.UIMF_DataReader.mz_Calibration.t0 / 10000.0;
@@ -6538,11 +6531,11 @@ namespace UIMF_File
 
         private void update_CalibrationCoefficients()
         {
-            this.tb_CalA.Text = this.ptr_UIMFDatabase.mzCalibration.K.ToString("E");
-            this.tb_CalT0.Text = this.ptr_UIMFDatabase.mzCalibration.T0.ToString("E");
-            this.lbl_CalibratorType.Text = this.ptr_UIMFDatabase.mzCalibration.Description;
+            this.tb_CalA.Text = this.ptr_UIMFDatabase.MzCalibration.K.ToString("E");
+            this.tb_CalT0.Text = this.ptr_UIMFDatabase.MzCalibration.T0.ToString("E");
+            this.lbl_CalibratorType.Text = this.ptr_UIMFDatabase.MzCalibration.Description;
 
-            this.pnl_postProcessing.set_ExperimentalCoefficients(this.ptr_UIMFDatabase.mzCalibration.K * 10000.0, this.ptr_UIMFDatabase.mzCalibration.T0 / 10000.0);
+            this.pnl_postProcessing.set_ExperimentalCoefficients(this.ptr_UIMFDatabase.MzCalibration.K * 10000.0, this.ptr_UIMFDatabase.MzCalibration.T0 / 10000.0);
         }
 
         private void btn_setCalDefaults_Click(object sender, System.EventArgs e)
@@ -6550,7 +6543,7 @@ namespace UIMF_File
 
             this.Enabled = false;
 
-            this.ptr_UIMFDatabase.updateAll_CalibrationCoefficients((float)(Convert.ToSingle(this.tb_CalA.Text) * 10000.0), (float)(Convert.ToSingle(this.tb_CalT0.Text) / 10000.0));
+            this.ptr_UIMFDatabase.UpdateAllCalibrationCoefficients((float)(Convert.ToSingle(this.tb_CalA.Text) * 10000.0), (float)(Convert.ToSingle(this.tb_CalT0.Text) / 10000.0));
 
             this.update_CalibrationCoefficients();
 
@@ -6563,7 +6556,7 @@ namespace UIMF_File
 
         private void btn_revertCalDefaults_Click(object sender, System.EventArgs e)
         {
-            this.ptr_UIMFDatabase.reset_FrameParameters();
+            this.ptr_UIMFDatabase.ReloadFrameParameters();
 
             this.update_CalibrationCoefficients();
 
@@ -6578,12 +6571,12 @@ namespace UIMF_File
         //
         private void btn_ApplyCalculatedCalibration_Click(object sender, EventArgs e)
         {
-            this.ptr_UIMFDatabase.update_CalibrationCoefficients(this.ptr_UIMFDatabase.current_frame_index, (float)this.pnl_postProcessing.Calculated_Slope,
+            this.ptr_UIMFDatabase.UpdateCalibrationCoefficients(this.ptr_UIMFDatabase.CurrentFrameIndex, (float)this.pnl_postProcessing.Calculated_Slope,
                 (float)this.pnl_postProcessing.Calculated_Intercept);
 
             this.update_CalibrationCoefficients();
 
-            this.pnl_postProcessing.InitializeCalibrants(this.ptr_UIMFDatabase.UIMF_GlobalParams.BinWidth, this.pnl_postProcessing.Calculated_Slope, this.pnl_postProcessing.Calculated_Intercept);
+            this.pnl_postProcessing.InitializeCalibrants(this.ptr_UIMFDatabase.UimfGlobalParams.BinWidth, this.pnl_postProcessing.Calculated_Slope, this.pnl_postProcessing.Calculated_Intercept);
 
             this.flag_update2DGraph = true;
         }
@@ -6591,12 +6584,12 @@ namespace UIMF_File
         private void btn_ApplyCalibration_Experiment_Click(object sender, EventArgs e)
         {
             //MessageBox.Show((Convert.ToDouble(this.tb_CalA.Text) * 10000.0).ToString() + "  " + this.pnl_postProcessing.Experimental_Slope.ToString());
-            this.ptr_UIMFDatabase.updateAll_CalibrationCoefficients((float)this.pnl_postProcessing.get_Experimental_Slope(),
+            this.ptr_UIMFDatabase.UpdateAllCalibrationCoefficients((float)this.pnl_postProcessing.get_Experimental_Slope(),
                 (float)this.pnl_postProcessing.get_Experimental_Intercept());
 
             this.update_CalibrationCoefficients();
 
-            this.pnl_postProcessing.InitializeCalibrants(this.ptr_UIMFDatabase.UIMF_GlobalParams.BinWidth, this.pnl_postProcessing.get_Experimental_Slope(), this.pnl_postProcessing.get_Experimental_Intercept());
+            this.pnl_postProcessing.InitializeCalibrants(this.ptr_UIMFDatabase.UimfGlobalParams.BinWidth, this.pnl_postProcessing.get_Experimental_Slope(), this.pnl_postProcessing.get_Experimental_Intercept());
 
             this.flag_update2DGraph = true;
         }
@@ -6639,10 +6632,10 @@ namespace UIMF_File
 
             this.Update();
 
-            this.slide_FrameSelect.Value = this.ptr_UIMFDatabase.current_frame_index;
+            this.slide_FrameSelect.Value = this.ptr_UIMFDatabase.CurrentFrameIndex;
             this.Update();
 
-            this.Calibrate_Frame(this.ptr_UIMFDatabase.current_frame_index, out slope, out intercept, out total_calibrants_matched);
+            this.Calibrate_Frame(this.ptr_UIMFDatabase.CurrentFrameIndex, out slope, out intercept, out total_calibrants_matched);
 
             /*
             MessageBox.Show("tick_Calibrate: " + this.current_frame_index.ToString() + "\n" +
@@ -6659,7 +6652,7 @@ namespace UIMF_File
             }
             else if (flag_CalibrateExperiment)
             {
-                this.ptr_UIMFDatabase.update_CalibrationCoefficients(this.ptr_UIMFDatabase.current_frame_index, (float)slope, (float)intercept);
+                this.ptr_UIMFDatabase.UpdateCalibrationCoefficients(this.ptr_UIMFDatabase.CurrentFrameIndex, (float)slope, (float)intercept);
             }
             else if (slope <= 0)
             {
@@ -6668,15 +6661,15 @@ namespace UIMF_File
             }
             else
             {
-                this.ptr_UIMFDatabase.mzCalibration.K = slope / 10000.0;
-                this.ptr_UIMFDatabase.mzCalibration.T0 = intercept * 10000.0;
+                this.ptr_UIMFDatabase.MzCalibration.K = slope / 10000.0;
+                this.ptr_UIMFDatabase.MzCalibration.T0 = intercept * 10000.0;
                 this.update_CalibrationCoefficients();
             }
 
             this.Update();
 
             if (this.flag_AutoCalibrate)
-                this.ptr_UIMFDatabase.updateAll_CalibrationCoefficients((float)(Convert.ToSingle(this.tb_CalA.Text) * 10000.0), (float)(Convert.ToSingle(this.tb_CalT0.Text) / 10000.0), this.flag_AutoCalibrate);
+                this.ptr_UIMFDatabase.UpdateAllCalibrationCoefficients((float)(Convert.ToSingle(this.tb_CalA.Text) * 10000.0), (float)(Convert.ToSingle(this.tb_CalT0.Text) / 10000.0), this.flag_AutoCalibrate);
 
             this.flag_update2DGraph = true;
             this.Enabled = true;
@@ -6705,12 +6698,12 @@ namespace UIMF_File
             int compression;
             double[] summed_spectrum;
             bool[] flag_above_noise;
-            double[] spectrum = new double[this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins];
-            int[] max_spectrum = new int[this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins];
-            int[] bins = new int[this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins];
+            double[] spectrum = new double[this.ptr_UIMFDatabase.UimfGlobalParams.Bins];
+            int[] max_spectrum = new int[this.ptr_UIMFDatabase.UimfGlobalParams.Bins];
+            int[] bins = new int[this.ptr_UIMFDatabase.UimfGlobalParams.Bins];
 
-            double slope = this.ptr_UIMFDatabase.UIMF_FrameParams.CalibrationSlope;
-            double intercept = this.ptr_UIMFDatabase.UIMF_FrameParams.CalibrationIntercept;
+            double slope = this.ptr_UIMFDatabase.UimfFrameParams.CalibrationSlope;
+            double intercept = this.ptr_UIMFDatabase.UimfFrameParams.CalibrationIntercept;
 
             int CalibrantCountMatched = 100;
             int CalibrantCountValid = 0;
@@ -6718,7 +6711,7 @@ namespace UIMF_File
             double AverageMassError = 0.0;
 
 #if COMPRESS_TO_100K
-            if (this.ptr_UIMFDatabase.UIMF_GlobalParams.BinWidth == .25)
+            if (this.ptr_UIMFDatabase.UimfGlobalParams.BinWidth == .25)
                 compression = 4;
             else
 #endif
@@ -6728,13 +6721,13 @@ namespace UIMF_File
             calibration_intercept = -1.0;
             total_calibrants_matched = 0;
 
-            summed_spectrum = new double[this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins / compression];
-            flag_above_noise = new bool[this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins / compression];
+            summed_spectrum = new double[this.ptr_UIMFDatabase.UimfGlobalParams.Bins / compression];
+            flag_above_noise = new bool[this.ptr_UIMFDatabase.UimfGlobalParams.Bins / compression];
 
             if (CalibrantCountMatched > 4)
             {
                 // clear arrays
-                for (i = 0; i < this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins / compression; i++)
+                for (i = 0; i < this.ptr_UIMFDatabase.UimfGlobalParams.Bins / compression; i++)
                 {
                     flag_above_noise[i] = false;
                     max_spectrum[i] = 0;
@@ -6742,7 +6735,7 @@ namespace UIMF_File
                     max_spectrum[i] = 0;
                 }
 
-                bins = this.ptr_UIMFDatabase.Get_SumScans(this.ptr_UIMFDatabase.array_FrameNum[frame_index], 0, this.ptr_UIMFDatabase.UIMF_FrameParams.Scans);
+                bins = this.ptr_UIMFDatabase.GetSumScans(this.ptr_UIMFDatabase.ArrayFrameNum[frame_index], 0, this.ptr_UIMFDatabase.UimfFrameParams.Scans);
 
                 for (j = 0; j < bins.Length; j++)
                 {
@@ -6758,7 +6751,7 @@ namespace UIMF_File
                 }
 
                 // determine noise level and filter summed spectrum
-                for (j = NOISE_REGION / 2; (j < (this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins / compression) - NOISE_REGION); j++)
+                for (j = NOISE_REGION / 2; (j < (this.ptr_UIMFDatabase.UimfGlobalParams.Bins / compression) - NOISE_REGION); j++)
                 {
                     // get the total intensity and divide by the number of peaks
                     noise_peaks = 0;
@@ -6784,7 +6777,7 @@ namespace UIMF_File
                 // calculate size of the array of filtered sum spectrum for calibration routine
                 above_noise_bins = 0;
                 added_zeros = 0;
-                for (i = 1; i < this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins / compression; i++)
+                for (i = 1; i < this.ptr_UIMFDatabase.UimfGlobalParams.Bins / compression; i++)
                 {
                     if (flag_above_noise[i])
                     {
@@ -6800,7 +6793,7 @@ namespace UIMF_File
                 compressed_bins = 0;
                 nonzero_bins = new double[above_noise_bins + added_zeros];
                 nonzero_intensities = new double[above_noise_bins + added_zeros];
-                for (i = 0; (i < (this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins / compression) - 1) && (compressed_bins < above_noise_bins + added_zeros); i++)
+                for (i = 0; (i < (this.ptr_UIMFDatabase.UimfGlobalParams.Bins / compression) - 1) && (compressed_bins < above_noise_bins + added_zeros); i++)
                 {
                     if (flag_above_noise[i])
                     {
@@ -6818,8 +6811,8 @@ namespace UIMF_File
 
                 // pass arrays into calibration routine
                 this.pnl_postProcessing.CalibrateFrame(summed_spectrum, nonzero_intensities, nonzero_bins,
-                    this.ptr_UIMFDatabase.UIMF_GlobalParams.BinWidth * (double)compression, this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins / compression,
-                    this.ptr_UIMFDatabase.UIMF_FrameParams.Scans, slope, intercept);
+                    this.ptr_UIMFDatabase.UimfGlobalParams.BinWidth * (double)compression, this.ptr_UIMFDatabase.UimfGlobalParams.Bins / compression,
+                    this.ptr_UIMFDatabase.UimfFrameParams.Scans, slope, intercept);
 
                 CalibrantCountMatched = this.pnl_postProcessing.get_CalibrantCountMatched();
                 CalibrantCountValid = this.pnl_postProcessing.get_CalibrantCountValid();
@@ -6838,14 +6831,14 @@ namespace UIMF_File
                     this.pnl_postProcessing.disable_CalibrantMaxPPMError();
             }
 
-            this.ptr_UIMFDatabase.clear_FrameParametersCache();
+            this.ptr_UIMFDatabase.ClearFrameParametersCache();
         }
 
         private void btn_Clean_Click(object sender, EventArgs e)
         {
             MessageBox.Show("not sure what this does.  Needs work.  wfd 02/22/11");
 
-            string filename = "c:\\IonMobilityData\\Gordon\\Calibration\\QC\\8pep_10fr_600scans_01_0000\\" + Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UIMF_DataFile) + "_clean.UIMF";
+            string filename = "c:\\IonMobilityData\\Gordon\\Calibration\\QC\\8pep_10fr_600scans_01_0000\\" + Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UimfDataFile) + "_clean.UIMF";
 
             if (File.Exists(filename))
                 File.Delete(filename);
@@ -6867,25 +6860,20 @@ namespace UIMF_File
 
                 uimf_writer.InsertFrame(i, fp);
 
-                for (int j = 0; j < this.ptr_UIMFDatabase.UIMF_FrameParams.Scans; j++)
+                for (int j = 0; j < this.ptr_UIMFDatabase.UimfFrameParams.Scans; j++)
                 {
                     double[] binList = new double[410000];
                     int[] intensityList = new int[410000];
 
-                    uimf_bins = this.ptr_UIMFDatabase.GetSpectrum(this.ptr_UIMFDatabase.array_FrameNum[i], (DataReader.FrameType) this.ptr_UIMFDatabase.get_FrameType(), j, out binList, out intensityList);
+                    uimf_bins = this.ptr_UIMFDatabase.GetSpectrum(this.ptr_UIMFDatabase.ArrayFrameNum[i], (DataReader.FrameType) this.ptr_UIMFDatabase.get_FrameType(), j, out binList, out intensityList);
                     var nzVals = new Tuple<int, int>[uimf_bins];
-                    int[] new_bins = new int[uimf_bins];
-                    int[] new_intensities = new int[uimf_bins];
 
                     for (int k = 0; k < uimf_bins; k++)
                     {
-                        new_bins[k] = (int) binList[k] - 10000;
-                        new_intensities[k] = intensityList[k];
                         nzVals[k] = new Tuple<int, int>((int)binList[k] - 10000, intensityList[k]);
                     }
 
-                    //uimf_writer.InsertScan(fp, j, new_bins, new_intensities, gp.BinWidth, 0);
-                    uimf_writer.InsertScan(i, fp, j, nzVals, this.ptr_UIMFDatabase.UIMF_GlobalParams.BinWidth, 0);
+                    uimf_writer.InsertScan(i, fp, j, nzVals, this.ptr_UIMFDatabase.UimfGlobalParams.BinWidth, 0);
                 }
             }
 
@@ -6917,7 +6905,7 @@ namespace UIMF_File
 
             frame_count = this.ptr_UIMFDatabase.set_FrameType(frame_type);
             this.current_frame_type = frame_type;
-            this.ptr_UIMFDatabase.current_frame_index = -1;
+            this.ptr_UIMFDatabase.CurrentFrameIndex = -1;
 
             Invoke(new ThreadStart(format_Screen));
 
@@ -6928,8 +6916,8 @@ namespace UIMF_File
             this.new_minBin = 0;
             this.new_minMobility = 0;
 
-            this.new_maxBin = this.maximum_Bins = this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins - 1;
-            this.new_maxMobility = this.maximum_Mobility = this.ptr_UIMFDatabase.UIMF_FrameParams.Scans - 1;
+            this.new_maxBin = this.maximum_Bins = this.ptr_UIMFDatabase.UimfGlobalParams.Bins - 1;
+            this.new_maxMobility = this.maximum_Mobility = this.ptr_UIMFDatabase.UimfFrameParams.Scans - 1;
 
             if (frame_count == 0)
                 return;
@@ -7164,8 +7152,6 @@ namespace UIMF_File
             double[] array_Bins = new double[0];
             int[] array_Intensity = new int[0];
             var list_nzVals = new List<Tuple<int, int>>();
-            List<int> list_Bins = new List<int>();
-            List<int> list_Intensity = new List<int>();
             List<int> list_Scans = new List<int>();
             List<int> list_Count = new List<int>();
 
@@ -7230,25 +7216,20 @@ namespace UIMF_File
                         current_intensities[j] = 0;
                     }
 
-                    this.ptr_UIMFDatabase.GetSpectrum(this.ptr_UIMFDatabase.array_FrameNum[current_frame], (DataReader.FrameType) this.ptr_UIMFDatabase.get_FrameType(), i, out array_Bins, out array_Intensity);
+                    this.ptr_UIMFDatabase.GetSpectrum(this.ptr_UIMFDatabase.ArrayFrameNum[current_frame], (DataReader.FrameType) this.ptr_UIMFDatabase.get_FrameType(), i, out array_Bins, out array_Intensity);
 
                     for (j = 0; j < array_Bins.Length; j++)
                         current_intensities[(int) array_Bins[j] / 4] += array_Intensity[j];
 
-                    list_Bins.Clear();
-                    list_Intensity.Clear();
                     list_nzVals.Clear();
                     for (j=0; j<gp.Bins; j++)
                     {
                         if (current_intensities[j] > 0)
                         {
-                            list_Bins.Add(j);
-                            list_Intensity.Add(current_intensities[j]);
                             list_nzVals.Add(new Tuple<int, int>(j, current_intensities[j]));
                         }
                     }
 
-                    //UIMF_Writer.InsertScan(fp, i, list_Bins, list_Intensity, 1, gp.TimeOffset/4);
                     UIMF_Writer.InsertScan(current_frame, fp, i, list_nzVals, 1, gp.GetValueInt32(GlobalParamKeyType.TimeOffset) / 4);
                 }
 
