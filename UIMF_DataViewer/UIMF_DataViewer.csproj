@@ -53,6 +53,9 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataViewer_Events.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="InstrumentSettings.cs">
       <SubType>UserControl</SubType>
     </Compile>
