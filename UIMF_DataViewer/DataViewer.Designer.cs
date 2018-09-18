@@ -116,10 +116,6 @@ namespace UIMF_File
         public NumericUpDown num_TICThreshold;
         private Button btn_TIC;
 
-#if MAX_SCAN_VALUE
-        protected CheckBox cb_MaxScanValue;
-#endif
-
         private System.Drawing.Graphics pnl_2DMap_Extensions;
         private Pen thick_pen = new Pen(new SolidBrush(Color.Fuchsia), 1);
 

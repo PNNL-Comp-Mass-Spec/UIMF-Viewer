@@ -1,5 +1,3 @@
-//#define HIDE_CALIBRATION
-#define COLOR_MAP
 #define COMPRESS_TO_100K
 
 using System;
@@ -258,13 +256,6 @@ namespace UIMF_File
             this.slide_FrameSelect.Minimum = 0;
             this.slide_FrameSelect.Maximum = this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames;
 
-#if SCROLLBAR_BUSY
-            this.hsb_2DMap.Leave += new System.EventHandler(this.leave_Scrollbar);
-            this.hsb_2DMap.Enter += new System.EventHandler(this.enter_Scrollbar);
-            this.vsb_2DMap.Leave += new System.EventHandler(this.leave_Scrollbar);
-            this.vsb_2DMap.Enter += new System.EventHandler(this.enter_Scrollbar);
-#endif
-
             this.current_minBin = 0;
             this.current_maxBin = 10;
 
@@ -333,25 +324,6 @@ namespace UIMF_File
             this.pb_Shrink.Hide();
             this.pb_Expand.Hide();
 
-#if MAX_SCAN_VALUE
-            this.cb_MaxScanValue = new System.Windows.Forms.CheckBox();
-            //
-            // cb_MaxScanValue
-            //
-            this.cb_MaxScanValue.AutoSize = true;
-            this.cb_MaxScanValue.BackColor = System.Drawing.Color.Gainsboro;
-            this.cb_MaxScanValue.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.cb_MaxScanValue.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cb_MaxScanValue.Location = new System.Drawing.Point(646, 712);
-            this.cb_MaxScanValue.Name = "cb_MaxScanValue";
-            this.cb_MaxScanValue.Size = new System.Drawing.Size(141, 18);
-            this.cb_MaxScanValue.TabIndex = 67;
-            this.cb_MaxScanValue.TabStop = false;
-            this.cb_MaxScanValue.Text = "Max Scan Value ONLY";
-            this.cb_MaxScanValue.UseVisualStyleBackColor = false;
-            this.tab_DataViewer.Controls.Add(this.cb_MaxScanValue);
-#endif
-
             this.tabpages_Main.Top = (this.tab_DataViewer.ClientSize.Height - this.tabpages_Main.Height)/2;
 
             this.lb_DragDropFiles.Visible = false;
@@ -375,14 +347,8 @@ namespace UIMF_File
 
             this.tab_PostProcessing.Controls.Add(this.pnl_postProcessing);
 
-#if CONTROL_BOX
-            this.ControlBox = false;
-#endif
-
             this.slider_ColorMap = new UIMF_File.Utilities.Intensity_ColorMap();
-#if COLOR_MAP
             this.tab_DataViewer.Controls.Add(this.slider_ColorMap);
-#endif
             this.slider_PlotBackground = new UIMF_File.Utilities.GrayScaleSlider(this.pb_SliderBackground);
             this.tab_DataViewer.Controls.Add(this.slider_PlotBackground);
 
@@ -419,16 +385,7 @@ namespace UIMF_File
 
             this.lbl_FramesShown.Hide();
 
-#if MAX_SCAN_VALUE
-            this.cb_MaxScanValue.BringToFront();
-            this.cb_MaxScanValue.ForeColor = Color.DarkBlue;
-#endif
-
             //this.AllowDrop = true;
-
-#if HIDE_CALIBRATION
-            this.btn_Calibration.Visible = false;
-#endif
 
             Thread.Sleep(200);
             this.Show();
@@ -497,9 +454,6 @@ namespace UIMF_File
                 this.rb_PartialChromatogram.CheckedChanged += new System.EventHandler(this.rb_PartialChromatogram_CheckedChanged);
                 this.num_FrameCompression.ValueChanged += new System.EventHandler(this.num_FrameCompression_ValueChanged);
 
-#if MAX_SCAN_VALUE
-                this.cb_MaxScanValue.CheckedChanged += new System.EventHandler(this.cb_MaxScanValue_CheckedChanged);
-#endif
                 this.btn_TIC.Click += new System.EventHandler(this.btn_TIC_Click);
 
                 this.num_FrameRange.ValueChanged += new System.EventHandler(this.num_FrameRange_ValueChanged);
@@ -975,16 +929,6 @@ namespace UIMF_File
 
                 this.AutoScrollPosition = new Point(0, 0);
 
-#if RESIZE
-                try
-                {
-                    this.ResizeThis();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Resize Error" + ex.ToString());
-                }
-#endif
                 this.Show();
 
                 if (flag_enablecontrols && (this.thread_GraphFrame == null))
@@ -1510,10 +1454,6 @@ namespace UIMF_File
 
                 this.num_minMobility.Left = this.plot_Mobility.Left;
                 this.num_maxMobility.Left = this.plot_Mobility.Left + this.plot_Mobility.Width - this.num_maxMobility.Width; //- (this.plot_Mobility.PlotAreaBounds.Width - this.pnl_2DMap.Width)
-#if MAX_SCAN_VALUE
-            this.cb_MaxScanValue.Top = this.plot_Mobility.Top + this.plot_Mobility.Height - this.cb_MaxScanValue.Height - 2;
-            this.cb_MaxScanValue.Left = this.plot_Mobility.Left + this.plot_Mobility.Width - this.cb_MaxScanValue.Width - 3;
-#endif
 
                 this.pnl_2DMap.Left = this.plot_TOF.Left + this.plot_TOF.Width + (int)this.plot_Mobility.GraphPane.Chart.Rect.Left;
                 this.hsb_2DMap.Left = this.pnl_2DMap.Left;
@@ -1884,10 +1824,6 @@ namespace UIMF_File
 
             this.num_minMobility.Left = this.plot_Mobility.Left;
             this.num_maxMobility.Left = this.plot_Mobility.Left + this.plot_Mobility.Width - this.num_maxMobility.Width; //- ((int)this.plot_Mobility.GraphPane.Chart.Rect.Width - this.pnl_2DMap.Width)
-#if MAX_SCAN_VALUE
-            this.cb_MaxScanValue.Top = this.plot_Mobility.Top + this.plot_Mobility.Height - this.cb_MaxScanValue.Height - 2;
-            this.cb_MaxScanValue.Left = this.plot_Mobility.Left + this.plot_Mobility.Width - this.cb_MaxScanValue.Width - 3;
-#endif
 
             this.cb_FrameType.Top = this.num_minMobility.Top + 40;
             this.cb_FrameType.Left = this.num_minMobility.Left + 5;
@@ -2342,9 +2278,6 @@ namespace UIMF_File
                     this.new_maxMobility = this.maximum_Mobility;
 
                     this.AutoScrollPosition = new Point(0, 0);
-#if RESIZE
-                    this.ResizeThis();
-#endif
                     this.ptr_UIMFDatabase.CurrentFrameIndex = (int)this.slide_FrameSelect.Value;
 
                     this.Chromatogram_CheckedChanged();
@@ -3643,9 +3576,6 @@ namespace UIMF_File
 
                                 this.flag_update2DGraph = true;
                             }
-#if CONTROL_BOX
-                                this.ControlBox = true;
-#endif
                         }
                     }
                 }
@@ -4664,16 +4594,6 @@ namespace UIMF_File
             this.flag_update2DGraph = true;
         }
 
-#if SCROLLBAR_BUSY
-        private void enter_Scrollbar(object sender, EventArgs e)
-        {
-            this.flag_ScrollbarBusy = true;
-        }
-        private void leave_Scrollbar(object sender, EventArgs e)
-        {
-            this.flag_ScrollbarBusy = false;
-        }
-#endif
         // ////////////////////////////////////////////////////////////////
         //
         //
@@ -5326,13 +5246,6 @@ namespace UIMF_File
 
             this.calc_TIC();
         }
-
-#if MAX_SCAN_VALUE
-        private void cb_MaxScanValue_CheckedChanged(object sender, EventArgs e)
-        {
-            this.flag_update2DGraph = true;
-        }
-#endif
 
         private void btn_ShowChromatogram_Click(object sender, EventArgs e)
         {
