@@ -1,5 +1,3 @@
-#define COMPRESS_TO_100K
-
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -295,12 +293,7 @@ namespace UIMF_File
 
             this.Width = this.pnl_2DMap.Left + this.ptr_UIMFDatabase.UimfFrameParams.Scans + 170;
 
-#if COMPRESS_TO_100K
-            // MessageBox.Show("initializeCalibrants: " + this.UIMF_DataReader.mz_Calibration.k.ToString());
             this.pnl_postProcessing.InitializeCalibrants(1, this.ptr_UIMFDatabase.UimfFrameParams.CalibrationSlope, this.ptr_UIMFDatabase.UimfFrameParams.CalibrationIntercept);
-#else
-            this.pnl_postProcessing.InitializeCalibrants(this.UIMF_GlobalParams.BinWidth, this.UIMF_DataReader.m_frameParameters.CalibrationSlope, this.UIMF_DataReader.m_frameParameters.CalibrationIntercept);
-#endif
 
             this.pnl_postProcessing.tb_SaveDecodeFilename.Text = Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UimfDataFile);
             this.pnl_postProcessing.tb_SaveDecodeDirectory.Text = Path.GetDirectoryName(this.ptr_UIMFDatabase.UimfDataFile);
@@ -5846,9 +5839,6 @@ namespace UIMF_File
             double[] nonzero_bins;
             double[] nonzero_intensities;
             int above_noise_bins = 0;
-#if NOISE_LEVEL
-            int noise_level; // = Convert.ToInt32(this.pnl_postProcessing.num_NoiseLevel.Value);
-#endif
             int compressed_bins = 0;
             int added_zeros = 0;
 
@@ -5870,11 +5860,9 @@ namespace UIMF_File
             double AverageAbsoluteValueMassError = 0.0;
             double AverageMassError = 0.0;
 
-#if COMPRESS_TO_100K
             if (this.ptr_UIMFDatabase.UimfGlobalParams.BinWidth == .25)
                 compression = 4;
             else
-#endif
                 compression = 1;
 
             calibration_slope = -1.0;
