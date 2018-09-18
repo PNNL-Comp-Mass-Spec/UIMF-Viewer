@@ -39,6 +39,8 @@ namespace UIMF_File
         private static extern bool BitBlt(IntPtr hdcDest, int nXDest, int nYDest,
             int nWidth, int nHeight, IntPtr hdcSrc, int nXSrc, int nYSrc, Int32 dwRop);
 
+        #region Fields
+
         // mz==something, TOF==null
         private bool flag_display_as_TOF;
 
@@ -187,6 +189,10 @@ namespace UIMF_File
 
         private bool flag_isFullscreen = false;
 
+        #endregion
+
+        #region Construct and Dispose
+
         public DataViewer()
         {
             try
@@ -307,6 +313,59 @@ namespace UIMF_File
                 this.pnl_postProcessing.tb_SaveCompressDirectory.Text = Path.GetDirectoryName(this.ptr_UIMFDatabase.UimfDataFile);
             }
         }
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            this.flag_Alive = false;
+            this.flag_Closing = true;
+
+            RegistrySave(Microsoft.Win32.Registry.CurrentUser.CreateSubKey("Software").CreateSubKey(AppDomain.CurrentDomain.FriendlyName));
+            this.pnl_postProcessing.Save_Registry();
+
+            if (this.flag_CinemaPlot)
+            {
+                this.StopCinema();
+                Thread.Sleep(300);
+            }
+
+            this.AllowDrop = false;
+            this.flag_update2DGraph = false;
+
+            while (this.flag_collecting_data)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+
+            if (disposing)
+            {
+                ptr_UIMFDatabase.Dispose();
+
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            base.Dispose(disposing);
+        }
+
+        private void IonMobilityDataView_Closed(object sender, System.EventArgs e)
+        {
+            RegistrySave(Microsoft.Win32.Registry.CurrentUser.CreateSubKey("Software").CreateSubKey(AppDomain.CurrentDomain.FriendlyName));
+            ptr_UIMFDatabase.Dispose();
+        }
+
+        #endregion
+
+        #region UI Setup
 
         private void build_Interface(bool flag_enablecontrols)
         {
@@ -498,10 +557,186 @@ namespace UIMF_File
             Invoke(new ThreadStart(this.ResizeThis));
         }
 
+        private void SetupPlots()
+        {
+            this.plot_TOF = new ZedGraph.ZedGraphControl();
+            this.waveform_TOFPlot = new ZedGraph.LineItem("TOF");
+
+            this.plot_Mobility = new Utilities.PointAnnotationGraph();
+            this.waveform_MobilityPlot = new ZedGraph.LineItem("Mobility");
+
+            // https://sourceforge.net/p/zedgraph/bugs/81/
+            // ZedGraph does not handle the font size quite properly; scale the numbers to get what we want
+            var zedGraphFontScaleFactor = 96F / 72F;
+
+            //
+            // plot_TOF
+            //
+            this.plot_TOF.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.plot_TOF.BackColor = System.Drawing.Color.Gainsboro;
+            this.plot_TOF.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.plot_TOF.BorderStyle = BorderStyle.Fixed3D;
+            this.plot_TOF.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.plot_TOF.IsEnableHEdit = false;
+            this.plot_TOF.IsEnableHPan = false;
+            this.plot_TOF.IsEnableHZoom = false;
+            this.plot_TOF.IsEnableSelection = false;
+            this.plot_TOF.IsEnableVEdit = false;
+            this.plot_TOF.IsEnableVPan = false;
+            this.plot_TOF.IsEnableVZoom = false;
+            this.plot_TOF.IsEnableZoom = false;
+            this.plot_TOF.IsEnableWheelZoom = false;
+            this.plot_TOF.Location = new System.Drawing.Point(18, 102);
+            this.plot_TOF.Name = "plot_TOF";
+            this.plot_TOF.GraphPane.Chart.Fill.Color = System.Drawing.Color.White;
+            this.plot_TOF.GraphPane.CurveList.Add(this.waveform_TOFPlot);
+            this.plot_TOF.Size = new System.Drawing.Size(204, 440);
+            this.plot_TOF.TabIndex = 20;
+            this.plot_TOF.TabStop = false;
+            this.plot_TOF.GraphPane.Title.IsVisible = false;
+            this.plot_TOF.GraphPane.Legend.IsVisible = false;
+            this.plot_TOF.GraphPane.XAxis.Scale.IsReverse = true;
+            this.plot_TOF.GraphPane.XAxis.Scale.IsLabelsInside = true;
+            this.plot_TOF.GraphPane.XAxis.MajorGrid.Color = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.plot_TOF.GraphPane.XAxis.MajorGrid.IsVisible = true;
+            this.plot_TOF.GraphPane.XAxis.CrossAuto = false;
+            this.plot_TOF.GraphPane.XAxis.Cross = 1000000; // TODO: Set automatically
+            this.plot_TOF.GraphPane.IsFontsScaled = false; // TODO:
+            this.plot_TOF.GraphPane.XAxis.Scale.MaxAuto = true;
+            this.plot_TOF.GraphPane.XAxis.Scale.Mag = 0;
+            this.plot_TOF.GraphPane.XAxis.Scale.Format = "0.0E00";
+            this.plot_TOF.GraphPane.XAxis.Scale.LabelGap = 0;
+            this.plot_TOF.GraphPane.YAxis.Scale.Mag = 0;
+            this.plot_TOF.GraphPane.YAxis.MinorTic.IsInside = false;
+            this.plot_TOF.GraphPane.YAxis.MinorTic.IsCrossInside = false;
+            this.plot_TOF.GraphPane.YAxis.MinorTic.IsOpposite = false;
+            this.plot_TOF.GraphPane.YAxis.MajorTic.IsInside = false;
+            this.plot_TOF.GraphPane.YAxis.MajorTic.IsCrossInside = false;
+            this.plot_TOF.GraphPane.YAxis.MajorTic.IsOpposite = false;
+            this.plot_TOF.GraphPane.YAxis.Scale.MaxAuto = true; // TODO:
+            this.plot_TOF.GraphPane.XAxis.Scale.FontSpec.Family = "Verdana";
+            this.plot_TOF.GraphPane.XAxis.Scale.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
+            this.plot_TOF.GraphPane.YAxis.Scale.FontSpec.Family = "Verdana";
+            this.plot_TOF.GraphPane.YAxis.Scale.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
+            this.plot_TOF.GraphPane.Margin.Left -= 5;
+            this.plot_TOF.GraphPane.Margin.Top = 25;
+            this.plot_TOF.GraphPane.Margin.Right = 5;
+            this.plot_TOF.GraphPane.Margin.Bottom = 5;
+            this.plot_TOF.ContextMenu = contextMenu_TOF;
+            //
+            // waveform_TOFPlot
+            //
+            this.waveform_TOFPlot.Color = System.Drawing.Color.DarkBlue;
+            this.waveform_TOFPlot.Symbol = new Symbol(SymbolType.None, Color.Transparent);
+
+            // Label the axis
+            this.plot_TOF.GraphPane.XAxis.Title.Text = "Time of Flight";
+            this.plot_TOF.GraphPane.XAxis.Title.FontSpec.Family = "Verdana";
+            this.plot_TOF.GraphPane.XAxis.Title.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
+            this.plot_TOF.GraphPane.XAxis.Title.IsVisible = false;
+
+            //
+            // plot_Mobility
+            //
+            this.plot_Mobility.BackColor = System.Drawing.Color.Gainsboro;
+            this.plot_Mobility.BorderStyle = BorderStyle.Fixed3D;
+            this.plot_Mobility.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.plot_Mobility.Location = new System.Drawing.Point(242, 572);
+            this.plot_Mobility.Name = "plot_DriftPlot";
+            this.plot_Mobility.GraphPane.Chart.Fill.Color = System.Drawing.Color.White;
+            this.plot_Mobility.GraphPane.CurveList.Add(this.waveform_MobilityPlot);
+            this.plot_Mobility.Size = new System.Drawing.Size(510, 111);
+            this.plot_Mobility.TabIndex = 24;
+            this.plot_Mobility.ContextMenu = contextMenu_driftTIC;
+            this.plot_Mobility.RangeChanged += new Utilities.RangeEventHandler(this.OnPlotTICRangeChanged);
+            this.plot_Mobility.GraphPane.Title.IsVisible = false;
+            this.plot_Mobility.GraphPane.Legend.IsVisible = false;
+            this.plot_Mobility.GraphPane.XAxis.Scale.Mag = 0;
+            this.plot_Mobility.GraphPane.XAxis.MinorTic.IsInside = false;
+            this.plot_Mobility.GraphPane.XAxis.MinorTic.IsCrossInside = false;
+            this.plot_Mobility.GraphPane.XAxis.MinorTic.IsOpposite = false;
+            this.plot_Mobility.GraphPane.XAxis.MajorTic.IsInside = false;
+            this.plot_Mobility.GraphPane.XAxis.MajorTic.IsCrossInside = false;
+            this.plot_Mobility.GraphPane.XAxis.MajorTic.IsOpposite = false;
+            this.plot_Mobility.GraphPane.XAxis.Scale.MaxAuto = true; // TODO:
+            this.plot_Mobility.GraphPane.XAxis.Scale.FontSpec.Family = "Verdana";
+            this.plot_Mobility.GraphPane.XAxis.Scale.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
+            this.plot_Mobility.GraphPane.YAxis.Scale.FontSpec.Family = "Verdana";
+            this.plot_Mobility.GraphPane.YAxis.Scale.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
+            this.plot_Mobility.GraphPane.YAxis.Scale.MaxAuto = true;
+            this.plot_Mobility.GraphPane.YAxis.Scale.LabelGap = 0;
+            this.plot_Mobility.IsEnableHEdit = false;
+            this.plot_Mobility.IsEnableHPan = false;
+            this.plot_Mobility.IsEnableHZoom = false;
+            this.plot_Mobility.IsEnableSelection = false;
+            this.plot_Mobility.IsEnableVEdit = false;
+            this.plot_Mobility.IsEnableVPan = false;
+            this.plot_Mobility.IsEnableVZoom = false;
+            this.plot_Mobility.IsEnableZoom = false;
+            this.plot_Mobility.IsEnableWheelZoom = false;
+            this.plot_Mobility.GraphPane.XAxis.Scale.Format = "F2";
+            this.plot_Mobility.GraphPane.XAxis.Scale.MaxAuto = true;
+            this.plot_Mobility.GraphPane.YAxis.Scale.IsLabelsInside = true;
+            this.plot_Mobility.GraphPane.IsFontsScaled = false; // TODO:
+            this.plot_Mobility.GraphPane.YAxis.Scale.Mag = 0;
+            this.plot_Mobility.GraphPane.YAxis.Scale.Format = "0.0E00";
+            this.plot_Mobility.GraphPane.Margin.Left = -5;
+            this.plot_Mobility.GraphPane.Margin.Top = 5;
+            this.plot_Mobility.GraphPane.Margin.Right = 40;
+            this.plot_Mobility.GraphPane.Margin.Bottom -= 5;
+            //
+            // waveform_MobilityPlot
+            //
+            this.waveform_MobilityPlot.Color = System.Drawing.Color.Crimson;
+            this.waveform_MobilityPlot.Symbol = new Symbol(SymbolType.None, System.Drawing.Color.Salmon);
+
+            // Label the axes
+            this.plot_Mobility.GraphPane.XAxis.Title.Text = "Mobility - Scans";
+            this.plot_Mobility.GraphPane.XAxis.Title.FontSpec.Family = "Verdana";
+            this.plot_Mobility.GraphPane.XAxis.Title.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
+            this.plot_Mobility.GraphPane.YAxis.Title.Text = "Drift Intensity";
+            this.plot_Mobility.GraphPane.YAxis.Title.FontSpec.Family = "Verdana";
+            this.plot_Mobility.GraphPane.YAxis.Title.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
+            this.plot_Mobility.GraphPane.YAxis.Title.IsVisible = false;
+            this.plot_Mobility.GraphPane.YAxis.Cross = 1000000;
+
+            // Add the controls
+            this.tab_DataViewer.Controls.Add(this.plot_TOF);
+            this.tab_DataViewer.Controls.Add(this.plot_Mobility);
+            this.plot_TOF.Show();
+
+            this.plot_TOF.Width = 200;
+            this.plot_Mobility.Height = 150;
+        }
+
+        #endregion
+
+        #region Registry
+
         private static Microsoft.Win32.RegistryKey MainKey
         {
             get { return Application.UserAppDataRegistry; }
         }
+
+        private void RegistrySave(Microsoft.Win32.RegistryKey key)
+        {
+            using (Microsoft.Win32.RegistryKey sk = key.CreateSubKey(this.Name))
+            {
+            }
+        }
+
+        private void RegistryLoad(Microsoft.Win32.RegistryKey key)
+        {
+            try
+            {
+                using (Microsoft.Win32.RegistryKey sk = key.OpenSubKey(this.Name))
+                {
+                }
+            }
+            catch { }
+        }
+
+        #endregion
 
         private void tabpages_Main_SelectedIndexChanged(object sender, System.EventArgs e)
         {
@@ -551,49 +786,6 @@ namespace UIMF_File
             e.Graphics.TranslateTransform(-s.Width, 0);
             // MessageBox.Show((e.Bounds.Left).ToString()+","+ (e.Bounds.Top).ToString());
             e.Graphics.DrawString(tabName, tab_font, bshFore, -e.Bounds.Top - 28, e.Bounds.Left + 4);
-        }
-
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            this.flag_Alive = false;
-            this.flag_Closing = true;
-
-            RegistrySave(Microsoft.Win32.Registry.CurrentUser.CreateSubKey("Software").CreateSubKey(AppDomain.CurrentDomain.FriendlyName));
-            this.pnl_postProcessing.Save_Registry();
-
-            if (this.flag_CinemaPlot)
-            {
-                this.StopCinema();
-                Thread.Sleep(300);
-            }
-
-            this.AllowDrop = false;
-            this.flag_update2DGraph = false;
-
-            while (this.flag_collecting_data)
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
-
-            if (disposing)
-            {
-                ptr_UIMFDatabase.Dispose();
-
-                if (components != null)
-                {
-                    components.Dispose();
-                }
-            }
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
-            base.Dispose(disposing);
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -1833,6 +2025,8 @@ namespace UIMF_File
             this.flag_collecting_data = false;
         }
 
+        #region Background Slider Events
+
         // ////////////////////////////////////////////////////////////////////////////
         // change the background color
         //
@@ -1856,6 +2050,10 @@ namespace UIMF_File
                 }
             }
         }
+
+        #endregion
+
+        #region 2DMap Events
 
         //wfd
         private void pnl_2DMap_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -1983,141 +2181,6 @@ namespace UIMF_File
             }
         }
 
-        /* Taken from Robert Sedgewick, Algorithms in C++ */
-        /*  returns whether, in traveling from the first to the second
-    	to the third point, we turn counterclockwise (+1) or not (-1) */
-        int ccw(Point p0, Point p1, Point p2)
-        {
-            int dx1, dx2, dy1, dy2;
-
-            dx1 = p1.X - p0.X;
-            dy1 = p1.Y - p0.Y;
-
-            dx2 = p2.X - p0.X;
-            dy2 = p2.Y - p0.Y;
-
-            if (dx1 * dy2 > dy1 * dx2)
-                return +1;
-            if (dx1 * dy2 < dy1 * dx2)
-                return -1;
-            if ((dx1 * dx2 < 0) || (dy1 * dy2 < 0))
-                return -1;
-            if ((dx1 * dx1 + dy1 * dy1) < (dx2 * dx2 + dy2 * dy2))
-                return +1;
-            return 0;
-        }
-
-        public bool inside_Polygon(int scan, int bin)
-        {
-            int x_pixel;
-            int y_pixel;
-
-            if (this.current_valuesPerPixelX == 1)
-                x_pixel = scan;
-            else
-                x_pixel = (scan - this.current_minMobility) * -this.current_valuesPerPixelX;
-
-            if (current_valuesPerPixelY > 0)
-                y_pixel = ((bin - this.current_minBin) / current_valuesPerPixelY);
-            else
-                y_pixel = ((bin - this.current_minBin) * -current_valuesPerPixelY);
-            return this.inside_Polygon_Pixel(x_pixel, y_pixel);
-        }
-
-        public bool inside_Polygon(int scan, double mz)
-        {
-            int x_pixel;
-            int y_pixel;
-
-            if (this.current_valuesPerPixelX == 1)
-                x_pixel = scan;
-            else
-                x_pixel = (scan - this.current_minMobility) * -this.current_valuesPerPixelX;
-
-            // to find the y_pixel, the mz is linearized vertically.
-            double height = this.pnl_2DMap.Height;
-            double mzMax = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ(this.current_maxBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-            double mzMin = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ(this.current_minBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-            y_pixel = (int)(height * (mz-mzMin) / (mzMax - mzMin));
-
-            return this.inside_Polygon_Pixel(x_pixel, y_pixel);
-        }
-
-        public bool inside_Polygon_Pixel(int x_pixel, int y_pixel)
-        {
-            if (this.menuItem_SelectionCorners.Checked)
-            {
-                // in situations where you are zoomed in to where the points are larger than a pixel, you need to compensate.
-                if (this.current_valuesPerPixelX < 0)
-                    x_pixel *= -this.current_valuesPerPixelX;
-                if (this.current_valuesPerPixelY < 0)
-                    y_pixel *= -this.current_valuesPerPixelY;
-
-                y_pixel = this.pnl_2DMap.Height - y_pixel;
-
-                // due to strange shapes, I have to split this into triangles for results to be correct.
-                Point pt = new Point(x_pixel, y_pixel);
-                if ((ccw(this.corner_2DMap[0], this.corner_2DMap[1], pt) > 0) &&
-                    (ccw(this.corner_2DMap[1], this.corner_2DMap[2], pt) > 0) &&
-                    (ccw(this.corner_2DMap[2], this.corner_2DMap[0], pt) > 0))
-                    return true;
-
-                if ((ccw(this.corner_2DMap[2], this.corner_2DMap[3], pt) > 0) &&
-                    (ccw(this.corner_2DMap[3], this.corner_2DMap[0], pt) > 0) &&
-                    (ccw(this.corner_2DMap[0], this.corner_2DMap[2], pt) > 0)) // counter clockwise
-                    return true;
-
-                return false;
-            }
-            else
-                return true;
-        }
-
-        void swap_corners(int index1, int index2)
-        {
-            //MessageBox.Show("swap corners:  "+index1.ToString()+"   "+index2.ToString());
-
-            Point tmp_point = this.corner_2DMap[index1];
-            this.corner_2DMap[index1] = this.corner_2DMap[index2];
-            this.corner_2DMap[index2] = tmp_point;
-        }
-
-        // make the points for the most outter points starting in the upper left corner
-        private void convex_Polygon()
-        {
-            //MessageBox.Show("convex Polygon:  ");
-            if (ccw(this.corner_2DMap[0], this.corner_2DMap[1], this.corner_2DMap[2]) < 0) // counter clockwise
-                this.swap_corners(1, 2);
-            if (ccw(this.corner_2DMap[1], this.corner_2DMap[2], this.corner_2DMap[3]) < 0) // counter clockwise
-                this.swap_corners(2, 3);
-            if (ccw(this.corner_2DMap[2], this.corner_2DMap[3], this.corner_2DMap[0]) < 0) // counter clockwise
-                this.swap_corners(3, 0);
-            if (ccw(this.corner_2DMap[3], this.corner_2DMap[0], this.corner_2DMap[1]) < 0) // counter clockwise
-                this.swap_corners(0, 1);
-
-            int upper_left = 0;
-            int smallest_dist = 1000000000;
-            int dist;
-            for (int i = 0; i < 4; i++)
-            {
-                dist = (this.corner_2DMap[i].Y ^ 2) + (this.corner_2DMap[i].X ^ 2);
-                if (dist < smallest_dist)
-                {
-                    upper_left = i;
-                    smallest_dist = dist;
-                }
-            }
-
-            for (int i = 0; i < upper_left; i++) // if upper left is 0, then we are good to go
-            {
-                Point tmp_point = this.corner_2DMap[0];
-                this.corner_2DMap[0] = this.corner_2DMap[1];
-                this.corner_2DMap[1] = this.corner_2DMap[2];
-                this.corner_2DMap[2] = this.corner_2DMap[3];
-                this.corner_2DMap[3] = tmp_point;
-            }
-        }
-
         private void pnl_2DMap_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             if (this.flag_kill_mouse)  // if plotting the plot, prevent zooming!
@@ -2171,12 +2234,12 @@ namespace UIMF_File
                             minframe_Data_number = this.minFrame_Chromatogram + (this._mouseMovePoint.X * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
                             maxframe_Data_number = this.minFrame_Chromatogram + (this._mouseDownPoint.X * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
 
-                           // minframe_Data_number = this.minFrame_Chromatogram + (this._mouseMovePoint.X / -this.chromatogram_valuesPerPixelX) + 1;
-                          //  maxframe_Data_number = this.minFrame_Chromatogram + (this._mouseDownPoint.X / -this.chromatogram_valuesPerPixelX) + 1;
+                            // minframe_Data_number = this.minFrame_Chromatogram + (this._mouseMovePoint.X / -this.chromatogram_valuesPerPixelX) + 1;
+                            //  maxframe_Data_number = this.minFrame_Chromatogram + (this._mouseDownPoint.X / -this.chromatogram_valuesPerPixelX) + 1;
                         }
                         else
                         {
-                          //  MessageBox.Show("here");
+                            //  MessageBox.Show("here");
 
                             minframe_Data_number = this.minFrame_Chromatogram + (this._mouseDownPoint.X * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
                             maxframe_Data_number = this.minFrame_Chromatogram + (this._mouseMovePoint.X * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
@@ -2202,14 +2265,14 @@ namespace UIMF_File
                         }
                     }
 
-                  //  MessageBox.Show("wfd: " + maxframe_Data_number.ToString() + " - " + minframe_Data_number.ToString() + " + 1");
+                    //  MessageBox.Show("wfd: " + maxframe_Data_number.ToString() + " - " + minframe_Data_number.ToString() + " + 1");
                     if (minframe_Data_number < 1)
                         minframe_Data_number = 1;
                     if (maxframe_Data_number > this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames)
                         maxframe_Data_number = this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames;
                     this.slide_FrameSelect.Value = maxframe_Data_number;
 
-                  //  MessageBox.Show("wfd: "+maxframe_Data_number.ToString()+" - "+minframe_Data_number.ToString()+" + 1");
+                    //  MessageBox.Show("wfd: "+maxframe_Data_number.ToString()+" - "+minframe_Data_number.ToString()+" + 1");
                     this.num_FrameRange.Value = maxframe_Data_number - minframe_Data_number + 1;
 
                     this.plot_Mobility.StopAnnotating(false);
@@ -2401,6 +2464,224 @@ namespace UIMF_File
                 this.corner_2DMap[3] = new Point((int)(this.pnl_2DMap.Width * .15), (int)(this.pnl_2DMap.Height * .85));
             }
         }
+
+        private void pnl_2DMap_MouseLeave(object sender, System.EventArgs e)
+        {
+            _interpolation_points.Clear();
+        }
+
+        protected virtual void pnl_2DMap_DblClick(object sender, System.EventArgs e)
+        {
+            int frame_number;
+
+            if (this.flag_CinemaPlot)
+            {
+                this.StopCinema();
+                return;
+            }
+
+            if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+            {
+                this.Width = this.pnl_2DMap.Left + this.ptr_UIMFDatabase.UimfFrameParams.Scans + 170;
+
+                this.rb_PartialChromatogram.Checked = false;
+                this.rb_CompleteChromatogram.Checked = false;
+
+                this.plot_Mobility.StopAnnotating(false);
+
+                this.Chromatogram_CheckedChanged();
+
+                // MessageBox.Show(this.chromatogram_valuesPerPixelX.ToString());
+                //if (this.chromatogram_valuesPerPixelX < 0)
+                frame_number = this.minFrame_Chromatogram + (this.prev_cursorX * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
+                //MessageBox.Show(frame_number.ToString());
+
+#if false
+                    frame_number = this.minFrame_Chromatogram + (this.prev_cursorX * Convert.ToInt32(this.num_FrameCompression.Value) / (-this.chromatogram_valuesPerPixelX)) + 1;
+                else
+                    frame_number = this.minFrame_Chromatogram + (this.prev_cursorX * Convert.ToInt32(this.num_FrameCompression.Value)) + 1;
+#endif
+                // MessageBox.Show(frame_number.ToString()+"="+this.minFrame_Chromatogram.ToString() + "  " + this.prev_cursorX.ToString() + "  " + this.current_valuesPerPixelX.ToString());
+
+                if (frame_number < 1)
+                    frame_number = 1;
+                if (frame_number > this.ptr_UIMFDatabase.get_NumFrames(this.current_frame_type))
+                    frame_number = this.ptr_UIMFDatabase.get_NumFrames(this.current_frame_type) - 1;
+
+                this.slide_FrameSelect.Value = frame_number;
+
+                this.ptr_UIMFDatabase.CurrentFrameIndex = (int)this.slide_FrameSelect.Value;
+                this.plot_Mobility.ClearRange();
+                this.num_FrameRange.Value = 1;
+
+                this.vsb_2DMap.Show();  // gets hidden with Chromatogram
+                this.hsb_2DMap.Show();
+
+                // this.imf_ReadFrame(this.new_frame_index, out frame_Data);
+                this.max_plot_width = this.ptr_UIMFDatabase.UimfFrameParams.Scans;
+                this.flag_update2DGraph = true;
+            }
+            else
+            {
+                // Reinitialize
+                _zoomX.Clear();
+                _zoomBin.Clear();
+
+                this.new_minBin = 0;
+                this.new_minMobility = 0;
+                this.new_maxBin = this.maximum_Bins;
+                this.new_maxMobility = this.maximum_Mobility;
+
+                this.num_minMobility.Value = 0;
+                this.num_maxMobility.Value = this.maximum_Mobility;
+
+                this.flag_selection_drift = false;
+                this.plot_Mobility.ClearRange();
+                this.flag_update2DGraph = true;
+
+                this.AutoScrollPosition = new Point(0, 0);
+                // this.ResizeThis();
+            }
+        }
+
+        #endregion
+
+        /* Taken from Robert Sedgewick, Algorithms in C++ */
+        /*  returns whether, in traveling from the first to the second
+    	to the third point, we turn counterclockwise (+1) or not (-1) */
+        int ccw(Point p0, Point p1, Point p2)
+        {
+            int dx1, dx2, dy1, dy2;
+
+            dx1 = p1.X - p0.X;
+            dy1 = p1.Y - p0.Y;
+
+            dx2 = p2.X - p0.X;
+            dy2 = p2.Y - p0.Y;
+
+            if (dx1 * dy2 > dy1 * dx2)
+                return +1;
+            if (dx1 * dy2 < dy1 * dx2)
+                return -1;
+            if ((dx1 * dx2 < 0) || (dy1 * dy2 < 0))
+                return -1;
+            if ((dx1 * dx1 + dy1 * dy1) < (dx2 * dx2 + dy2 * dy2))
+                return +1;
+            return 0;
+        }
+
+        public bool inside_Polygon(int scan, int bin)
+        {
+            int x_pixel;
+            int y_pixel;
+
+            if (this.current_valuesPerPixelX == 1)
+                x_pixel = scan;
+            else
+                x_pixel = (scan - this.current_minMobility) * -this.current_valuesPerPixelX;
+
+            if (current_valuesPerPixelY > 0)
+                y_pixel = ((bin - this.current_minBin) / current_valuesPerPixelY);
+            else
+                y_pixel = ((bin - this.current_minBin) * -current_valuesPerPixelY);
+            return this.inside_Polygon_Pixel(x_pixel, y_pixel);
+        }
+
+        public bool inside_Polygon(int scan, double mz)
+        {
+            int x_pixel;
+            int y_pixel;
+
+            if (this.current_valuesPerPixelX == 1)
+                x_pixel = scan;
+            else
+                x_pixel = (scan - this.current_minMobility) * -this.current_valuesPerPixelX;
+
+            // to find the y_pixel, the mz is linearized vertically.
+            double height = this.pnl_2DMap.Height;
+            double mzMax = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ(this.current_maxBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+            double mzMin = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ(this.current_minBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+            y_pixel = (int)(height * (mz-mzMin) / (mzMax - mzMin));
+
+            return this.inside_Polygon_Pixel(x_pixel, y_pixel);
+        }
+
+        public bool inside_Polygon_Pixel(int x_pixel, int y_pixel)
+        {
+            if (this.menuItem_SelectionCorners.Checked)
+            {
+                // in situations where you are zoomed in to where the points are larger than a pixel, you need to compensate.
+                if (this.current_valuesPerPixelX < 0)
+                    x_pixel *= -this.current_valuesPerPixelX;
+                if (this.current_valuesPerPixelY < 0)
+                    y_pixel *= -this.current_valuesPerPixelY;
+
+                y_pixel = this.pnl_2DMap.Height - y_pixel;
+
+                // due to strange shapes, I have to split this into triangles for results to be correct.
+                Point pt = new Point(x_pixel, y_pixel);
+                if ((ccw(this.corner_2DMap[0], this.corner_2DMap[1], pt) > 0) &&
+                    (ccw(this.corner_2DMap[1], this.corner_2DMap[2], pt) > 0) &&
+                    (ccw(this.corner_2DMap[2], this.corner_2DMap[0], pt) > 0))
+                    return true;
+
+                if ((ccw(this.corner_2DMap[2], this.corner_2DMap[3], pt) > 0) &&
+                    (ccw(this.corner_2DMap[3], this.corner_2DMap[0], pt) > 0) &&
+                    (ccw(this.corner_2DMap[0], this.corner_2DMap[2], pt) > 0)) // counter clockwise
+                    return true;
+
+                return false;
+            }
+            else
+                return true;
+        }
+
+        void swap_corners(int index1, int index2)
+        {
+            //MessageBox.Show("swap corners:  "+index1.ToString()+"   "+index2.ToString());
+
+            Point tmp_point = this.corner_2DMap[index1];
+            this.corner_2DMap[index1] = this.corner_2DMap[index2];
+            this.corner_2DMap[index2] = tmp_point;
+        }
+
+        // make the points for the most outter points starting in the upper left corner
+        private void convex_Polygon()
+        {
+            //MessageBox.Show("convex Polygon:  ");
+            if (ccw(this.corner_2DMap[0], this.corner_2DMap[1], this.corner_2DMap[2]) < 0) // counter clockwise
+                this.swap_corners(1, 2);
+            if (ccw(this.corner_2DMap[1], this.corner_2DMap[2], this.corner_2DMap[3]) < 0) // counter clockwise
+                this.swap_corners(2, 3);
+            if (ccw(this.corner_2DMap[2], this.corner_2DMap[3], this.corner_2DMap[0]) < 0) // counter clockwise
+                this.swap_corners(3, 0);
+            if (ccw(this.corner_2DMap[3], this.corner_2DMap[0], this.corner_2DMap[1]) < 0) // counter clockwise
+                this.swap_corners(0, 1);
+
+            int upper_left = 0;
+            int smallest_dist = 1000000000;
+            int dist;
+            for (int i = 0; i < 4; i++)
+            {
+                dist = (this.corner_2DMap[i].Y ^ 2) + (this.corner_2DMap[i].X ^ 2);
+                if (dist < smallest_dist)
+                {
+                    upper_left = i;
+                    smallest_dist = dist;
+                }
+            }
+
+            for (int i = 0; i < upper_left; i++) // if upper left is 0, then we are good to go
+            {
+                Point tmp_point = this.corner_2DMap[0];
+                this.corner_2DMap[0] = this.corner_2DMap[1];
+                this.corner_2DMap[1] = this.corner_2DMap[2];
+                this.corner_2DMap[2] = this.corner_2DMap[3];
+                this.corner_2DMap[3] = tmp_point;
+            }
+        }
+
+        #region Context Menu Events
 
         // Handler for the pb_2DMap's ContextMenu
         protected virtual void ZoomContextMenu(object sender, System.EventArgs e)
@@ -2652,106 +2933,6 @@ namespace UIMF_File
             }
         }
 
-        private void IonMobilityDataView_Closed(object sender, System.EventArgs e)
-        {
-            RegistrySave(Microsoft.Win32.Registry.CurrentUser.CreateSubKey("Software").CreateSubKey(AppDomain.CurrentDomain.FriendlyName));
-            ptr_UIMFDatabase.Dispose();
-        }
-
-        private void pnl_2DMap_MouseLeave(object sender, System.EventArgs e)
-        {
-            _interpolation_points.Clear();
-        }
-
-        protected virtual void pnl_2DMap_DblClick(object sender, System.EventArgs e)
-        {
-            int frame_number;
-
-            if (this.flag_CinemaPlot)
-            {
-                this.StopCinema();
-                return;
-            }
-
-            if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
-            {
-                this.Width = this.pnl_2DMap.Left + this.ptr_UIMFDatabase.UimfFrameParams.Scans + 170;
-
-                this.rb_PartialChromatogram.Checked = false;
-                this.rb_CompleteChromatogram.Checked = false;
-
-                this.plot_Mobility.StopAnnotating(false);
-
-                this.Chromatogram_CheckedChanged();
-
-                // MessageBox.Show(this.chromatogram_valuesPerPixelX.ToString());
-                //if (this.chromatogram_valuesPerPixelX < 0)
-                frame_number = this.minFrame_Chromatogram + (this.prev_cursorX * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
-                //MessageBox.Show(frame_number.ToString());
-
-#if false
-                    frame_number = this.minFrame_Chromatogram + (this.prev_cursorX * Convert.ToInt32(this.num_FrameCompression.Value) / (-this.chromatogram_valuesPerPixelX)) + 1;
-                else
-                    frame_number = this.minFrame_Chromatogram + (this.prev_cursorX * Convert.ToInt32(this.num_FrameCompression.Value)) + 1;
-#endif
-                // MessageBox.Show(frame_number.ToString()+"="+this.minFrame_Chromatogram.ToString() + "  " + this.prev_cursorX.ToString() + "  " + this.current_valuesPerPixelX.ToString());
-
-                if (frame_number < 1)
-                    frame_number = 1;
-                if (frame_number > this.ptr_UIMFDatabase.get_NumFrames(this.current_frame_type))
-                    frame_number = this.ptr_UIMFDatabase.get_NumFrames(this.current_frame_type) - 1;
-
-                this.slide_FrameSelect.Value = frame_number;
-
-                this.ptr_UIMFDatabase.CurrentFrameIndex = (int)this.slide_FrameSelect.Value;
-                this.plot_Mobility.ClearRange();
-                this.num_FrameRange.Value = 1;
-
-                this.vsb_2DMap.Show();  // gets hidden with Chromatogram
-                this.hsb_2DMap.Show();
-
-                // this.imf_ReadFrame(this.new_frame_index, out frame_Data);
-                this.max_plot_width = this.ptr_UIMFDatabase.UimfFrameParams.Scans;
-                this.flag_update2DGraph = true;
-            }
-            else
-            {
-                // Reinitialize
-                _zoomX.Clear();
-                _zoomBin.Clear();
-
-                this.new_minBin = 0;
-                this.new_minMobility = 0;
-                this.new_maxBin = this.maximum_Bins;
-                this.new_maxMobility = this.maximum_Mobility;
-
-                this.num_minMobility.Value = 0;
-                this.num_maxMobility.Value = this.maximum_Mobility;
-
-                this.flag_selection_drift = false;
-                this.plot_Mobility.ClearRange();
-                this.flag_update2DGraph = true;
-
-                this.AutoScrollPosition = new Point(0, 0);
-                // this.ResizeThis();
-            }
-        }
-
-        private void OnPlotTICRangeChanged(object sender, UIMF_File.Utilities.RangeEventArgs e)
-        {
-            if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
-                return;
-
-            Graphics g = this.pnl_2DMap.CreateGraphics();
-
-            this.selection_min_drift = e.Min;
-            this.selection_max_drift = e.Max;
-
-            this.flag_selection_drift = e.Selecting;
-
-            this.flag_update2DGraph = true;
-        }
-
         private void menuItem_ExportCompressed_Click(object sender, System.EventArgs e)
         {
             try
@@ -2813,15 +2994,15 @@ namespace UIMF_File
             int mob_height = this.ptr_UIMFDatabase.UimfFrameParams.Scans;
             double[] drift_axis = new double[mob_height];
 
-            int [][]dump_chromatogram = new int[frames_width][];
-            for (int i=0; i<frames_width; i++)
+            int[][] dump_chromatogram = new int[frames_width][];
+            for (int i = 0; i < frames_width; i++)
             {
                 dump_chromatogram[i] = this.ptr_UIMFDatabase.GetDriftChromatogram(i);
             }
 
             for (int i = 1; i < frames_width; i++)
                 frames_axis[i] = i;
-            for (int i=1; i<mob_height; i++)
+            for (int i = 1; i < mob_height; i++)
                 drift_axis[i] = i;
 
             Utilities.TextExport tex = new Utilities.TextExport();
@@ -2895,7 +3076,7 @@ namespace UIMF_File
             }
 
             //string points = "";
-            int i,j;
+            int i, j;
             int minbin = this.current_minBin;
             int maxbin = this.current_maxBin;
             int minmobility = this.current_minMobility;
@@ -2929,7 +3110,7 @@ namespace UIMF_File
                 if (ypos < maxbin)
                     maxbin = ypos;
 
-              //  points += xpos.ToString() + ", " + ypos.ToString() + "\n";
+                //  points += xpos.ToString() + ", " + ypos.ToString() + "\n";
 
                 xpos = this.current_minMobility + (smallest_x * (this.current_maxMobility - this.current_minMobility) / this.pnl_2DMap.Width) + 1;
                 ypos = this.current_minBin + (smallest_y * (this.current_maxBin - this.current_minBin) / this.pnl_2DMap.Height);
@@ -2938,7 +3119,7 @@ namespace UIMF_File
                 if (ypos > minbin)
                     minbin = ypos;
 
-              //  points += xpos.ToString() + ", " + ypos.ToString() + "\n\n";
+                //  points += xpos.ToString() + ", " + ypos.ToString() + "\n\n";
             }
 
             int total_scans = maxmobility - minmobility + 1;
@@ -2946,7 +3127,7 @@ namespace UIMF_File
 
             //points += maxmobility.ToString() + " - "+minmobility.ToString() + " = "+total_scans.ToString() + "\n ";
             //points += maxbin.ToString()+ " - " + minbin.ToString()+ " = " + total_bins.ToString();
-           // MessageBox.Show(points);
+            // MessageBox.Show(points);
 
             //double mob_width = this.ptr_UIMFDatabase.UIMF_FrameParams.Scans;
             double[] drift_axis = new double[total_scans];
@@ -2998,13 +3179,13 @@ namespace UIMF_File
             {
                 int tics = 0;
                 for (i = 0; i < total_scans; i++)
-                for (j = 0; j < total_bins; j++)
-                {
-                    tics += export_data[i][j];
-                    //if (!this.inside_Polygon((minmobility + i) * this.pnl_2DMap.Width / (this.current_maxMobility - this.current_minMobility), (minbin + j) * this.pnl_2DMap.Height / (this.current_maxBin - this.current_minBin)))
-                    //    export_data[i][j] = 0;
-                    // MessageBox.Show(tics.ToString());
-                }
+                    for (j = 0; j < total_bins; j++)
+                    {
+                        tics += export_data[i][j];
+                        //if (!this.inside_Polygon((minmobility + i) * this.pnl_2DMap.Width / (this.current_maxMobility - this.current_minMobility), (minbin + j) * this.pnl_2DMap.Height / (this.current_maxBin - this.current_minBin)))
+                        //    export_data[i][j] = 0;
+                        // MessageBox.Show(tics.ToString());
+                    }
             }
 
             Utilities.TextExport tex = new Utilities.TextExport();
@@ -3072,7 +3253,7 @@ namespace UIMF_File
                     double increment_TOFValue = 1.0;
                     for (int i = 0; i < this.tic_TOF.Length; i++)
                     {
-                        sw_TOF.WriteLine("{0},{1}", (i*increment_TOFValue)+this.minMobility_Chromatogram, tic_TOF[i]);
+                        sw_TOF.WriteLine("{0},{1}", (i * increment_TOFValue) + this.minMobility_Chromatogram, tic_TOF[i]);
                     }
                 }
                 else
@@ -3115,6 +3296,427 @@ namespace UIMF_File
             }
         }
 
+        private void menuitem_WriteUIMF_Click(object sender, EventArgs e)
+        {
+            UIMFLibrary.GlobalParams Global_Params;
+            UIMFLibrary.DataWriter UIMF_Writer;
+            DateTime dt_StartExperiment;
+            SaveFileDialog save_dialog = new SaveFileDialog();
+            save_dialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+            save_dialog.CheckFileExists = false;
+            save_dialog.Title = "Save merged frame to UIMF file...";
+            save_dialog.Filter = "Comma-separated variables (*.uimf)|*.uimf";
+            save_dialog.FilterIndex = 1;
+
+            if (save_dialog.ShowDialog(this) == DialogResult.OK)
+            {
+                if (File.Exists(save_dialog.FileName))
+                {
+                    UIMF_Writer = new UIMFLibrary.DataWriter(save_dialog.FileName);
+                    Global_Params = UIMF_Writer.GetGlobalParams().Clone();
+
+                    Global_Params.AddUpdateValue(GlobalParamKeyType.NumFrames, Global_Params.NumFrames + 1);
+
+                    UIMF_Writer.InsertGlobal(Global_Params);
+                }
+                else
+                {
+                    UIMF_Writer = new UIMFLibrary.DataWriter(save_dialog.FileName);
+                    UIMF_Writer.CreateTables(null);
+
+                    Global_Params = this.ptr_UIMFDatabase.GetGlobalParams().Clone();
+
+                    dt_StartExperiment = new DateTime(1970, 1, 1);
+                    Global_Params.AddUpdateValue(GlobalParamKeyType.DateStarted, dt_StartExperiment.ToLocalTime().ToShortDateString() + " " + dt_StartExperiment.ToLocalTime().ToLongTimeString());
+                    Global_Params.AddUpdateValue(GlobalParamKeyType.NumFrames, 1);
+                    Global_Params.AddUpdateValue(GlobalParamKeyType.TimeOffset, 0);
+                    Global_Params.AddUpdateValue(GlobalParamKeyType.InstrumentName, "MergeFrames");
+
+                    UIMF_Writer.InsertGlobal(Global_Params);
+                }
+
+                AppendUIMFFrame(UIMF_Writer, Global_Params.NumFrames - 1);
+
+                UIMF_Writer.Dispose();
+            }
+        }
+
+        public void AppendUIMFFrame(UIMFLibrary.DataWriter UIMF_Writer, int frame_number)
+        {
+            int nonzero_bins;
+            int i;
+            int time_offset = 0;
+            int b;
+            int[] mapped_bins;
+            int total_bins;
+            int scan;
+            FrameParams fp;
+            int[] scan_data;
+            int exp_index;
+            int start_index;
+            int end_index;
+            int frames;
+            double mapped_intercept;
+            double mapped_slope;
+            double mz;
+            int new_bin;
+            double new_mz;
+
+            fp = this.ptr_UIMFDatabase.UimfFrameParams.Clone();
+            total_bins = this.ptr_UIMFDatabase.UimfGlobalParams.Bins;
+
+            fp.Values.Remove(FrameParamKeyType.Accumulations);
+            fp.Values.Remove(FrameParamKeyType.DurationSeconds);
+            fp.Values.Remove(FrameParamKeyType.FragmentationProfile);
+
+            // entrance voltages
+            fp.Values.Remove(FrameParamKeyType.VoltEntranceHPFIn);
+            fp.Values.Remove(FrameParamKeyType.VoltTrapIn);
+            fp.Values.Remove(FrameParamKeyType.VoltTrapOut);
+            fp.Values.Remove(FrameParamKeyType.VoltEntranceHPFOut);
+            fp.Values.Remove(FrameParamKeyType.VoltEntranceCondLmt);
+            fp.Values.Remove(FrameParamKeyType.VoltJetDist);
+            fp.Values.Remove(FrameParamKeyType.VoltCapInlet);
+
+            // exit voltages
+            fp.Values.Remove(FrameParamKeyType.VoltIMSOut);
+            fp.Values.Remove(FrameParamKeyType.VoltExitHPFIn);
+            fp.Values.Remove(FrameParamKeyType.VoltExitHPFOut);
+            fp.Values.Remove(FrameParamKeyType.VoltExitCondLmt);
+
+            fp.Values.Remove(FrameParamKeyType.VoltQuad1);
+            fp.Values.Remove(FrameParamKeyType.VoltCond1);
+            fp.Values.Remove(FrameParamKeyType.VoltQuad2);
+            fp.Values.Remove(FrameParamKeyType.VoltCond2);
+
+            // pressure monitors
+            fp.Values.Remove(FrameParamKeyType.HighPressureFunnelPressure);
+            fp.Values.Remove(FrameParamKeyType.IonFunnelTrapPressure);
+            fp.Values.Remove(FrameParamKeyType.RearIonFunnelPressure);
+            fp.Values.Remove(FrameParamKeyType.QuadrupolePressure);
+
+            UIMF_Writer.InsertFrame(frame_number, fp);
+
+            //MessageBox.Show(this.current_valuesPerPixelX.ToString() + ", " + this.current_valuesPerPixelY.ToString());
+
+            mapped_bins = new int[total_bins];
+            mapped_intercept = this.ptr_UIMFDatabase.UimfFrameParams.CalibrationIntercept;
+            mapped_slope = this.ptr_UIMFDatabase.UimfFrameParams.CalibrationSlope;
+            for (scan = 0; scan < fp.Scans; scan++)
+            {
+                // zero out the mapped bins
+                for (i = 0; i < total_bins; i++)
+                    mapped_bins[i] = 0;
+
+                // we need to do a scan at a time, map and sum bins.
+                for (exp_index = 0; exp_index < this.lb_DragDropFiles.Items.Count; exp_index++)
+                {
+                    if (this.lb_DragDropFiles.GetSelected(exp_index))
+                    {
+                        this.ptr_UIMFDatabase = (UIMFDataWrapper)this.array_Experiments[exp_index];
+
+                        start_index = this.ptr_UIMFDatabase.CurrentFrameIndex - (this.ptr_UIMFDatabase.FrameWidth - 1);
+                        end_index = this.ptr_UIMFDatabase.CurrentFrameIndex;
+
+                        // collect the data
+                        for (frames = start_index; (frames <= end_index) && !this.flag_Closing; frames++)
+                        {
+                            // this is in bin resolution.
+                            scan_data = this.ptr_UIMFDatabase.GetSumScans(frames, scan, scan);
+
+                            // convert to mz resolution then map into bin resolution - sum into mapped_bins[]
+                            for (i = 0; i < scan_data.Length; i++)
+                            {
+                                new_bin = this.ptr_UIMFDatabase.MapBinCalibration(i, mapped_slope, mapped_intercept);
+
+                                if (new_bin < mapped_bins.Length)
+                                {
+                                    if (flag_display_as_TOF)
+                                    {
+                                        if (this.inside_Polygon(scan, new_bin))
+                                            mapped_bins[new_bin] += scan_data[i];
+                                    }
+                                    else
+                                    {
+                                        new_mz = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ((double)i * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                                        if (this.inside_Polygon(scan, new_mz))
+                                            mapped_bins[new_bin] += scan_data[i];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                nonzero_bins = 0;
+                for (i = 0; i < mapped_bins.Length; i++)
+                {
+                    if (mapped_bins[i] != 0)
+                        nonzero_bins++;
+                }
+
+                var nzVals = new Tuple<int, int>[nonzero_bins];
+
+                // collect the data
+                b = 0;
+                for (i = time_offset; (i < total_bins) && (b < nonzero_bins); i++)
+                    if (mapped_bins[i] != 0)
+                    {
+                        nzVals[b] = new Tuple<int, int>(i - time_offset, mapped_bins[i]);
+
+                        b++;
+                    }
+
+                UIMF_Writer.InsertScan(frame_number, fp, scan, nzVals, this.ptr_UIMFDatabase.UimfGlobalParams.BinWidth, 0);
+            }
+        }
+
+        // ///////////////////////////////////////////////////////////////////////////////////////
+        // Super Frame - Merge files
+        //
+        private void menuItem_SuperExperiment_Click(object sender, EventArgs e)
+        {
+            this.form_ExportExperiment = new UIMF_File.Utilities.ExportExperiment();
+            this.form_ExportExperiment.btn_ExportExperimentOK.Click += new EventHandler(this.form_ExportExperiment_OK_Click);
+            this.form_ExportExperiment.Show();
+        }
+
+        private void form_ExportExperiment_OK_Click(object sender, EventArgs e)
+        {
+            int step = Convert.ToInt32(this.form_ExportExperiment.num_Step.Value);
+            int merge = Convert.ToInt32(this.form_ExportExperiment.num_Merge.Value);
+            string name = this.form_ExportExperiment.tb_Name.Text;
+            string directory = Path.Combine(this.form_ExportExperiment.tb_Directory.Text, name);
+            string file_merge_IMF;
+
+            this.form_ExportExperiment.Hide();
+
+            if ((step <= 0) || (merge <= 0))
+            {
+                MessageBox.Show(this, "Either the step or merge value is not correct, please correct the problem.");
+                this.form_ExportExperiment.Show();
+                return;
+            }
+
+            if (Directory.Exists(directory))
+            {
+                MessageBox.Show(this, "The experiment already exists in the location you have specified, please change the name");
+                this.form_ExportExperiment.Show();
+                return;
+            }
+
+            Directory.CreateDirectory(directory);
+            this.slide_FrameSelect.Value = merge;
+            this.num_FrameRange.Value = merge;
+
+            this.Enabled = false;
+            //this.flag_Halt = true;
+            try
+            {
+                for (int i = 1; i <= ((this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames - merge) / step) + 1; i++)
+                {
+                    //  MessageBox.Show((i * step).ToString());
+                    //  continue;
+                    this.slide_FrameSelect.Value = ((i - 1) * step) + merge;
+
+                    this.Graph_2DPlot();
+                    this.Update();
+
+                    file_merge_IMF = Path.Combine(directory, name + ".Accum_" + i.ToString() + ".IMF");
+                    this.save_MergedFrame(file_merge_IMF, true, i);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+
+            //this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames = ((this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames - merge) / step) + 1;
+            this.ptr_UIMFDatabase.UimfGlobalParams.AddUpdateValue(GlobalParamKeyType.NumFrames, ((this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames - merge) / step) + 1);
+            this.Enabled = true;
+
+            this.form_ExportExperiment.Dispose();
+        }
+
+        private void menuItem_SuperFrame_Click(object obj, System.EventArgs e)
+        {
+            MessageBox.Show("menuItem_SuperFrame_Click needs work");
+        }
+
+        private bool save_MergedFrame(string file_merge_IMF, bool flag_calc_accumulations, int frame_number)
+        {
+            MessageBox.Show("save_MergedFrame needs work");
+            return false;
+        }
+
+        // //////////////////////////////////////////////////////////////////////////////////
+        // create IMF file
+        //
+        private void menuitem_SaveIMF_Click(object sender, EventArgs e)
+        {
+            string file_accum_IMF;
+            int i, j = 0, k;
+            long escape_position;
+            int counter_TIC = 0;
+            int counter_bin = 0;
+            int[] num_BinTICs;
+            int[] bytes_Bin;
+
+            double bin_width;
+
+            file_accum_IMF = Path.Combine(Path.GetDirectoryName(this.ptr_UIMFDatabase.UimfDataFile), Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UimfDataFile) + ".Accum_" + this.ptr_UIMFDatabase.CurrentFrameNum.ToString() + ".IMF");
+
+            num_BinTICs = new int[this.ptr_UIMFDatabase.UimfFrameParams.Scans];
+            bytes_Bin = new int[this.ptr_UIMFDatabase.UimfFrameParams.Scans];
+            bin_width = this.ptr_UIMFDatabase.UimfGlobalParams.BinWidth;
+            /////////////////////////////////////////////////////////
+            //////                                             //////
+            //////                                             //////
+            //////              WRITE IMF FILE                 //////
+            //////                                             //////
+            //////                                             //////
+            /////////////////////////////////////////////////////////
+            StreamWriter sw_IMF = new StreamWriter(file_accum_IMF, false);
+            sw_IMF.WriteLine("DataType: 11");
+            sw_IMF.WriteLine("DataSubType: int");
+            sw_IMF.WriteLine("TOFSpectra: " + this.ptr_UIMFDatabase.UimfFrameParams.Scans.ToString());
+            sw_IMF.WriteLine("NumBins: " + this.ptr_UIMFDatabase.UimfGlobalParams.Bins.ToString());
+            sw_IMF.WriteLine("BinWidth: " + bin_width.ToString("0.00") + " ns");
+            sw_IMF.WriteLine("Accumulations: " + this.ptr_UIMFDatabase.UimfFrameParams.GetValueInt32(FrameParamKeyType.Accumulations).ToString());
+            sw_IMF.WriteLine("TimeOffset: " + this.ptr_UIMFDatabase.UimfGlobalParams.GetValue(GlobalParamKeyType.TimeOffset, 0).ToString());
+
+            sw_IMF.WriteLine("CalibrationSlope: " + this.ptr_UIMFDatabase.UimfFrameParams.CalibrationSlope);
+            sw_IMF.WriteLine("CalibrationIntercept: " + this.ptr_UIMFDatabase.UimfFrameParams.CalibrationIntercept);
+
+            sw_IMF.WriteLine("FrameNumber: " + this.ptr_UIMFDatabase.CurrentFrameNum.ToString());
+            sw_IMF.WriteLine("AverageTOFLength: " + this.ptr_UIMFDatabase.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength).ToString("0.00") + " ns");
+
+            if (string.IsNullOrWhiteSpace(this.ptr_UIMFDatabase.UimfFrameParams.GetValue(FrameParamKeyType.MultiplexingEncodingSequence, "")))
+            {
+                MessageBox.Show("menuitem_SaveIMF_Click - putting in IMFProfile...");
+                sw_IMF.WriteLine("MultiplexingProfile: 4Bit_24OS.txt"); //this.uimf_FrameParameters.MPBitOrder + "BitOrder");
+            }
+            else
+                sw_IMF.WriteLine("MultiplexingProfile: " + this.ptr_UIMFDatabase.UimfFrameParams.GetValue(FrameParamKeyType.MultiplexingEncodingSequence, "")); //this.uimf_FrameParameters.MPBitOrder + "BitOrder");
+
+            sw_IMF.WriteLine("End");
+            sw_IMF.Flush();
+            sw_IMF.Close();
+
+            FileStream fs_IMF = new FileStream(file_accum_IMF, FileMode.Open, FileAccess.ReadWrite);
+            BinaryWriter bw_IMF = new BinaryWriter(fs_IMF);
+            bw_IMF.Seek(0, SeekOrigin.End);
+
+            // First write the escape character, which divides the ICR-2LS header from the binary data
+            bw_IMF.Write((byte)27); // 27 is the ESC char
+            escape_position = fs_IMF.Position;
+
+            // Write number of accumulated TOFSpectra within the Accum Frame
+            // Accumulation file will therefore be self-contained
+            bw_IMF.Write((int)this.ptr_UIMFDatabase.UimfFrameParams.Scans);
+
+            // Write counter_TIC values and the channel data size (Nodes * sizeof(Node values)]for each channel
+            // Each record is made up of [Int32 TOFValue, Int16 Count]
+            for (i = 0; i < this.ptr_UIMFDatabase.UimfFrameParams.Scans * 2; i++)
+                bw_IMF.Write(Convert.ToInt32(0));
+
+            double[] spectrum_array = new double[0];
+            int[] bins_array = new int[0];
+
+            num_BinTICs = new int[this.ptr_UIMFDatabase.UimfFrameParams.Scans];
+            bytes_Bin = new int[this.ptr_UIMFDatabase.UimfFrameParams.Scans];
+
+            //MessageBox.Show(this.uimf_FrameParameters.FrameNum.ToString());
+            for (k = 0; k < this.ptr_UIMFDatabase.UimfFrameParams.Scans; k++)
+            {
+                counter_TIC = 0;
+                counter_bin = 0;
+
+                try
+                {
+                    this.ptr_UIMFDatabase.GetSpectrum(this.ptr_UIMFDatabase.CurrentFrameNum, (DataReader.FrameType)this.ptr_UIMFDatabase.get_FrameType(), k, out spectrum_array, out bins_array);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("menuitem_SaveIMF_Click UIMF_DataReader: " + ex.ToString());
+                }
+
+                for (j = 0; j < spectrum_array.Length; j++)
+                {
+                    counter_bin++;
+                    counter_TIC += bins_array[j];
+                    bw_IMF.Write((spectrum_array[j] - this.ptr_UIMFDatabase.UimfGlobalParams.GetValue(GlobalParamKeyType.TimeOffset, 0)) * 10); // * binWidth);
+                    bw_IMF.Write(bins_array[j]);
+                }
+
+                num_BinTICs[k] = counter_TIC;
+                bytes_Bin[k] = counter_bin;
+            }
+
+            // Go back to the Escape Position, then pass the number of TOFSpectraPerFrame
+            bw_IMF.Seek((int)escape_position + 4, SeekOrigin.Begin);
+
+            for (k = 0; k < this.ptr_UIMFDatabase.UimfFrameParams.Scans; k++)
+            {
+                bw_IMF.Write(num_BinTICs[k]);
+                bw_IMF.Write(bytes_Bin[k] * 8);
+            }
+
+            bw_IMF.Flush();
+
+            bw_IMF.Close();
+            fs_IMF.Close();
+        }
+
+        // ////////////////////////////////////////////////////////////////
+        //
+        //
+        private void menuItem_SelectionCorners_Click(object sender, EventArgs e)
+        {
+            this.menuItem_SelectionCorners.Checked = !this.menuItem_SelectionCorners.Checked;
+
+            if (this.menuItem_SelectionCorners.Checked)
+                this.reset_Corners();
+
+            this.flag_update2DGraph = true;
+        }
+
+        // ////////////////////////////////////////////////////////////////
+        // Show only the maximum values - do not sum bins.
+        //
+        private void menuItem_TOFMaximum_Click(object sender, EventArgs e)
+        {
+            this.menuItem_TOFMaximum.Checked = !this.menuItem_TOFMaximum.Checked;
+            this.menuItem_MaxIntensities.Checked = this.menuItem_TOFMaximum.Checked;
+
+            if (this.menuItem_TOFMaximum.Checked)
+                this.plot_TOF.BackColor = Color.AntiqueWhite;
+            else
+                this.plot_TOF.BackColor = Color.White;
+
+            this.flag_update2DGraph = true;
+        }
+
+        #endregion
+
+        #region Mobility Plot and Controls
+
+        private void OnPlotTICRangeChanged(object sender, UIMF_File.Utilities.RangeEventArgs e)
+        {
+            if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+                return;
+
+            Graphics g = this.pnl_2DMap.CreateGraphics();
+
+            this.selection_min_drift = e.Min;
+            this.selection_max_drift = e.Max;
+
+            this.flag_selection_drift = e.Selecting;
+
+            this.flag_update2DGraph = true;
+        }
+
         protected virtual void num_Mobility_ValueChanged(object sender, System.EventArgs e)
         {
             int min, max;
@@ -3151,6 +3753,10 @@ namespace UIMF_File
 
             this.flag_enterMobilityRange = false;
         }
+
+        #endregion
+
+        #region TOF Plot and Controls
 
         // ////////////////////////////////////////////////////////////////////////////////
         // This needs some more work.
@@ -3299,6 +3905,10 @@ namespace UIMF_File
             this.flag_enterBinRange = false;
         }
 
+        #endregion
+
+        #region Frame Selection and Controls
+
         // //////////////////////////////////////////////////////////////////////////////
         // Frame Selection
         //
@@ -3356,6 +3966,86 @@ namespace UIMF_File
 
             this.flag_update2DGraph = true;
         }
+
+        // ///////////////////////////////////////////////////////////////
+        // Select FrameType
+        //
+        private void cb_FrameType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            this.flag_CinemaPlot = false;
+
+            this.Filter_FrameType(this.cb_FrameType.SelectedIndex);
+
+            this.flag_FrameTypeChanged = true;
+            this.flag_update2DGraph = true;
+
+        }
+
+        private void Filter_FrameType(int frame_type)
+        {
+            if (this.current_frame_type == frame_type)
+                return;
+
+            int frame_count = 0;
+            object[] read_values = new object[0];
+
+            frame_count = this.ptr_UIMFDatabase.set_FrameType(frame_type);
+            this.current_frame_type = frame_type;
+            this.ptr_UIMFDatabase.CurrentFrameIndex = -1;
+
+            Invoke(new ThreadStart(format_Screen));
+
+            // Reinitialize
+            _zoomX.Clear();
+            _zoomBin.Clear();
+
+            this.new_minBin = 0;
+            this.new_minMobility = 0;
+
+            this.new_maxBin = this.maximum_Bins = this.ptr_UIMFDatabase.UimfGlobalParams.Bins - 1;
+            this.new_maxMobility = this.maximum_Mobility = this.ptr_UIMFDatabase.UimfFrameParams.Scans - 1;
+
+            if (frame_count == 0)
+                return;
+
+            if (this.ptr_UIMFDatabase.get_NumFrames(frame_type) > DESIRED_WIDTH_CHROMATOGRAM)
+                this.num_FrameCompression.Value = this.ptr_UIMFDatabase.get_NumFrames(frame_type) / DESIRED_WIDTH_CHROMATOGRAM;
+            else
+            {
+                this.rb_PartialChromatogram.Enabled = false;
+                this.num_FrameCompression.Value = 1;
+            }
+            this.current_frame_compression = Convert.ToInt32(this.num_FrameCompression.Value);
+
+            this.flag_selection_drift = false;
+            this.plot_Mobility.ClearRange();
+
+            this.num_FrameRange.Value = 1;
+            this.num_FrameIndex.Maximum = frame_count - 1;
+            this.num_FrameIndex.Value = 0;
+            this.slide_FrameSelect.Value = 0;
+
+            // MessageBox.Show(this.array_FrameNum.Length.ToString());
+
+            if (frame_count < 2)
+            {
+                this.rb_CompleteChromatogram.Enabled = false;
+                this.rb_PartialChromatogram.Enabled = false;
+
+                this.pnl_Chromatogram.Enabled = false;
+            }
+            else
+            {
+                this.rb_CompleteChromatogram.Enabled = true;
+                this.rb_PartialChromatogram.Enabled = true;
+
+                this.pnl_Chromatogram.Enabled = true;
+            }
+
+            this.flag_update2DGraph = true;
+        }
+
+        #endregion
 
         // //////////////////////////////////////////////////////////////////////////
         // Display Settings
@@ -3844,7 +4534,7 @@ namespace UIMF_File
             }
         }
 
-#region Drawing
+        #region Drawing
 
         // Create an image out of the data array
         protected unsafe virtual void DrawBitmap(int[][] new_data2D, int new_maxIntensity)
@@ -4496,11 +5186,11 @@ namespace UIMF_File
                 this.flag_update2DGraph = true;
             }
         }
-#endregion
 
-        // //////////////////////////////////////////////////////////////////
-        // play
-        //
+        #endregion
+
+        #region Play through frames
+
         private bool flag_CinemaPlot = false;
         private int Cinemaframe_DataChange = 0;
         private void pb_PlayLeftIn_Click(object sender, EventArgs e)
@@ -4559,9 +5249,10 @@ namespace UIMF_File
             this.flag_update2DGraph = true;
         }
 
-        // /////////////////////////////////////////////////////
-        // Map scrollbar
-        //
+        #endregion
+
+        #region 2DMap Scrollbar
+
         protected virtual void hsb_2DMap_Scroll(object sender, ScrollEventArgs e)
         {
             int old_min = this.current_minMobility;
@@ -4584,62 +5275,21 @@ namespace UIMF_File
             this.flag_update2DGraph = true;
         }
 
-        // ////////////////////////////////////////////////////////////////
-        //
-        //
-        private void menuItem_SelectionCorners_Click(object sender, EventArgs e)
-        {
-            this.menuItem_SelectionCorners.Checked = !this.menuItem_SelectionCorners.Checked;
+        #endregion
 
-            if (this.menuItem_SelectionCorners.Checked)
-                this.reset_Corners();
+        #region Drag Drop Files
 
-            this.flag_update2DGraph = true;
-        }
-
-        // ////////////////////////////////////////////////////////////////
-        // Show only the maximum values - do not sum bins.
-        //
-        private void menuItem_TOFMaximum_Click(object sender, EventArgs e)
-        {
-            this.menuItem_TOFMaximum.Checked = !this.menuItem_TOFMaximum.Checked;
-            this.menuItem_MaxIntensities.Checked = this.menuItem_TOFMaximum.Checked;
-
-            if (this.menuItem_TOFMaximum.Checked)
-                this.plot_TOF.BackColor = Color.AntiqueWhite;
-            else
-                this.plot_TOF.BackColor = Color.White;
-
-            this.flag_update2DGraph = true;
-        }
-
-        // ---------------------------------------------------------------------------------
-        // ---------------------------------------------------------------------------------
-        // ---------------------------------------------------------------------------------
-        // ---------------                                            ----------------------
-        // ---------------               DRAG DROP FILES              ----------------------
-        // ---------------                                            ----------------------
-        // ---------------------------------------------------------------------------------
-        // ---------------------------------------------------------------------------------
-        // ---------------------------------------------------------------------------------
-
-        // ////////////////////////////////////////////////
-        //
         private void pb_PlayDownOut_MOUSEDOWN(object obj, MouseEventArgs e)
         {
             int selected_row = (int)this.lb_DragDropFiles.SelectedIndices[0];
             this.pb_PlayDownOut.Hide();
         }
 
-        // ////////////////////////////////////////////////
-        //
         private void pb_PlayDownOut_MOUSEUP(object obj, MouseEventArgs e)
         {
             this.pb_PlayDownOut.Show();
         }
 
-        // ////////////////////////////////////////////////
-        //
         private void pb_PlayUpOut_MOUSEDOWN(object obj, MouseEventArgs e)
         {
             int selected_row = (int)this.lb_DragDropFiles.SelectedIndices[0];
@@ -4650,8 +5300,6 @@ namespace UIMF_File
                 return;
         }
 
-        // ////////////////////////////////////////////////
-        //
         private void pb_PlayUpOut_MOUSEUP(object obj, MouseEventArgs e)
         {
             this.pb_PlayUpOut.Show();
@@ -4787,161 +5435,8 @@ namespace UIMF_File
             e.Effect = DragDropEffects.Move;
         }
 
-        private void SetupPlots()
-        {
-            this.plot_TOF = new ZedGraph.ZedGraphControl();
-            this.waveform_TOFPlot = new ZedGraph.LineItem("TOF");
+        #endregion
 
-            this.plot_Mobility = new Utilities.PointAnnotationGraph();
-            this.waveform_MobilityPlot = new ZedGraph.LineItem("Mobility");
-
-            // https://sourceforge.net/p/zedgraph/bugs/81/
-            // ZedGraph does not handle the font size quite properly; scale the numbers to get what we want
-            var zedGraphFontScaleFactor = 96F / 72F;
-
-            //
-            // plot_TOF
-            //
-            this.plot_TOF.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.plot_TOF.BackColor = System.Drawing.Color.Gainsboro;
-            this.plot_TOF.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.plot_TOF.BorderStyle = BorderStyle.Fixed3D;
-            this.plot_TOF.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.plot_TOF.IsEnableHEdit = false;
-            this.plot_TOF.IsEnableHPan = false;
-            this.plot_TOF.IsEnableHZoom = false;
-            this.plot_TOF.IsEnableSelection = false;
-            this.plot_TOF.IsEnableVEdit = false;
-            this.plot_TOF.IsEnableVPan = false;
-            this.plot_TOF.IsEnableVZoom = false;
-            this.plot_TOF.IsEnableZoom = false;
-            this.plot_TOF.IsEnableWheelZoom = false;
-            this.plot_TOF.Location = new System.Drawing.Point(18, 102);
-            this.plot_TOF.Name = "plot_TOF";
-            this.plot_TOF.GraphPane.Chart.Fill.Color = System.Drawing.Color.White;
-            this.plot_TOF.GraphPane.CurveList.Add(this.waveform_TOFPlot);
-            this.plot_TOF.Size = new System.Drawing.Size(204, 440);
-            this.plot_TOF.TabIndex = 20;
-            this.plot_TOF.TabStop = false;
-            this.plot_TOF.GraphPane.Title.IsVisible = false;
-            this.plot_TOF.GraphPane.Legend.IsVisible = false;
-            this.plot_TOF.GraphPane.XAxis.Scale.IsReverse = true;
-            this.plot_TOF.GraphPane.XAxis.Scale.IsLabelsInside = true;
-            this.plot_TOF.GraphPane.XAxis.MajorGrid.Color = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.plot_TOF.GraphPane.XAxis.MajorGrid.IsVisible = true;
-            this.plot_TOF.GraphPane.XAxis.CrossAuto = false;
-            this.plot_TOF.GraphPane.XAxis.Cross = 1000000; // TODO: Set automatically
-            this.plot_TOF.GraphPane.IsFontsScaled = false; // TODO:
-            this.plot_TOF.GraphPane.XAxis.Scale.MaxAuto = true;
-            this.plot_TOF.GraphPane.XAxis.Scale.Mag = 0;
-            this.plot_TOF.GraphPane.XAxis.Scale.Format = "0.0E00";
-            this.plot_TOF.GraphPane.XAxis.Scale.LabelGap = 0;
-            this.plot_TOF.GraphPane.YAxis.Scale.Mag = 0;
-            this.plot_TOF.GraphPane.YAxis.MinorTic.IsInside = false;
-            this.plot_TOF.GraphPane.YAxis.MinorTic.IsCrossInside = false;
-            this.plot_TOF.GraphPane.YAxis.MinorTic.IsOpposite = false;
-            this.plot_TOF.GraphPane.YAxis.MajorTic.IsInside = false;
-            this.plot_TOF.GraphPane.YAxis.MajorTic.IsCrossInside = false;
-            this.plot_TOF.GraphPane.YAxis.MajorTic.IsOpposite = false;
-            this.plot_TOF.GraphPane.YAxis.Scale.MaxAuto = true; // TODO:
-            this.plot_TOF.GraphPane.XAxis.Scale.FontSpec.Family = "Verdana";
-            this.plot_TOF.GraphPane.XAxis.Scale.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
-            this.plot_TOF.GraphPane.YAxis.Scale.FontSpec.Family = "Verdana";
-            this.plot_TOF.GraphPane.YAxis.Scale.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
-            this.plot_TOF.GraphPane.Margin.Left -= 5;
-            this.plot_TOF.GraphPane.Margin.Top = 25;
-            this.plot_TOF.GraphPane.Margin.Right = 5;
-            this.plot_TOF.GraphPane.Margin.Bottom = 5;
-            this.plot_TOF.ContextMenu = contextMenu_TOF;
-            //
-            // waveform_TOFPlot
-            //
-            this.waveform_TOFPlot.Color = System.Drawing.Color.DarkBlue;
-            this.waveform_TOFPlot.Symbol = new Symbol(SymbolType.None, Color.Transparent);
-
-            // Label the axis
-            this.plot_TOF.GraphPane.XAxis.Title.Text = "Time of Flight";
-            this.plot_TOF.GraphPane.XAxis.Title.FontSpec.Family = "Verdana";
-            this.plot_TOF.GraphPane.XAxis.Title.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
-            this.plot_TOF.GraphPane.XAxis.Title.IsVisible = false;
-
-            //
-            // plot_Mobility
-            //
-            this.plot_Mobility.BackColor = System.Drawing.Color.Gainsboro;
-            this.plot_Mobility.BorderStyle = BorderStyle.Fixed3D;
-            this.plot_Mobility.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.plot_Mobility.Location = new System.Drawing.Point(242, 572);
-            this.plot_Mobility.Name = "plot_DriftPlot";
-            this.plot_Mobility.GraphPane.Chart.Fill.Color = System.Drawing.Color.White;
-            this.plot_Mobility.GraphPane.CurveList.Add(this.waveform_MobilityPlot);
-            this.plot_Mobility.Size = new System.Drawing.Size(510, 111);
-            this.plot_Mobility.TabIndex = 24;
-            this.plot_Mobility.ContextMenu = contextMenu_driftTIC;
-            this.plot_Mobility.RangeChanged += new Utilities.RangeEventHandler(this.OnPlotTICRangeChanged);
-            this.plot_Mobility.GraphPane.Title.IsVisible = false;
-            this.plot_Mobility.GraphPane.Legend.IsVisible = false;
-            this.plot_Mobility.GraphPane.XAxis.Scale.Mag = 0;
-            this.plot_Mobility.GraphPane.XAxis.MinorTic.IsInside = false;
-            this.plot_Mobility.GraphPane.XAxis.MinorTic.IsCrossInside = false;
-            this.plot_Mobility.GraphPane.XAxis.MinorTic.IsOpposite = false;
-            this.plot_Mobility.GraphPane.XAxis.MajorTic.IsInside = false;
-            this.plot_Mobility.GraphPane.XAxis.MajorTic.IsCrossInside = false;
-            this.plot_Mobility.GraphPane.XAxis.MajorTic.IsOpposite = false;
-            this.plot_Mobility.GraphPane.XAxis.Scale.MaxAuto = true; // TODO:
-            this.plot_Mobility.GraphPane.XAxis.Scale.FontSpec.Family = "Verdana";
-            this.plot_Mobility.GraphPane.XAxis.Scale.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
-            this.plot_Mobility.GraphPane.YAxis.Scale.FontSpec.Family = "Verdana";
-            this.plot_Mobility.GraphPane.YAxis.Scale.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
-            this.plot_Mobility.GraphPane.YAxis.Scale.MaxAuto = true;
-            this.plot_Mobility.GraphPane.YAxis.Scale.LabelGap = 0;
-            this.plot_Mobility.IsEnableHEdit = false;
-            this.plot_Mobility.IsEnableHPan = false;
-            this.plot_Mobility.IsEnableHZoom = false;
-            this.plot_Mobility.IsEnableSelection = false;
-            this.plot_Mobility.IsEnableVEdit = false;
-            this.plot_Mobility.IsEnableVPan = false;
-            this.plot_Mobility.IsEnableVZoom = false;
-            this.plot_Mobility.IsEnableZoom = false;
-            this.plot_Mobility.IsEnableWheelZoom = false;
-            this.plot_Mobility.GraphPane.XAxis.Scale.Format = "F2";
-            this.plot_Mobility.GraphPane.XAxis.Scale.MaxAuto = true;
-            this.plot_Mobility.GraphPane.YAxis.Scale.IsLabelsInside = true;
-            this.plot_Mobility.GraphPane.IsFontsScaled = false; // TODO:
-            this.plot_Mobility.GraphPane.YAxis.Scale.Mag = 0;
-            this.plot_Mobility.GraphPane.YAxis.Scale.Format = "0.0E00";
-            this.plot_Mobility.GraphPane.Margin.Left = -5;
-            this.plot_Mobility.GraphPane.Margin.Top = 5;
-            this.plot_Mobility.GraphPane.Margin.Right = 40;
-            this.plot_Mobility.GraphPane.Margin.Bottom -= 5;
-            //
-            // waveform_MobilityPlot
-            //
-            this.waveform_MobilityPlot.Color = System.Drawing.Color.Crimson;
-            this.waveform_MobilityPlot.Symbol = new Symbol(SymbolType.None, System.Drawing.Color.Salmon);
-
-            // Label the axes
-            this.plot_Mobility.GraphPane.XAxis.Title.Text = "Mobility - Scans";
-            this.plot_Mobility.GraphPane.XAxis.Title.FontSpec.Family = "Verdana";
-            this.plot_Mobility.GraphPane.XAxis.Title.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
-            this.plot_Mobility.GraphPane.YAxis.Title.Text = "Drift Intensity";
-            this.plot_Mobility.GraphPane.YAxis.Title.FontSpec.Family = "Verdana";
-            this.plot_Mobility.GraphPane.YAxis.Title.FontSpec.Size = 8.25F * zedGraphFontScaleFactor;
-            this.plot_Mobility.GraphPane.YAxis.Title.IsVisible = false;
-            this.plot_Mobility.GraphPane.YAxis.Cross = 1000000;
-
-            // Add the controls
-            this.tab_DataViewer.Controls.Add(this.plot_TOF);
-            this.tab_DataViewer.Controls.Add(this.plot_Mobility);
-            this.plot_TOF.Show();
-
-            this.plot_TOF.Width = 200;
-            this.plot_Mobility.Height = 150;
-        }
-
-        // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //
-        //
         private void btn_Refresh_Click(object sender, EventArgs e)
         {
             this.tab_DataViewer.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
@@ -4958,262 +5453,9 @@ namespace UIMF_File
             //this.IonMobilityDataView_Resize((object)null, (EventArgs)null);
             this.flag_ResizeThis = true;
             this.btn_Refresh.Enabled = true;
-
         }
 
-        private void menuitem_WriteUIMF_Click(object sender, EventArgs e)
-        {
-            UIMFLibrary.GlobalParams Global_Params;
-            UIMFLibrary.DataWriter UIMF_Writer;
-            DateTime dt_StartExperiment;
-            SaveFileDialog save_dialog = new SaveFileDialog();
-            save_dialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
-            save_dialog.CheckFileExists = false;
-            save_dialog.Title = "Save merged frame to UIMF file...";
-            save_dialog.Filter = "Comma-separated variables (*.uimf)|*.uimf";
-            save_dialog.FilterIndex = 1;
-
-            if (save_dialog.ShowDialog(this) == DialogResult.OK)
-            {
-                if (File.Exists(save_dialog.FileName))
-                {
-                    UIMF_Writer = new UIMFLibrary.DataWriter(save_dialog.FileName);
-                    Global_Params = UIMF_Writer.GetGlobalParams().Clone();
-
-                    Global_Params.AddUpdateValue(GlobalParamKeyType.NumFrames, Global_Params.NumFrames + 1);
-
-                    UIMF_Writer.InsertGlobal(Global_Params);
-                }
-                else
-                {
-                    UIMF_Writer = new UIMFLibrary.DataWriter(save_dialog.FileName);
-                    UIMF_Writer.CreateTables(null);
-
-                    Global_Params = this.ptr_UIMFDatabase.GetGlobalParams().Clone();
-
-                    dt_StartExperiment = new DateTime(1970, 1, 1);
-                    Global_Params.AddUpdateValue(GlobalParamKeyType.DateStarted, dt_StartExperiment.ToLocalTime().ToShortDateString() + " " + dt_StartExperiment.ToLocalTime().ToLongTimeString());
-                    Global_Params.AddUpdateValue(GlobalParamKeyType.NumFrames, 1);
-                    Global_Params.AddUpdateValue(GlobalParamKeyType.TimeOffset, 0);
-                    Global_Params.AddUpdateValue(GlobalParamKeyType.InstrumentName, "MergeFrames");
-
-                    UIMF_Writer.InsertGlobal(Global_Params);
-                }
-
-                AppendUIMFFrame(UIMF_Writer, Global_Params.NumFrames-1);
-
-                UIMF_Writer.Dispose();
-            }
-        }
-
-        public void AppendUIMFFrame(UIMFLibrary.DataWriter UIMF_Writer, int frame_number)
-        {
-            int nonzero_bins;
-            int i;
-            int time_offset = 0;
-            int b;
-            int[] mapped_bins;
-            int total_bins;
-            int scan;
-            FrameParams fp;
-            int[] scan_data;
-            int exp_index;
-            int start_index;
-            int end_index;
-            int frames;
-            double mapped_intercept;
-            double mapped_slope;
-            double mz;
-            int new_bin;
-            double new_mz;
-
-            fp = this.ptr_UIMFDatabase.UimfFrameParams.Clone();
-            total_bins = this.ptr_UIMFDatabase.UimfGlobalParams.Bins;
-
-            fp.Values.Remove(FrameParamKeyType.Accumulations);
-            fp.Values.Remove(FrameParamKeyType.DurationSeconds);
-            fp.Values.Remove(FrameParamKeyType.FragmentationProfile);
-
-            // entrance voltages
-            fp.Values.Remove(FrameParamKeyType.VoltEntranceHPFIn);
-            fp.Values.Remove(FrameParamKeyType.VoltTrapIn);
-            fp.Values.Remove(FrameParamKeyType.VoltTrapOut);
-            fp.Values.Remove(FrameParamKeyType.VoltEntranceHPFOut);
-            fp.Values.Remove(FrameParamKeyType.VoltEntranceCondLmt);
-            fp.Values.Remove(FrameParamKeyType.VoltJetDist);
-            fp.Values.Remove(FrameParamKeyType.VoltCapInlet);
-
-            // exit voltages
-            fp.Values.Remove(FrameParamKeyType.VoltIMSOut);
-            fp.Values.Remove(FrameParamKeyType.VoltExitHPFIn);
-            fp.Values.Remove(FrameParamKeyType.VoltExitHPFOut);
-            fp.Values.Remove(FrameParamKeyType.VoltExitCondLmt);
-
-            fp.Values.Remove(FrameParamKeyType.VoltQuad1);
-            fp.Values.Remove(FrameParamKeyType.VoltCond1);
-            fp.Values.Remove(FrameParamKeyType.VoltQuad2);
-            fp.Values.Remove(FrameParamKeyType.VoltCond2);
-
-            // pressure monitors
-            fp.Values.Remove(FrameParamKeyType.HighPressureFunnelPressure);
-            fp.Values.Remove(FrameParamKeyType.IonFunnelTrapPressure);
-            fp.Values.Remove(FrameParamKeyType.RearIonFunnelPressure);
-            fp.Values.Remove(FrameParamKeyType.QuadrupolePressure);
-
-            UIMF_Writer.InsertFrame(frame_number, fp);
-
-            //MessageBox.Show(this.current_valuesPerPixelX.ToString() + ", " + this.current_valuesPerPixelY.ToString());
-
-            mapped_bins = new int[total_bins];
-            mapped_intercept = this.ptr_UIMFDatabase.UimfFrameParams.CalibrationIntercept;
-            mapped_slope = this.ptr_UIMFDatabase.UimfFrameParams.CalibrationSlope;
-            for (scan = 0; scan < fp.Scans; scan++)
-            {
-                // zero out the mapped bins
-                for (i = 0; i < total_bins; i++)
-                    mapped_bins[i] = 0;
-
-                // we need to do a scan at a time, map and sum bins.
-                for (exp_index = 0; exp_index < this.lb_DragDropFiles.Items.Count; exp_index++)
-                {
-                    if (this.lb_DragDropFiles.GetSelected(exp_index))
-                    {
-                        this.ptr_UIMFDatabase = (UIMFDataWrapper)this.array_Experiments[exp_index];
-
-                        start_index = this.ptr_UIMFDatabase.CurrentFrameIndex - (this.ptr_UIMFDatabase.FrameWidth - 1);
-                        end_index = this.ptr_UIMFDatabase.CurrentFrameIndex;
-
-                        // collect the data
-                        for (frames = start_index; (frames <= end_index) && !this.flag_Closing; frames++)
-                        {
-                            // this is in bin resolution.
-                            scan_data = this.ptr_UIMFDatabase.GetSumScans(frames, scan, scan);
-
-                            // convert to mz resolution then map into bin resolution - sum into mapped_bins[]
-                            for (i = 0; i < scan_data.Length; i++)
-                            {
-                                new_bin = this.ptr_UIMFDatabase.MapBinCalibration(i, mapped_slope, mapped_intercept);
-
-                                if (new_bin < mapped_bins.Length)
-                                {
-                                    if (flag_display_as_TOF)
-                                    {
-                                        if (this.inside_Polygon(scan, new_bin))
-                                            mapped_bins[new_bin] += scan_data[i];
-                                    }
-                                    else
-                                    {
-                                        new_mz = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ((double)i * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-                                        if (this.inside_Polygon(scan, new_mz))
-                                            mapped_bins[new_bin] += scan_data[i];
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                nonzero_bins = 0;
-                for (i = 0; i < mapped_bins.Length; i++)
-                {
-                    if (mapped_bins[i] != 0)
-                        nonzero_bins++;
-                }
-
-                var nzVals = new Tuple<int, int>[nonzero_bins];
-
-                // collect the data
-                b = 0;
-                for (i = time_offset; (i < total_bins) && (b < nonzero_bins); i++)
-                    if (mapped_bins[i] != 0)
-                    {
-                        nzVals[b] = new Tuple<int, int>(i - time_offset, mapped_bins[i]);
-
-                        b++;
-                    }
-
-                UIMF_Writer.InsertScan(frame_number, fp, scan, nzVals, this.ptr_UIMFDatabase.UimfGlobalParams.BinWidth, 0);
-            }
-        }
-
-        // ///////////////////////////////////////////////////////////////////////////////////////
-        // Super Frame - Merge files
-        //
-        private void menuItem_SuperExperiment_Click(object sender, EventArgs e)
-        {
-            this.form_ExportExperiment = new UIMF_File.Utilities.ExportExperiment();
-            this.form_ExportExperiment.btn_ExportExperimentOK.Click += new EventHandler(this.form_ExportExperiment_OK_Click);
-            this.form_ExportExperiment.Show();
-        }
-
-        private void form_ExportExperiment_OK_Click(object sender, EventArgs e)
-        {
-            int step = Convert.ToInt32(this.form_ExportExperiment.num_Step.Value);
-            int merge = Convert.ToInt32(this.form_ExportExperiment.num_Merge.Value);
-            string name = this.form_ExportExperiment.tb_Name.Text;
-            string directory = Path.Combine(this.form_ExportExperiment.tb_Directory.Text, name);
-            string file_merge_IMF;
-
-            this.form_ExportExperiment.Hide();
-
-            if ((step <= 0) || (merge <= 0))
-            {
-                MessageBox.Show(this, "Either the step or merge value is not correct, please correct the problem.");
-                this.form_ExportExperiment.Show();
-                return;
-            }
-
-            if (Directory.Exists(directory))
-            {
-                MessageBox.Show(this, "The experiment already exists in the location you have specified, please change the name");
-                this.form_ExportExperiment.Show();
-                return;
-            }
-
-            Directory.CreateDirectory(directory);
-            this.slide_FrameSelect.Value = merge;
-            this.num_FrameRange.Value = merge;
-
-            this.Enabled = false;
-            //this.flag_Halt = true;
-            try
-            {
-                for (int i = 1; i <= ((this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames - merge) / step) + 1; i++)
-                {
-                    //  MessageBox.Show((i * step).ToString());
-                    //  continue;
-                    this.slide_FrameSelect.Value = ((i - 1) * step) + merge;
-
-                    this.Graph_2DPlot();
-                    this.Update();
-
-                    file_merge_IMF = Path.Combine(directory, name + ".Accum_" + i.ToString() + ".IMF");
-                    this.save_MergedFrame(file_merge_IMF, true, i);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-            }
-
-            //this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames = ((this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames - merge) / step) + 1;
-            this.ptr_UIMFDatabase.UimfGlobalParams.AddUpdateValue(GlobalParamKeyType.NumFrames, ((this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames - merge) / step) + 1);
-            this.Enabled = true;
-
-            this.form_ExportExperiment.Dispose();
-        }
-
-        private void menuItem_SuperFrame_Click(object obj, System.EventArgs e)
-        {
-            MessageBox.Show("menuItem_SuperFrame_Click needs work");
-        }
-
-        private bool save_MergedFrame(string file_merge_IMF, bool flag_calc_accumulations, int frame_number)
-        {
-            MessageBox.Show("save_MergedFrame needs work");
-            return false;
-        }
+        #region Chromatogram
 
         private void lbl_FramesShown_Click(object sender, EventArgs e)
         {
@@ -5492,124 +5734,9 @@ namespace UIMF_File
             this.flag_update2DGraph = true;
         }
 
-        // //////////////////////////////////////////////////////////////////////////////////
-        // create IMF file
-        //
-        private void menuitem_SaveIMF_Click(object sender, EventArgs e)
-        {
-            string file_accum_IMF;
-            int i, j = 0, k;
-            long escape_position;
-            int counter_TIC = 0;
-            int counter_bin = 0;
-            int[] num_BinTICs;
-            int[] bytes_Bin;
+        #endregion
 
-            double bin_width;
-
-            file_accum_IMF = Path.Combine(Path.GetDirectoryName(this.ptr_UIMFDatabase.UimfDataFile), Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UimfDataFile) + ".Accum_" + this.ptr_UIMFDatabase.CurrentFrameNum.ToString() + ".IMF");
-
-            num_BinTICs = new int[this.ptr_UIMFDatabase.UimfFrameParams.Scans];
-            bytes_Bin = new int[this.ptr_UIMFDatabase.UimfFrameParams.Scans];
-            bin_width = this.ptr_UIMFDatabase.UimfGlobalParams.BinWidth;
-            /////////////////////////////////////////////////////////
-            //////                                             //////
-            //////                                             //////
-            //////              WRITE IMF FILE                 //////
-            //////                                             //////
-            //////                                             //////
-            /////////////////////////////////////////////////////////
-            StreamWriter sw_IMF = new StreamWriter(file_accum_IMF, false);
-            sw_IMF.WriteLine("DataType: 11");
-            sw_IMF.WriteLine("DataSubType: int");
-            sw_IMF.WriteLine("TOFSpectra: " + this.ptr_UIMFDatabase.UimfFrameParams.Scans.ToString());
-            sw_IMF.WriteLine("NumBins: " + this.ptr_UIMFDatabase.UimfGlobalParams.Bins.ToString());
-            sw_IMF.WriteLine("BinWidth: " + bin_width.ToString("0.00") + " ns");
-            sw_IMF.WriteLine("Accumulations: " + this.ptr_UIMFDatabase.UimfFrameParams.GetValueInt32(FrameParamKeyType.Accumulations).ToString());
-            sw_IMF.WriteLine("TimeOffset: " + this.ptr_UIMFDatabase.UimfGlobalParams.GetValue(GlobalParamKeyType.TimeOffset, 0).ToString());
-
-            sw_IMF.WriteLine("CalibrationSlope: " + this.ptr_UIMFDatabase.UimfFrameParams.CalibrationSlope);
-            sw_IMF.WriteLine("CalibrationIntercept: " + this.ptr_UIMFDatabase.UimfFrameParams.CalibrationIntercept);
-
-            sw_IMF.WriteLine("FrameNumber: " + this.ptr_UIMFDatabase.CurrentFrameNum.ToString());
-            sw_IMF.WriteLine("AverageTOFLength: " + this.ptr_UIMFDatabase.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength).ToString("0.00") + " ns");
-
-            if (string.IsNullOrWhiteSpace(this.ptr_UIMFDatabase.UimfFrameParams.GetValue(FrameParamKeyType.MultiplexingEncodingSequence, "")))
-            {
-                MessageBox.Show("menuitem_SaveIMF_Click - putting in IMFProfile...");
-                sw_IMF.WriteLine("MultiplexingProfile: 4Bit_24OS.txt"); //this.uimf_FrameParameters.MPBitOrder + "BitOrder");
-            }
-            else
-                sw_IMF.WriteLine("MultiplexingProfile: " + this.ptr_UIMFDatabase.UimfFrameParams.GetValue(FrameParamKeyType.MultiplexingEncodingSequence, "")); //this.uimf_FrameParameters.MPBitOrder + "BitOrder");
-
-            sw_IMF.WriteLine("End");
-            sw_IMF.Flush();
-            sw_IMF.Close();
-
-            FileStream fs_IMF = new FileStream(file_accum_IMF, FileMode.Open, FileAccess.ReadWrite);
-            BinaryWriter bw_IMF = new BinaryWriter(fs_IMF);
-            bw_IMF.Seek(0, SeekOrigin.End);
-
-            // First write the escape character, which divides the ICR-2LS header from the binary data
-            bw_IMF.Write((byte)27); // 27 is the ESC char
-            escape_position = fs_IMF.Position;
-
-            // Write number of accumulated TOFSpectra within the Accum Frame
-            // Accumulation file will therefore be self-contained
-            bw_IMF.Write((int)this.ptr_UIMFDatabase.UimfFrameParams.Scans);
-
-            // Write counter_TIC values and the channel data size (Nodes * sizeof(Node values)]for each channel
-            // Each record is made up of [Int32 TOFValue, Int16 Count]
-            for (i = 0; i < this.ptr_UIMFDatabase.UimfFrameParams.Scans * 2; i++)
-                bw_IMF.Write(Convert.ToInt32(0));
-
-            double[] spectrum_array = new double[0];
-            int[] bins_array = new int[0];
-
-            num_BinTICs = new int[this.ptr_UIMFDatabase.UimfFrameParams.Scans];
-            bytes_Bin = new int[this.ptr_UIMFDatabase.UimfFrameParams.Scans];
-
-            //MessageBox.Show(this.uimf_FrameParameters.FrameNum.ToString());
-            for (k = 0; k < this.ptr_UIMFDatabase.UimfFrameParams.Scans; k++)
-            {
-                counter_TIC = 0;
-                counter_bin = 0;
-
-                try
-                {
-                    this.ptr_UIMFDatabase.GetSpectrum(this.ptr_UIMFDatabase.CurrentFrameNum, (DataReader.FrameType) this.ptr_UIMFDatabase.get_FrameType(), k, out spectrum_array, out bins_array);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("menuitem_SaveIMF_Click UIMF_DataReader: " + ex.ToString());
-                }
-
-                for (j = 0; j < spectrum_array.Length; j++)
-                {
-                    counter_bin++;
-                    counter_TIC += bins_array[j];
-                    bw_IMF.Write((spectrum_array[j] - this.ptr_UIMFDatabase.UimfGlobalParams.GetValue(GlobalParamKeyType.TimeOffset, 0)) * 10); // * binWidth);
-                    bw_IMF.Write(bins_array[j]);
-                }
-
-                num_BinTICs[k] = counter_TIC;
-                bytes_Bin[k] = counter_bin;
-            }
-
-            // Go back to the Escape Position, then pass the number of TOFSpectraPerFrame
-            bw_IMF.Seek((int)escape_position + 4, SeekOrigin.Begin);
-
-            for (k = 0; k < this.ptr_UIMFDatabase.UimfFrameParams.Scans; k++)
-            {
-                bw_IMF.Write(num_BinTICs[k]);
-                bw_IMF.Write(bytes_Bin[k] * 8);
-            }
-
-            bw_IMF.Flush();
-
-            bw_IMF.Close();
-            fs_IMF.Close();
-        }
+        #region Calibration
 
         // /////////////////////////////////////////////////////////////
         // Set Calibration.
@@ -5982,6 +6109,8 @@ namespace UIMF_File
             this.ptr_UIMFDatabase.ClearFrameParametersCache();
         }
 
+        #endregion
+
         private void btn_Clean_Click(object sender, EventArgs e)
         {
             MessageBox.Show("not sure what this does.  Needs work.  wfd 02/22/11");
@@ -6026,84 +6155,6 @@ namespace UIMF_File
 
             uimf_writer.Dispose();
             MessageBox.Show("created " + filename);
-        }
-
-        // ///////////////////////////////////////////////////////////////
-        // Select FrameType
-        //
-        private void cb_FrameType_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            this.flag_CinemaPlot = false;
-
-            this.Filter_FrameType(this.cb_FrameType.SelectedIndex);
-
-            this.flag_FrameTypeChanged = true;
-            this.flag_update2DGraph = true;
-
-        }
-
-        private void Filter_FrameType(int frame_type)
-        {
-            if (this.current_frame_type == frame_type)
-                return;
-
-            int frame_count = 0;
-            object[] read_values = new object[0];
-
-            frame_count = this.ptr_UIMFDatabase.set_FrameType(frame_type);
-            this.current_frame_type = frame_type;
-            this.ptr_UIMFDatabase.CurrentFrameIndex = -1;
-
-            Invoke(new ThreadStart(format_Screen));
-
-            // Reinitialize
-            _zoomX.Clear();
-            _zoomBin.Clear();
-
-            this.new_minBin = 0;
-            this.new_minMobility = 0;
-
-            this.new_maxBin = this.maximum_Bins = this.ptr_UIMFDatabase.UimfGlobalParams.Bins - 1;
-            this.new_maxMobility = this.maximum_Mobility = this.ptr_UIMFDatabase.UimfFrameParams.Scans - 1;
-
-            if (frame_count == 0)
-                return;
-
-            if (this.ptr_UIMFDatabase.get_NumFrames(frame_type) > DESIRED_WIDTH_CHROMATOGRAM)
-                this.num_FrameCompression.Value = this.ptr_UIMFDatabase.get_NumFrames(frame_type) / DESIRED_WIDTH_CHROMATOGRAM;
-            else
-            {
-                this.rb_PartialChromatogram.Enabled = false;
-                this.num_FrameCompression.Value = 1;
-            }
-            this.current_frame_compression = Convert.ToInt32(this.num_FrameCompression.Value);
-
-            this.flag_selection_drift = false;
-            this.plot_Mobility.ClearRange();
-
-            this.num_FrameRange.Value = 1;
-            this.num_FrameIndex.Maximum = frame_count - 1;
-            this.num_FrameIndex.Value = 0;
-            this.slide_FrameSelect.Value = 0;
-
-            // MessageBox.Show(this.array_FrameNum.Length.ToString());
-
-            if (frame_count < 2)
-            {
-                this.rb_CompleteChromatogram.Enabled = false;
-                this.rb_PartialChromatogram.Enabled = false;
-
-                this.pnl_Chromatogram.Enabled = false;
-            }
-            else
-            {
-                this.rb_CompleteChromatogram.Enabled = true;
-                this.rb_PartialChromatogram.Enabled = true;
-
-                this.pnl_Chromatogram.Enabled = true;
-            }
-
-            this.flag_update2DGraph = true;
         }
 
         private void format_Screen()
@@ -6168,23 +6219,7 @@ namespace UIMF_File
             }
         }
 
-        private void RegistrySave(Microsoft.Win32.RegistryKey key)
-        {
-            using (Microsoft.Win32.RegistryKey sk = key.CreateSubKey(this.Name))
-            {
-            }
-        }
-
-        private void RegistryLoad(Microsoft.Win32.RegistryKey key)
-        {
-            try
-            {
-                using (Microsoft.Win32.RegistryKey sk = key.OpenSubKey(this.Name))
-                {
-                }
-            }
-            catch { }
-        }
+        #region m/z Range Selection controls
 
         private void cb_EnableMZRange_CheckedChanged(object sender, EventArgs e)
         {
@@ -6218,6 +6253,10 @@ namespace UIMF_File
 
             this.flag_update2DGraph = true;
         }
+
+        #endregion
+
+        #region 4GHz to 1GHz compression
 
         // //////////////////////////////////////////////////////////////////////////////////////////////
         // Compress 4GHz Data to 1GHz
@@ -6338,5 +6377,7 @@ namespace UIMF_File
 
             UIMF_Writer.Dispose();
         }
+
+        #endregion
     }
 }
