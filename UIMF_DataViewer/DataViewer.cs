@@ -485,9 +485,6 @@ namespace UIMF_File
                 this.Resize += new EventHandler(this.IonMobilityDataView_Resize);
               //  this.tabpages_Main.Resize += new EventHandler(this.tabpages_Main_Resize);
 
-#if BELOV_TRANSFORM
-                this.pnl_postProcessing.btn_DecodeMultiplexing.Click += new System.EventHandler(this.btn_DecodeMultiplexing_Click);
-#endif
                 this.AllowDrop = true;
                 this.DragDrop += new System.Windows.Forms.DragEventHandler(DataViewer_DragDrop);
                 this.DragEnter += new System.Windows.Forms.DragEventHandler(DataViewer_DragEnter);
@@ -6234,42 +6231,6 @@ namespace UIMF_File
             this.flag_update2DGraph = true;
         }
 
-#if BELOV_TRANSFORM
-        // //////////////////////////////////////////////////////////////////////////////////////////////
-        // Decode Multiplexed UIMF File
-        //
-        UIMF_BelovTransform.UIMF_BelovTransform uimf_BelovTransform;
-        private void btn_DecodeMultiplexing_Click(object sender, EventArgs e)
-        {
-            this.DecodeMultiplexing();
-        }
-
-        public void DecodeMultiplexing()
-        {
-            this.Hide();
-            if ((this.frame_progress == null) || this.frame_progress.IsDisposed)
-            {
-                this.frame_progress = new UIMF_File.Utilities.progress_Processing();
-                this.frame_progress.btn_Cancel.Click += new EventHandler(btn_ProgressDecodeCancel_Click);
-                this.frame_progress.Show();
-            }
-
-            this.uimf_BelovTransform = new UIMF_BelovTransform.UIMF_BelovTransform(this.ptr_UIMFDatabase,
-                Path.Combine(this.pnl_postProcessing.tb_SaveDecodeDirectory.Text, this.pnl_postProcessing.tb_SaveDecodeFilename.Text),
-                this.frame_progress, true);
-        }
-
-        private void btn_ProgressDecodeCancel_Click(object obj, System.EventArgs e)
-        {
-            if (!this.Visible)
-            {
-                this.Show();
-                if (this.uimf_BelovTransform != null)
-                    this.uimf_BelovTransform.flag_Stopped = true;
-            }
-        }
-#endif
-
         // //////////////////////////////////////////////////////////////////////////////////////////////
         // Compress 4GHz Data to 1GHz
         //
@@ -6294,17 +6255,12 @@ namespace UIMF_File
         private void btn_ProgressCompressCancel_Click(object obj, System.EventArgs e)
         {
             this.Show();
-#if BELOV_TRANSFORM
-            if (this.uimf_BelovTransform != null)
-                this.uimf_BelovTransform.flag_Stopped = true;
-#endif
         }
 
         private void Compress4GHzUIMF()
         {
             UIMFLibrary.GlobalParams gp = this.ptr_UIMFDatabase.GetGlobalParams();
             UIMFLibrary.FrameParams fp;
-            string name_instrument;
             int i;
             int j;
             int k;
@@ -6335,23 +6291,6 @@ namespace UIMF_File
             gp.AddUpdateValue(GlobalParamKeyType.BinWidth, 1);
             gp.AddUpdateValue(GlobalParamKeyType.Bins, gp.Bins / 4);
             UIMF_Writer.InsertGlobal(gp);
-
-            // make sure the instrument name is in the right format - either QTOF or TOF
-            name_instrument = gp.GetValueString(GlobalParamKeyType.InstrumentName);
-            if ((name_instrument == null) || (name_instrument.Length == 0))
-                name_instrument = "QTOF";
-            else if (name_instrument != "QTOF" && name_instrument != "TOF")
-            {
-                // BelovTransform.cpp nly knows about instruments QTOF and TOF
-                // Try to auto-update mCachedGlobalParams.InstrumentName
-                if (name_instrument.ToUpper().StartsWith("IMS"))
-                    name_instrument = "QTOF";
-                else
-                {
-                    //  ShowMessage("Instrument name of " + name_instrument + " is not recognized by BelovTransform.cpp; results will likely be invalid");
-                    name_instrument = "QTOF";
-                }
-            }
 
             int max_time = 0;
 
