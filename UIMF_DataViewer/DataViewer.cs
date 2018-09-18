@@ -272,7 +272,7 @@ namespace UIMF_File
             this.ptr_UIMFDatabase.CurrentFrameIndex = 0;
 
             this.ptr_UIMFDatabase.set_FrameType(current_frame_type, true);
-            this.cb_FrameType.SelectedIndexChanged += new System.EventHandler(this.cb_FrameType_SelectedIndexChanged);
+            this.cb_FrameType.SelectedIndexChanged += this.cb_FrameType_SelectedIndexChanged;
 
             Generate2DIntensityArray();
             this.GraphFrame(this.data_2D, flag_enablecontrols);
@@ -308,7 +308,7 @@ namespace UIMF_File
                 this.pnl_postProcessing.gb_Compress4GHz.Hide();
             else
             {
-                this.pnl_postProcessing.btn_Compress1GHz.Click += new System.EventHandler(this.btn_Compress1GHz_Click);
+                this.pnl_postProcessing.btn_Compress1GHz.Click += this.btn_Compress1GHz_Click;
                 this.pnl_postProcessing.tb_SaveCompressFilename.Text = Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UimfDataFile);
                 this.pnl_postProcessing.tb_SaveCompressDirectory.Text = Path.GetDirectoryName(this.ptr_UIMFDatabase.UimfDataFile);
             }
@@ -415,7 +415,7 @@ namespace UIMF_File
             this.plot_TOF.Top = 0;
 
             //this.slider_PlotBackground.btn_GreyValue.MouseUp += new MouseEventHandler( this.slider_Background_MouseUp );
-            this.slider_PlotBackground.btn_GreyValue.Move += new EventHandler(this.slider_Background_Move);
+            this.slider_PlotBackground.btn_GreyValue.Move += this.slider_Background_Move;
 
             // starts with the mobility view
             this.flag_viewMobility = true;
@@ -448,104 +448,102 @@ namespace UIMF_File
                 this.menuItem_Time_driftTIC.Checked = true;
                 this.menuItem_Frame_driftTIC.Checked = false;
 
-                this.menuItem_SelectionCorners.Click += new System.EventHandler(this.menuItem_SelectionCorners_Click);
-                this.menuItem_ScanTime.Click += new System.EventHandler(this.ScanTime_ContextMenu);
-                this.menuItem_Mobility.Click += new System.EventHandler(this.Mobility_ContextMenu);
-                this.menuItem_ExportCompressed.Click += new System.EventHandler(this.menuItem_ExportCompressed_Click);
-                this.menuItem_ExportComplete.Click += new System.EventHandler(this.menuItem_ExportComplete_Click);
-                this.menuItem_ExportAll.Click += new System.EventHandler(this.menuItem_ExportAll_Click);
-                this.menuItem_SuperFrame.Click += new System.EventHandler(this.menuItem_SuperFrame_Click);
-                this.menuItem_SuperExperiment.Click += new System.EventHandler(this.menuItem_SuperExperiment_Click);
-                this.menuItem_CopyToClipboard.Click += new System.EventHandler(this.menuItem_CopyToClipboard_Click);
-                this.menuItem_CaptureExperimentFrame.Click += new System.EventHandler(this.menuItem_CaptureExperimentFrame_Click);
-                this.menuItem_SaveIMF.Click += new System.EventHandler(this.menuitem_SaveIMF_Click);
-                this.menuItem_WriteUIMF.Click += new System.EventHandler(this.menuitem_WriteUIMF_Click);
-                this.menuItem_UseScans.Click += new System.EventHandler(this.menuItem_UseScans_Click);
-                this.menuItem_UseDriftTime.Click += new System.EventHandler(this.menuItem_UseDriftTime_Click);
-                this.menuItem_Exportnew_driftTIC.Click += new System.EventHandler(this.menuItem_ExportDriftTIC_Click);
-                this.menuItem_Frame_driftTIC.Click += new System.EventHandler(this.menuItem_Frame_driftTIC_Click);
-                this.menuItem_Time_driftTIC.Click += new System.EventHandler(this.menuItem_Time_driftTIC_Click);
-                this.menuItem_TOFExport.Click += new System.EventHandler(this.menuItem_TOFExport_Click);
-                this.menuItem_TOFMaximum.Click += new System.EventHandler(this.menuItem_TOFMaximum_Click);
-                this.menuItemZoomFull.Click += new System.EventHandler(this.ZoomContextMenu);
-                this.menuItemZoomPrevious.Click += new System.EventHandler(this.ZoomContextMenu);
-                this.menuItemZoomOut.Click += new System.EventHandler(this.ZoomContextMenu);
-                this.menuItem_MaxIntensities.Click += new System.EventHandler(this.menuItem_TOFMaximum_Click);
-                this.menuItemConvertToMZ.Click += new System.EventHandler(this.ConvertContextMenu);
-                this.menuItemConvertToTOF.Click += new System.EventHandler(this.ConvertContextMenu);
+                this.menuItem_SelectionCorners.Click += this.menuItem_SelectionCorners_Click;
+                this.menuItem_ScanTime.Click += this.ScanTime_ContextMenu;
+                this.menuItem_Mobility.Click += this.Mobility_ContextMenu;
+                this.menuItem_ExportCompressed.Click += this.menuItem_ExportCompressed_Click;
+                this.menuItem_ExportComplete.Click += this.menuItem_ExportComplete_Click;
+                this.menuItem_ExportAll.Click += this.menuItem_ExportAll_Click;
+                this.menuItem_SuperFrame.Click += this.menuItem_SuperFrame_Click;
+                this.menuItem_SuperExperiment.Click += this.menuItem_SuperExperiment_Click;
+                this.menuItem_CopyToClipboard.Click += this.menuItem_CopyToClipboard_Click;
+                this.menuItem_CaptureExperimentFrame.Click += this.menuItem_CaptureExperimentFrame_Click;
+                this.menuItem_SaveIMF.Click += this.menuitem_SaveIMF_Click;
+                this.menuItem_WriteUIMF.Click += this.menuitem_WriteUIMF_Click;
+                this.menuItem_UseScans.Click += this.menuItem_UseScans_Click;
+                this.menuItem_UseDriftTime.Click += this.menuItem_UseDriftTime_Click;
+                this.menuItem_Exportnew_driftTIC.Click += this.menuItem_ExportDriftTIC_Click;
+                this.menuItem_Frame_driftTIC.Click += this.menuItem_Frame_driftTIC_Click;
+                this.menuItem_Time_driftTIC.Click += this.menuItem_Time_driftTIC_Click;
+                this.menuItem_TOFExport.Click += this.menuItem_TOFExport_Click;
+                this.menuItem_TOFMaximum.Click += this.menuItem_TOFMaximum_Click;
+                this.menuItemZoomFull.Click += this.ZoomContextMenu;
+                this.menuItemZoomPrevious.Click += this.ZoomContextMenu;
+                this.menuItemZoomOut.Click += this.ZoomContextMenu;
+                this.menuItem_MaxIntensities.Click += this.menuItem_TOFMaximum_Click;
+                this.menuItemConvertToMZ.Click += this.ConvertContextMenu;
+                this.menuItemConvertToTOF.Click += this.ConvertContextMenu;
 
-                this.pnl_2DMap.DoubleClick += new System.EventHandler(this.pnl_2DMap_DblClick);
-                this.pnl_2DMap.MouseLeave += new System.EventHandler(this.pnl_2DMap_MouseLeave);
-                this.pnl_2DMap.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pnl_2DMap_MouseMove);
-                this.pnl_2DMap.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnl_2DMap_MouseDown);
-                this.pnl_2DMap.Paint += new System.Windows.Forms.PaintEventHandler(this.pnl_2DMap_Paint);
-                this.pnl_2DMap.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnl_2DMap_MouseUp);
+                this.pnl_2DMap.DoubleClick += this.pnl_2DMap_DblClick;
+                this.pnl_2DMap.MouseLeave += this.pnl_2DMap_MouseLeave;
+                this.pnl_2DMap.MouseMove += this.pnl_2DMap_MouseMove;
+                this.pnl_2DMap.MouseDown += this.pnl_2DMap_MouseDown;
+                this.pnl_2DMap.Paint += this.pnl_2DMap_Paint;
+                this.pnl_2DMap.MouseUp += this.pnl_2DMap_MouseUp;
 
-                //this.plot_Mobility.MouseDown += new System.Windows.Forms.MouseEventHandler(this.plot_Mobility_MouseDown);
                 this.plot_Mobility.ContextMenu = contextMenu_driftTIC;
-                this.plot_Mobility.RangeChanged += new UIMF_File.Utilities.RangeEventHandler(this.OnPlotTICRangeChanged);
-                this.pb_PlayRightIn.Click += new System.EventHandler(this.pb_PlayRightIn_Click);
-                this.pb_PlayLeftOut.Click += new System.EventHandler(this.pb_PlayLeftOut_Click);
-                this.pb_PlayLeftIn.Click += new System.EventHandler(this.pb_PlayLeftIn_Click);
-                this.pb_PlayRightOut.Click += new System.EventHandler(this.pb_PlayRightOut_Click);
-                this.num_FrameIndex.ValueChanged += new System.EventHandler(this.num_FrameIndex_ValueChanged);
-                this.cb_EnableMZRange.CheckedChanged += new System.EventHandler(this.cb_EnableMZRange_CheckedChanged);
-                this.num_MZ.ValueChanged += new System.EventHandler(this.num_MZ_ValueChanged);
-                this.num_PPM.ValueChanged += new System.EventHandler(this.num_PPM_ValueChanged);
-                this.lbl_FramesShown.Click += new System.EventHandler(this.lbl_FramesShown_Click);
-                this.btn_setCalDefaults.Click += new System.EventHandler(this.btn_setCalDefaults_Click);
+                this.plot_Mobility.RangeChanged += this.OnPlotTICRangeChanged;
+                this.pb_PlayRightIn.Click += this.pb_PlayRightIn_Click;
+                this.pb_PlayLeftOut.Click += this.pb_PlayLeftOut_Click;
+                this.pb_PlayLeftIn.Click += this.pb_PlayLeftIn_Click;
+                this.pb_PlayRightOut.Click += this.pb_PlayRightOut_Click;
+                this.num_FrameIndex.ValueChanged += this.num_FrameIndex_ValueChanged;
+                this.cb_EnableMZRange.CheckedChanged += this.cb_EnableMZRange_CheckedChanged;
+                this.num_MZ.ValueChanged += this.num_MZ_ValueChanged;
+                this.num_PPM.ValueChanged += this.num_PPM_ValueChanged;
+                this.lbl_FramesShown.Click += this.lbl_FramesShown_Click;
+                this.btn_setCalDefaults.Click += this.btn_setCalDefaults_Click;
 
-                this.num_minMobility.ValueChanged += new System.EventHandler(this.num_Mobility_ValueChanged);
-                this.num_maxMobility.ValueChanged += new System.EventHandler(this.num_Mobility_ValueChanged);
-                this.num_maxBin.ValueChanged += new System.EventHandler(this.num_maxBin_ValueChanged);
-                this.num_minBin.ValueChanged += new System.EventHandler(this.num_minBin_ValueChanged);
-                //this.plot_TOF.MouseDown += new System.Windows.Forms.MouseEventHandler(this.plot_TOF_MouseDown);
+                this.num_minMobility.ValueChanged += this.num_Mobility_ValueChanged;
+                this.num_maxMobility.ValueChanged += this.num_Mobility_ValueChanged;
+                this.num_maxBin.ValueChanged += this.num_maxBin_ValueChanged;
+                this.num_minBin.ValueChanged += this.num_minBin_ValueChanged;
                 this.plot_TOF.ContextMenu = contextMenu_TOF;
 
-                this.rb_CompleteChromatogram.CheckedChanged += new System.EventHandler(this.rb_CompleteChromatogram_CheckedChanged);
-                this.rb_PartialChromatogram.CheckedChanged += new System.EventHandler(this.rb_PartialChromatogram_CheckedChanged);
-                this.num_FrameCompression.ValueChanged += new System.EventHandler(this.num_FrameCompression_ValueChanged);
+                this.rb_CompleteChromatogram.CheckedChanged += this.rb_CompleteChromatogram_CheckedChanged;
+                this.rb_PartialChromatogram.CheckedChanged += this.rb_PartialChromatogram_CheckedChanged;
+                this.num_FrameCompression.ValueChanged += this.num_FrameCompression_ValueChanged;
 
-                this.btn_TIC.Click += new System.EventHandler(this.btn_TIC_Click);
+                this.btn_TIC.Click += this.btn_TIC_Click;
 
-                this.num_FrameRange.ValueChanged += new System.EventHandler(this.num_FrameRange_ValueChanged);
+                this.num_FrameRange.ValueChanged += this.num_FrameRange_ValueChanged;
                 this.slide_FrameSelect.ValueChanged += this.slide_FrameSelect_ValueChanged;
 
-                this.vsb_2DMap.Scroll += new System.Windows.Forms.ScrollEventHandler(this.vsb_2DMap_Scroll);
-                this.hsb_2DMap.Scroll += new System.Windows.Forms.ScrollEventHandler(this.hsb_2DMap_Scroll);
+                this.vsb_2DMap.Scroll += this.vsb_2DMap_Scroll;
+                this.hsb_2DMap.Scroll += this.hsb_2DMap_Scroll;
 
-                this.tb_CalT0.Click += new System.EventHandler(this.CalibratorT0_Changed);
-                this.tb_CalT0.Leave += new System.EventHandler(this.CalibratorT0_Changed);
-                this.tb_CalA.Click += new System.EventHandler(this.CalibratorA_Changed);
-                this.tb_CalA.Leave += new System.EventHandler(this.CalibratorA_Changed);
+                this.tb_CalT0.Click += this.CalibratorT0_Changed;
+                this.tb_CalT0.Leave += this.CalibratorT0_Changed;
+                this.tb_CalA.Click += this.CalibratorA_Changed;
+                this.tb_CalA.Leave += this.CalibratorA_Changed;
 
-                this.btn_Reset.Click += new System.EventHandler(this.btn_Reset_Clicked);
+                this.btn_Reset.Click += this.btn_Reset_Clicked;
                 this.slide_Threshold.ValueChanged += this.slide_Threshold_ValueChanged;
-                this.btn_revertCalDefaults.Click += new System.EventHandler(this.btn_revertCalDefaults_Click);
+                this.btn_revertCalDefaults.Click += this.btn_revertCalDefaults_Click;
 
-                this.pnl_postProcessing.btn_AttemptCalibration.Click += new System.EventHandler(this.btn_CalibrateFrames_Click);
-                this.pnl_postProcessing.btn_ManualCalibration.Click += new System.EventHandler(this.btn_ApplyCalculatedCalibration_Click);
-                this.pnl_postProcessing.btn_ExperimentCalibration.Click += new System.EventHandler(this.btn_ApplyCalibration_Experiment_Click);
+                this.pnl_postProcessing.btn_AttemptCalibration.Click += this.btn_CalibrateFrames_Click;
+                this.pnl_postProcessing.btn_ManualCalibration.Click += this.btn_ApplyCalculatedCalibration_Click;
+                this.pnl_postProcessing.btn_ExperimentCalibration.Click += this.btn_ApplyCalibration_Experiment_Click;
 
-                this.tabpages_Main.DrawItem += new DrawItemEventHandler(this.tabpages_Main_DrawItem);
-                this.tabpages_Main.SelectedIndexChanged += new EventHandler(this.tabpages_Main_SelectedIndexChanged);
+                this.tabpages_Main.DrawItem += this.tabpages_Main_DrawItem;
+                this.tabpages_Main.SelectedIndexChanged += this.tabpages_Main_SelectedIndexChanged;
 
                 for (int i = 0; i < this.slider_ColorMap.btn_Slider.Length; i++)
-                    this.slider_ColorMap.btn_Slider[i].MouseUp += new System.Windows.Forms.MouseEventHandler(this.ColorSelector_Change);
-                this.slider_ColorMap.lbl_MaxIntensity.MouseEnter += new System.EventHandler(this.show_MaxIntensity);
+                    this.slider_ColorMap.btn_Slider[i].MouseUp += this.ColorSelector_Change;
+                this.slider_ColorMap.lbl_MaxIntensity.MouseEnter += this.show_MaxIntensity;
 
-                this.Resize += new EventHandler(this.IonMobilityDataView_Resize);
+                this.Resize += this.IonMobilityDataView_Resize;
               //  this.tabpages_Main.Resize += new EventHandler(this.tabpages_Main_Resize);
 
                 this.AllowDrop = true;
-                this.DragDrop += new System.Windows.Forms.DragEventHandler(DataViewer_DragDrop);
-                this.DragEnter += new System.Windows.Forms.DragEventHandler(DataViewer_DragEnter);
-                this.lb_DragDropFiles.SelectedIndexChanged +=new EventHandler(lb_DragDropFiles_SelectedIndexChanged);
+                this.DragDrop += DataViewer_DragDrop;
+                this.DragEnter += DataViewer_DragEnter;
+                this.lb_DragDropFiles.SelectedIndexChanged += lb_DragDropFiles_SelectedIndexChanged;
 
-                this.pb_PlayDownOut.MouseDown += new MouseEventHandler(this.pb_PlayDownOut_MOUSEDOWN);
-                this.pb_PlayDownOut.MouseUp += new MouseEventHandler(this.pb_PlayDownOut_MOUSEUP);
-                this.pb_PlayUpOut.MouseDown += new MouseEventHandler(this.pb_PlayUpOut_MOUSEDOWN);
-                this.pb_PlayUpOut.MouseUp += new MouseEventHandler(this.pb_PlayUpOut_MOUSEUP);
+                this.pb_PlayDownOut.MouseDown += this.pb_PlayDownOut_MOUSEDOWN;
+                this.pb_PlayDownOut.MouseUp += this.pb_PlayDownOut_MOUSEUP;
+                this.pb_PlayUpOut.MouseDown += this.pb_PlayUpOut_MOUSEDOWN;
+                this.pb_PlayUpOut.MouseUp += this.pb_PlayUpOut_MOUSEUP;
             }
 
             this.tabpages_Main.Width = this.ClientSize.Width + ((this.tabpages_Main.Height - this.tab_DataViewer.ClientSize.Height) / 2);
