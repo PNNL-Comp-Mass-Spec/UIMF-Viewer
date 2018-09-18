@@ -1,7 +1,5 @@
-//#define DEBUGGING
 //#define HIDE_CALIBRATION
 #define COLOR_MAP
-#define SHOW
 //#define STOP_WATCH
 #define COMPRESS_TO_100K
 
@@ -4726,12 +4724,12 @@ namespace UIMF_File
             UnlockBitmap();
         }
 
-        private PixelData* PixelAt(int x, int y)
+        private unsafe PixelData* PixelAt(int x, int y)
         {
             return (PixelData*)(pBase + (y * pixel_width) + (x * sizeof(PixelData)));
         }
 
-        private void LockBitmap()
+        private unsafe void LockBitmap()
         {
 
             Rectangle bounds = new Rectangle(0, 0, this.pnl_2DMap.Width, this.pnl_2DMap.Height);
@@ -4754,7 +4752,7 @@ namespace UIMF_File
             pBase = (Byte*)bitmapData.Scan0.ToPointer();
         }
 
-        private void UnlockBitmap()
+        private unsafe void UnlockBitmap()
         {
             try
             {

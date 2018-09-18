@@ -3,11 +3,7 @@ using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
-using ZedGraph;
 using UIMF_DataViewer.WpfControls;
-using Color = System.Drawing.Color;
-using Label = System.Windows.Forms.Label;
-using Pen = System.Drawing.Pen;
 
 namespace UIMF_File
 {
