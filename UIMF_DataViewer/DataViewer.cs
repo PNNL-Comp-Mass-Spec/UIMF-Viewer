@@ -1,6 +1,5 @@
 //#define HIDE_CALIBRATION
 #define COLOR_MAP
-//#define STOP_WATCH
 #define COMPRESS_TO_100K
 
 using System;
@@ -9,7 +8,6 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Windows.Forms;
 using System.Threading;
 using System.IO;
@@ -18,10 +16,6 @@ using UIMFLibrary;
 using System.Diagnostics;
 using System.Linq;
 using ZedGraph;
-
-#if STOP_WATCH
-using System.Diagnostics;
-#endif
 
 // ******************************************************************************************************
 // * Programmer:  William Danielson
@@ -329,102 +323,6 @@ namespace UIMF_File
                 this.pnl_postProcessing.tb_SaveCompressDirectory.Text = Path.GetDirectoryName(this.ptr_UIMFDatabase.UimfDataFile);
             }
         }
-#if false
-        public DataViewer(string uimf_file, bool flag_enablecontrols)
-        {
-            this.array_Experiments = new ArrayList();
-
-            try
-            {
-                this.ptr_UIMFDatabase = new UIMFDataWrapper(uimf_file);
-                this.array_Experiments.Add(this.ptr_UIMFDatabase);
-
-                this.ptr_UIMFDatabase.current_frame_index = 0;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-            }
-
-            this.current_minBin = 0;
-            this.current_maxBin = this.maximum_Bins = this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins;
-
-            try
-            {
-                this.build_Interface(flag_enablecontrols);
-                this.cb_FrameType.SelectedIndexChanged += new System.EventHandler(this.cb_FrameType_SelectedIndexChanged);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("failed to build interface()\n\n" + ex.ToString());
-            }
-
-            for (int i = 0; i < 5; i++)
-                this.cb_FrameType.Items.Add(this.ptr_UIMFDatabase.FrameTypeDescription(i));
-
-            try
-            {
-                this.cb_FrameType.SelectedIndex = 0; // (int)this.ptr_UIMFDatabase.get_FrameType();
-                this.slide_FrameSelect.Range = new NationalInstruments.UI.Range(0, this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames);
-
-#if SCROLLBAR_BUSY
-            this.hsb_2DMap.Leave += new System.EventHandler(this.leave_Scrollbar);
-            this.hsb_2DMap.Enter += new System.EventHandler(this.enter_Scrollbar);
-            this.vsb_2DMap.Leave += new System.EventHandler(this.leave_Scrollbar);
-            this.vsb_2DMap.Enter += new System.EventHandler(this.enter_Scrollbar);
-#endif
-
-                this.current_minBin = 0;
-                //this.current_maxBin = 10;
-
-                this.lb_DragDropFiles.Items.Add(this.ptr_UIMFDatabase.UIMF_DataFile);
-                this.cb_ExperimentControlled.Items.Add(Path.GetFileName(this.ptr_UIMFDatabase.UIMF_DataFile));
-                this.cb_ExperimentControlled.SelectedIndex = 0;
-
-                this.Filter_FrameType(this.ptr_UIMFDatabase.get_FrameType());
-                this.ptr_UIMFDatabase.current_frame_index = 0;
-
-                this.Generate2DIntensityArray();
-                this.GraphFrame(this.data_2D, flag_enablecontrols);
-
-                this.num_TICThreshold.Visible = false;
-                this.btn_TIC.Visible = false;
-
-                if (this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames > DESIRED_WIDTH_CHROMATOGRAM)
-                    this.num_FrameCompression.Value = this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames / DESIRED_WIDTH_CHROMATOGRAM;
-                else
-                    this.num_FrameCompression.Value = 1;
-                this.current_frame_compression = Convert.ToInt32(this.num_FrameCompression.Value);
-
-                this.Width = this.pnl_2DMap.Left + this.ptr_UIMFDatabase.UIMF_FrameParams.Scans + 170;
-
-#if COMPRESS_TO_100K
-                // MessageBox.Show("initializeCalibrants: " + this.UIMF_DataReader.mz_Calibration.k.ToString());
-                this.pnl_postProcessing.InitializeCalibrants(1, this.ptr_UIMFDatabase.UIMF_FrameParams.CalibrationSlope, this.ptr_UIMFDatabase.UIMF_FrameParams.CalibrationIntercept);
-#else
-            this.pnl_postProcessing.InitializeCalibrants(this.UIMF_GlobalParams.BinWidth, this.m_frameParameters.CalibrationSlope, this.m_frameParameters.CalibrationIntercept);
-#endif
-
-                this.pnl_postProcessing.tb_SaveDecodeFilename.Text = Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UIMF_DataFile);
-                this.pnl_postProcessing.tb_SaveDecodeDirectory.Text = Path.GetDirectoryName(this.ptr_UIMFDatabase.UIMF_DataFile);
-
-                if (this.ptr_UIMFDatabase.UIMF_GlobalParams.BinWidth != .25)
-                    this.pnl_postProcessing.gb_Compress4GHz.Hide();
-                else
-                {
-                    this.pnl_postProcessing.btn_Compress1GHz.Click += new System.EventHandler(this.btn_Compress1GHz_Click);
-                    this.pnl_postProcessing.tb_SaveCompressFilename.Text = Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UIMF_DataFile);
-                    this.pnl_postProcessing.tb_SaveCompressDirectory.Text = Path.GetDirectoryName(this.ptr_UIMFDatabase.UIMF_DataFile);
-                }
-
-                this.cb_FrameType.SelectedIndex = 0; // (int)this.ptr_UIMFDatabase.get_FrameType();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-            }
-        }
-#endif
 
         private void build_Interface(bool flag_enablecontrols)
         {
@@ -641,7 +539,6 @@ namespace UIMF_File
                 this.DragEnter += new System.Windows.Forms.DragEventHandler(DataViewer_DragEnter);
                 this.lb_DragDropFiles.SelectedIndexChanged +=new EventHandler(lb_DragDropFiles_SelectedIndexChanged);
 
-
                 this.pb_PlayDownOut.MouseDown += new MouseEventHandler(this.pb_PlayDownOut_MOUSEDOWN);
                 this.pb_PlayDownOut.MouseUp += new MouseEventHandler(this.pb_PlayDownOut_MOUSEUP);
                 this.pb_PlayUpOut.MouseDown += new MouseEventHandler(this.pb_PlayUpOut_MOUSEDOWN);
@@ -676,14 +573,6 @@ namespace UIMF_File
             {
                 this.pnl_InstrumentSettings.update_Frame(this.ptr_UIMFDatabase.CurrentFrameIndex, this.ptr_UIMFDatabase.GetFrameParams(this.ptr_UIMFDatabase.CurrentFrameIndex));
             }
-         /* wfd - don't do this, for some reason it does not work when switching the tabs.  Besides not necessary.
-            else
-            {
-                this.flag_update2DGraph = true;
-                this.Graph_2DPlot();
-                //this.IonMobilityDataView_Resize((object)null, (EventArgs)null);
-            }
-          */
         }
 
         private void tabpages_Main_DrawItem(object sender, System.Windows.Forms.DrawItemEventArgs e)
@@ -692,7 +581,6 @@ namespace UIMF_File
             Brush bshFore;
             Brush bshBack;
             Font tab_font = new System.Drawing.Font("Comic Sans MS", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-
 
             if (e.Index != this.tabpages_Main.SelectedIndex)
             {
@@ -751,20 +639,6 @@ namespace UIMF_File
             if (disposing)
             {
                 ptr_UIMFDatabase.Dispose();
-
-                try
-                {
-                    /*
-                    bitmap = null;
-
-                    data_driftTIC = null;
-                    data_tofTIC = null;
-                    */
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Disposing object IonMobilityDataViewShort:  " + ex.ToString());
-                }
 
                 if (components != null)
                 {
@@ -841,15 +715,6 @@ namespace UIMF_File
 
                 this.pnl_FrameControl.Height = this.num_FrameRange.Top + this.num_FrameRange.Height + 6;
                 this.pnl_FrameControl.BringToFront();
-
-                // place button
-#if false
-                this.pb_Shrink.Left = this.pnl_2DMap.Left + this.pnl_2DMap.Width - this.pb_Shrink.Width - 2;
-                this.pb_Shrink.Top = this.pnl_2DMap.Top + 2;
-                this.pb_Shrink.BringToFront();
-
-                this.pb_Shrink.Show();
-#endif
 
                 this.flag_Resizing = false;
 
@@ -986,7 +851,6 @@ namespace UIMF_File
                     this.Top = (Screen.PrimaryScreen.Bounds.Height - this.Height) / 2;
             }
 
-
 #if TRACK_RESIZE_EVENTS
             this.lbl_ExperimentDate.Text = (count_resizes++).ToString();
 #endif
@@ -1014,14 +878,6 @@ namespace UIMF_File
 
             if (this.tabpages_Main.SelectedTab == this.tab_InstrumentSettings)
                 this.pnl_InstrumentSettings.Resize_This();
-
-#if false
-            // button in upper right corner of pnl_2DMap
-            this.pb_Expand.Left = this.pnl_2DMap.Left + this.pnl_2DMap.Width - this.pb_Expand.Width - 2;
-            this.pb_Expand.Top = this.pnl_2DMap.Top + 2;
-            this.pb_Expand.BringToFront();
-            this.pb_Expand.Show();
-#endif
 
             // redraw
             this.flag_Resizing = false;
@@ -1211,7 +1067,6 @@ namespace UIMF_File
             }
         }
 
-
         // Generate a map out of the data, whether TOF or m/z
         //
         // wfd:  there may be a problem in here dealing with the differences between the
@@ -1243,7 +1098,6 @@ namespace UIMF_File
                     this.ptr_UIMFDatabase.UimfFrameParams.MassCalibrationCoefficients.c2, this.ptr_UIMFDatabase.UimfFrameParams.Scans,
                     (int) (7500000.0/this.ptr_UIMFDatabase.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength))); // msec gap
 
-
             if (this.flag_Closing)
             {
                 return;
@@ -1262,7 +1116,6 @@ namespace UIMF_File
             GC.WaitForPendingFinalizers();
             GC.Collect();
         }
-
 
         protected virtual void get_ViewableIntensities()
         {
@@ -1613,18 +1466,6 @@ namespace UIMF_File
             // point to the selected experiment whether it is enabled or not
             this.ptr_UIMFDatabase = (UIMFDataWrapper)this.array_Experiments[this.index_CurrentExperiment];
 
-#if false
-            if (pixel_y < this.pnl_2DMap.Height)
-            {
-                this.data_2D[scans][pixel_y] += int_BinIntensity;
-                if (this.data_2D[scans][pixel_y] > this.data_maxIntensity)
-                {
-                    this.data_maxIntensity = this.data_2D[scans][pixel_y];
-                    this.posX_MaxIntensity = scans;
-                    this.posY_MaxIntensity = pixel_y;
-                }
-            }
-#endif
             if (!this.flag_isFullscreen)
             {
                 this.plot_axisMobility(this.data_driftTIC);
@@ -1684,416 +1525,6 @@ namespace UIMF_File
 
             this.flag_collecting_data = false;
         }
-
-#if false
-        protected virtual void get_ViewableIntensities()
-        {
-            if (this.flag_collecting_data)
-                return;
-            this.flag_collecting_data = true;
-
-            int exp_index;
-            int start_index;
-            int end_index;
-
-            int frames;
-            int temp;
-            int data_height;
-            int data_width;
-            int total_mobility;
-            int total_bins;
-
-            int new_2dmap_width = 0;
-            int new_2dmap_height = 0;
-
-            int max_MZRange_bin;
-            int min_MZRange_bin;
-            float select_MZ = (float)Convert.ToDouble(this.num_MZ.Value);
-            float select_PPM = (float)(select_MZ * Convert.ToDouble(this.num_PPM.Value) / 1000000.0);
-            if (this.cb_EnableMZRange.Checked)
-            {
-//                double min_TOF = (this.current_minBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin * 1e-4);
-
-                min_MZRange_bin = (int) (((double) this.ptr_UIMFDatabase.mzCalibration.MZtoTOF(select_MZ - select_PPM)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-                max_MZRange_bin = (int) (((double) this.ptr_UIMFDatabase.mzCalibration.MZtoTOF(select_MZ + select_PPM)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-
-                this.current_minBin = (int) (((double) this.ptr_UIMFDatabase.mzCalibration.MZtoTOF((float)(select_MZ - (select_PPM * 1.5)))) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-                this.current_maxBin = (int) (((double) this.ptr_UIMFDatabase.mzCalibration.MZtoTOF((float)(select_MZ + (select_PPM * 1.5)))) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-            }
-            else
-            {
-                min_MZRange_bin = 0;
-                max_MZRange_bin = this.ptr_UIMFDatabase.UIMF_GlobalParams.Bins;
-            }
-
-            if (this.current_maxBin < this.current_minBin)
-            {
-                MessageBox.Show("(this.current_maxBin < this.current_minBin): ("+this.current_maxBin.ToString()+" < "+this.current_minBin.ToString()+")"+maximum_Bins.ToString());
-
-                temp = this.current_minBin;
-                this.current_minBin = this.current_maxBin;
-                this.current_maxBin = temp;
-            }
-            total_bins = (this.current_maxBin - this.current_minBin) + 1;
-
-            if (this.current_maxMobility < this.current_minMobility)
-            {
-                temp = this.current_minMobility;
-                this.current_minMobility = this.current_maxMobility;
-                this.current_maxMobility = temp;
-            }
-            total_mobility = (this.current_maxMobility - this.current_minMobility) + 1;
-
-            // resize data to fit screen
-            if (this.max_plot_height < total_bins)
-            {
-                this.current_valuesPerPixelY = (total_bins / this.max_plot_height);
-
-                this.current_maxBin = this.current_minBin + (this.current_valuesPerPixelY * this.max_plot_height);
-
-                if (this.current_maxBin > this.maximum_Bins)
-                {
-                    this.current_minBin -= (this.current_maxBin - this.maximum_Bins);
-                    this.current_maxBin = this.maximum_Bins - 1;
-                }
-                if (this.current_minBin < 0)
-                {
-                    MessageBox.Show("Bill "+"("+this.current_maxBin.ToString()+" < "+this.current_minBin.ToString()+")\n\n"+this.max_plot_height.ToString()+" < "+total_bins.ToString()+"\n\nget_ViewableIntensities: this.current_maxBin is already this.maximum_Bins  -- should never happen");
-                    this.current_minBin = 0;
-                }
-
-                total_bins = (this.current_maxBin - this.current_minBin) + 1;
-                this.current_valuesPerPixelY = (total_bins / this.max_plot_height);
-            }
-            else // the pixels get taller...
-            {
-                this.current_valuesPerPixelY = -(max_plot_height / total_bins);
-                if (this.current_valuesPerPixelY >= 0)
-                    this.current_valuesPerPixelY = -1;
-
-                // create calibration table
-                this.current_maxBin = this.current_minBin + (this.max_plot_height / -this.current_valuesPerPixelY);
-
-                if (this.current_maxBin > this.maximum_Bins)
-                {
-                    this.current_maxBin = this.maximum_Bins;
-                    this.current_minBin = this.maximum_Bins - (this.max_plot_height / -this.current_valuesPerPixelY);
-                }
-                if (this.current_minBin < 0)
-                {
-                    this.current_minBin = 0;
-                    this.current_maxBin = (this.max_plot_height / -this.current_valuesPerPixelY);
-                }
-
-                if ((this.current_maxBin - this.current_minBin) < MIN_GRAPHED_BINS)
-                {
-                    this.current_minBin = ((this.current_maxBin + this.current_minBin) - MIN_GRAPHED_BINS) / 2;
-                    this.current_maxBin = this.current_minBin + MIN_GRAPHED_BINS;
-                }
-
-                total_bins = (this.current_maxBin - this.current_minBin) + 1;
-                this.current_valuesPerPixelY = -(max_plot_height / total_bins);
-
-                // OK, make sure we have a good fit on the screen.
-                if (this.current_valuesPerPixelY >= 0)
-                {
-                    this.current_valuesPerPixelY = -1;
-                    if ((total_bins * -this.current_valuesPerPixelY) + 1 > this.max_plot_height)
-                    {
-                        this.current_maxBin = this.current_minBin + this.max_plot_height;
-                        total_bins = (this.current_maxBin - this.current_minBin) + 1;
-                    }
-                }
-                else
-                {
-                    // good enough- just awful.
-                    while (((total_bins + 1) * -this.current_valuesPerPixelY) + 1 < this.max_plot_height)
-                    {
-                        //int offset_fit = (this.max_plot_height - ((total_bins+1) * -this.current_valuesPerPixelY))/2;
-                        this.current_minBin--;
-                        this.current_maxBin++;
-                        total_bins = (this.current_maxBin - this.current_minBin) + 1;
-                    }
-                }
-            }
-
-            if (this.current_valuesPerPixelY > 0)
-                new_2dmap_height = (total_bins / this.current_valuesPerPixelY) + 1;
-            else
-                new_2dmap_height = (total_bins * -this.current_valuesPerPixelY) + 1;
-            if (this.pnl_2DMap.Height != new_2dmap_height)
-            {
-                this.pnl_2DMap.Height = new_2dmap_height;
-                this.flag_ResizeThis = true;
-            }
-
-            if (max_plot_width < total_mobility)
-            {
-                // in this case we will not overlap pixels.  We can create another scrollbar to handle too wide plots
-                this.current_valuesPerPixelX = -1;
-
-                this.current_minMobility = this.hsb_2DMap.Value;
-                this.current_maxMobility = this.current_minMobility + this.max_plot_width;
-
-                if (this.current_maxMobility > this.maximum_Mobility)
-                {
-                    this.current_maxMobility = this.maximum_Mobility;
-                    this.current_minMobility = Convert.ToInt32(this.num_minMobility.Value); // 0; // this.maximum_Mobility - this.max_plot_width;
-                }
-
-#if false
-                this.current_valuesPerPixelX = (total_mobility / this.max_plot_width) + 1;
-
-                this.current_maxMobility = this.current_minMobility + (this.max_plot_width * this.current_valuesPerPixelX);
-                if (this.current_minMobility < 0)
-                {
-                    this.current_minMobility = 0;
-                    this.current_maxMobility = (this.max_plot_width * this.current_valuesPerPixelY);
-                }
-                if (this.current_maxMobility > this.maximum_Mobility)
-                    this.current_maxMobility = this.maximum_Mobility;
-#endif
-            }
-            else
-            {
-                this.current_valuesPerPixelX = -(this.max_plot_width / total_mobility);
-                // MessageBox.Show("max_plot_width=" + max_plot_width + ", this.current_valuesPerPixelX=" + this.current_valuesPerPixelX.ToString());
-
-#if false // erin did not like my attempt at extending out the plot.  Aug 2, 2010
-                    this.current_maxMobility = this.current_minMobility + (this.max_plot_width / -this.current_valuesPerPixelX) - 1;
-
-                    if (this.current_maxMobility > this.maximum_Mobility)
-                    {
-                        this.current_maxMobility = this.maximum_Mobility;
-                        this.current_minMobility = this.maximum_Mobility - (this.max_plot_width / -this.current_valuesPerPixelX);
-                    }
-                    if (this.current_minMobility < 0)
-                    {
-                        this.current_minMobility = 0;
-                        this.current_maxMobility = (this.max_plot_width / -this.current_valuesPerPixelX);
-                    }
-                    if (this.current_maxMobility > this.maximum_Mobility)
-                        this.current_maxMobility = this.maximum_Mobility;
-#endif
-            }
-
-            total_mobility = (this.current_maxMobility - this.current_minMobility) + 1;
-
-            // calculate width of data
-            if (this.current_valuesPerPixelX > 0)
-                new_2dmap_width = (total_mobility / this.current_valuesPerPixelX) + 1;
-            else
-                new_2dmap_width = (total_mobility * -this.current_valuesPerPixelX) + 1;
-            if (this.pnl_2DMap.Width != new_2dmap_width)
-            {
-                this.flag_ResizeThis = true;
-                this.pnl_2DMap.Width = new_2dmap_width;
-            }
-
-            // create array to store visual data
-            if (this.current_valuesPerPixelX < 0)
-                data_width = total_mobility;
-            else
-                data_width = this.pnl_2DMap.Width;
-            if (this.current_valuesPerPixelY < 0)
-                data_height = total_bins;
-            else
-                data_height = this.pnl_2DMap.Height;
-
-            this.data_2D = new int[data_width][];
-            for (int n = 0; n < data_width; n++)
-                this.data_2D[n] = new int[data_height];
-
-            // show frame range
-            if ((this.slide_FrameSelect.Value - Convert.ToInt32(this.num_FrameRange.Value) + 1) < 0)
-                this.slide_FrameSelect.FillBaseValue = 0;
-            else
-                this.slide_FrameSelect.FillBaseValue = ((double)(this.slide_FrameSelect.Value - Convert.ToInt32(this.num_FrameRange.Value) + 1)) - .1;
-
-            if (this.num_FrameIndex.Maximum >= (int)this.slide_FrameSelect.Value)
-                this.num_FrameIndex.Value = (int)this.slide_FrameSelect.Value;
-
-            for (exp_index = 0; exp_index < this.lb_DragDropFiles.Items.Count; exp_index++)
-            {
-                if (this.lb_DragDropFiles.GetSelected(exp_index))
-                {
-                    this.ptr_UIMFDatabase = (UIMFDataWrapper)this.array_Experiments[exp_index];
-
-                    start_index = this.ptr_UIMFDatabase.current_frame_index - (this.ptr_UIMFDatabase.frame_width - 1);
-                    end_index = this.ptr_UIMFDatabase.current_frame_index;
-
-                    if (Convert.ToInt32(this.num_FrameRange.Value) > 1)
-                    {
-                        this.lbl_FramesShown.Show();
-                        this.lbl_FramesShown.Text = "Showing Frames: " + start_index.ToString() + " to " + end_index.ToString();
-                    }
-
-                    // collect the data
-                    for (frames = start_index; (frames <= end_index) && !this.flag_Closing; frames++)
-                    {
-                        // this.lbl_ExperimentDate.Text = "accumulate_FrameData: " + (++count_times).ToString() + "  "+start_index.ToString()+"<"+end_index.ToString();
-
-                        try
-                        {
-                            if (this.data_2D == null)
-                                MessageBox.Show("null");
-                            this.data_2D = this.ptr_UIMFDatabase.accumulate_FrameData(frames, this.flag_display_as_TOF, this.current_minMobility, this.current_minBin, min_MZRange_bin, max_MZRange_bin, this.data_2D, this.current_valuesPerPixelY);
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show("accumulate_FrameData:  " + ex.ToString());
-                        }
-
-                        try
-                        {
-                            int sel_min;
-                            int sel_max;
-                            if (this.flag_viewMobility)
-                            {
-                                sel_min = (this.selection_min_drift - this.current_minMobility);
-                                sel_max = (this.selection_max_drift - this.current_minMobility);
-                            }
-                            else
-                            {
-                                sel_min = (int)((this.selection_min_drift - (int)(this.current_minMobility * (this.mean_TOFScanTime / 1000000))));
-                                sel_max = (int)((this.selection_max_drift - (int)(this.current_minMobility * (this.mean_TOFScanTime / 1000000)))); //  * (this.mean_TOFScanTime / 100000));
-                            }
-
-                            int current_scan;
-                            int bin_value;
-                            int pixel_x;
-                            int pixel_y;
-                            this.data_maxIntensity = 0;
-                            this.data_driftTIC = new double[data_width];
-                            this.data_tofTIC = new double[data_height];
-                            for (current_scan = 0; current_scan < data_width; current_scan++)
-                            {
-                                for (bin_value = 0; bin_value < data_height; bin_value++)
-                                {
-                                                        if (this.current_valuesPerPixelY < 0)
-                    {
-                        pixel_y = (int);
-                        new_minBin = (int)this.ptr_UIMFDatabase.get_pixelMZ((int)min_Py / -this.current_valuesPerPixelY);
-                    }
-                    else
-                    {
-                        new_maxBin = (int)this.ptr_UIMFDatabase.get_pixelMZ((int)max_Py);
-                        new_minBin = (int)this.ptr_UIMFDatabase.get_pixelMZ((int)min_Py);
-                    }
-
-                                     bin_value) + this.current_minBin
-                                    if (this.current_valuesPerPixelX > 0)
-                                        pixel_x = current_scan / this.current_valuesPerPixelX;
-                                    else
-                                        pixel_x = current_scan * -this.current_valuesPerPixelX;
-
-                                    if (this.current_valuesPerPixelY > 0)
-                                        pixel_y = bin_value / this.current_valuesPerPixelY;
-                                    else
-                                        pixel_y = bin_value * -this.current_valuesPerPixelY;
-                                    sdfasdfsadf
-
-
-                                    if (this.inside_Polygon_Pixel(current_scan, this.ptr_UIMFDatabase.get_pixelMZ((int)max_Py / -this.current_valuesPerPixelY)))
-                                    {
-                                        this.data_driftTIC[current_scan] += this.data_2D[current_scan][bin_value];
-
-                                        if (!flag_selection_drift || ((current_scan >= sel_min) && (current_scan <= sel_max)))
-                                            this.data_tofTIC[bin_value] += data_2D[current_scan][bin_value];
-
-                                        if (this.data_2D[current_scan][bin_value] > this.data_maxIntensity)
-                                        {
-                                            this.data_maxIntensity = this.data_2D[current_scan][bin_value];
-                                            this.posX_MaxIntensity = current_scan;
-                                            this.posY_MaxIntensity = bin_value;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.ToString());
-                        }
-                    }
-
-                    this.update_CalibrationCoefficients();
-                }
-            }
-
-            // point to the selected experiment whether it is enabled or not
-            this.ptr_UIMFDatabase = (UIMFDataWrapper)this.array_Experiments[this.index_CurrentExperiment];
-
-#if false
-            if (pixel_y < this.pnl_2DMap.Height)
-            {
-                this.data_2D[scans][pixel_y] += int_BinIntensity;
-                if (this.data_2D[scans][pixel_y] > this.data_maxIntensity)
-                {
-                    this.data_maxIntensity = this.data_2D[scans][pixel_y];
-                    this.posX_MaxIntensity = scans;
-                    this.posY_MaxIntensity = pixel_y;
-                }
-            }
-#endif
-            if (!this.flag_isFullscreen)
-            {
-                this.plot_axisMobility(this.data_driftTIC);
-                this.plot_axisTOF(this.data_tofTIC);
-
-                // align everything
-                if (this.current_valuesPerPixelY > 0)
-                {
-                    this.plot_TOF.Height = this.pnl_2DMap.Height + this.plot_TOF.Height - this.plot_TOF.PlotAreaBounds.Height;
-                    this.plot_TOF.Top = this.num_maxBin.Top + this.num_maxBin.Height + 4;
-                }
-                else
-                {
-                    this.plot_TOF.Height = this.pnl_2DMap.Height + this.plot_TOF.Height - this.plot_TOF.PlotAreaBounds.Height + this.current_valuesPerPixelY;
-                    this.plot_TOF.Top = this.num_maxBin.Top + this.num_maxBin.Height + 4 - this.current_valuesPerPixelY / 2;
-                }
-
-                this.num_minBin.Top = this.plot_TOF.Top + this.plot_TOF.Height + 4;
-                this.vsb_2DMap.Height = this.pnl_2DMap.Height;
-
-                this.pnl_2DMap.Top = this.num_maxBin.Top + this.num_maxBin.Height + 4 + this.plot_TOF.PlotAreaBounds.Top;
-                this.hsb_2DMap.Top = this.pnl_2DMap.Top - this.hsb_2DMap.Height;
-                this.vsb_2DMap.Top = this.pnl_2DMap.Top;
-
-                if ((this.plot_TOF.Top + this.plot_TOF.Height) < (this.pnl_2DMap.Top + this.pnl_2DMap.Height + 16))
-                    this.plot_Mobility.Top = this.pnl_2DMap.Top + this.pnl_2DMap.Height + 16;
-                else
-                    this.plot_Mobility.Top = this.plot_TOF.Top + this.plot_TOF.Height;
-                this.num_minMobility.Top = this.num_maxMobility.Top = this.plot_Mobility.Top + this.plot_Mobility.Height + 4;
-
-                if (this.current_valuesPerPixelX > 0)
-                {
-                    this.plot_Mobility.Left = this.plot_TOF.Left + this.plot_TOF.Width;
-                    this.plot_Mobility.Width = this.pnl_2DMap.Width + this.plot_Mobility.Width - this.plot_Mobility.PlotAreaBounds.Width;
-                }
-                else
-                {
-                    this.plot_Mobility.Width = this.pnl_2DMap.Width + this.plot_Mobility.Width - this.plot_Mobility.PlotAreaBounds.Width + this.current_valuesPerPixelX;
-                    this.plot_Mobility.Left = this.plot_Mobility.Left = this.plot_TOF.Left + this.plot_TOF.Width - this.current_valuesPerPixelX / 2;
-                }
-
-                this.num_minMobility.Left = this.plot_Mobility.Left;
-                this.num_maxMobility.Left = this.plot_Mobility.Left + this.plot_Mobility.Width - this.num_maxMobility.Width; //- (this.plot_Mobility.PlotAreaBounds.Width - this.pnl_2DMap.Width)
-#if MAX_SCAN_VALUE
-            this.cb_MaxScanValue.Top = this.plot_Mobility.Top + this.plot_Mobility.Height - this.cb_MaxScanValue.Height - 2;
-            this.cb_MaxScanValue.Left = this.plot_Mobility.Left + this.plot_Mobility.Width - this.cb_MaxScanValue.Width - 3;
-#endif
-
-                this.pnl_2DMap.Left = this.plot_TOF.Left + this.plot_TOF.Width + this.plot_Mobility.PlotAreaBounds.Left;
-                this.hsb_2DMap.Left = this.pnl_2DMap.Left;
-
-                this.hsb_2DMap.Width = this.pnl_2DMap.Width;
-                this.vsb_2DMap.Left = this.pnl_2DMap.Left + this.pnl_2DMap.Width;
-            }
-
-            this.flag_collecting_data = false;
-        }
-#endif
 
         private void calc_TIC()
         {
@@ -2738,7 +2169,6 @@ namespace UIMF_File
             if (ccw(this.corner_2DMap[3], this.corner_2DMap[0], this.corner_2DMap[1]) < 0) // counter clockwise
                 this.swap_corners(0, 1);
 
-
             int upper_left = 0;
             int smallest_dist = 1000000000;
             int dist;
@@ -2773,7 +2203,6 @@ namespace UIMF_File
 
                 // ensure there are no negative angles.
                 this.flag_MovingCorners = -1; // no more moving corner
-
 
                 this.flag_update2DGraph = true;
             }
@@ -3124,6 +2553,7 @@ namespace UIMF_File
             this.menuItem_Mobility.Checked = true;
             this.menuItem_ScanTime.Checked = false;
         }
+
         private void ScanTime_ContextMenu(object sender, System.EventArgs e)
         {
             if (this.mean_TOFScanTime == -1.0)
@@ -3138,6 +2568,7 @@ namespace UIMF_File
             this.menuItem_Mobility.Checked = false;
             this.menuItem_ScanTime.Checked = true;
         }
+
         private void ConvertContextMenu(object sender, System.EventArgs e)
         {
             if (sender == menuItemConvertToMZ)
@@ -3229,16 +2660,6 @@ namespace UIMF_File
         {
             MessageBox.Show("btn_Export_Click   IonMobilityDataView");
 #if false
-            //			double[] data = new double[100000];
-            //			for(int i=0; i<data.Length; i++)
-            //				data[i] = 1;
-            //
-            //			CDataSmoother s = new CDataSmoother();
-            //			s.Add5Point();
-            //			double[] smoothed_data;
-            //			s.Smooth(data, out smoothed_data);
-            //			int j;
-            //			j=4;
             int[] tof;
             int[] intensities;
             int tic;
@@ -3410,14 +2831,6 @@ namespace UIMF_File
 
         private void menuItem_ExportCompressed_Click(object sender, System.EventArgs e)
         {
-#if false
-            if (this.flag_display_as_TOF)
-            {
-                MessageBox.Show("Export requires data to be shown in MZ mode.");
-                return;
-            }
-#endif
-
             try
             {
                 SaveFileDialog save_dialog = new SaveFileDialog();
@@ -3440,15 +2853,9 @@ namespace UIMF_File
                 MessageBox.Show(ex.ToString());
             }
         }
+
         private void menuItem_ExportComplete_Click(object sender, System.EventArgs e)
         {
-#if false
-            if (this.flag_display_as_TOF)
-            {
-                MessageBox.Show("Export requires data to be shown in MZ mode.");
-                return;
-            }
-#endif
             if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
             {
                 MessageBox.Show(this, "This viewer is not prepared to export the chromatogram.  Please request it.");
@@ -3488,17 +2895,6 @@ namespace UIMF_File
             {
                 dump_chromatogram[i] = this.ptr_UIMFDatabase.GetDriftChromatogram(i);
             }
-
-
-#if false
-            int frames_width = this.chromat_data.Length;
-            double[] frames_axis = new double[frames_width];
-            double frames_increment = Convert.ToInt32(this.num_FrameCompression.Value);
-
-            int mob_height = this.chromat_data[0].Length;
-            double[] drift_axis = new double[mob_height];
-            double drift_increment = this.chromatogram_valuesPerPixelY;
-#endif
 
             for (int i = 1; i < frames_width; i++)
                 frames_axis[i] = i;
@@ -3790,16 +3186,6 @@ namespace UIMF_File
                             if ((mz >= mzMin) && (mz <= mzMax))
                                 sw_TOF.WriteLine("{0},{1}", mz, saved_intensities[i]);
                         }
-
-                        /*
-                        double mzMin = this.ptr_UIMFDatabase.mzCalibration.TOFtoMZ((float)(this.current_minBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin));
-                        double mzMax = this.ptr_UIMFDatabase.mzCalibration.TOFtoMZ((float)(this.current_maxBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin));
-                        double increment_MZ = (mzMax - mzMin) / (double)this.pnl_2DMap.Height;
-                        for (int i = 0; i < this.tic_TOF.Length; i++)
-                        {
-                            sw_TOF.WriteLine("{0},{1}", (i * increment_MZ) + mzMin, tic_TOF[i]);
-                        }
-                         */
                     }
                 }
                 sw_TOF.Close();
@@ -3826,7 +3212,6 @@ namespace UIMF_File
                 this.flag_enterMobilityRange = false;
                 return;
             }
-
 
             min = Convert.ToInt32(this.num_minMobility.Value);
             max = Convert.ToInt32(this.num_maxMobility.Value);
@@ -4298,14 +3683,7 @@ namespace UIMF_File
 
             if (this.WindowState == FormWindowState.Minimized)
                 return;
-#if false
-            // Nothing to graph?
-            if (this.current_frame_index != frame_number)
-            {
-                this.current_frame_index = 0;
-                this.Generate2DIntensityArray(frame_number);
-            }
-#endif
+
             if (this.data_2D == (int[][])null)
             {
                 MessageBox.Show("Graph_2DPlot(): data for frame is null");
@@ -4458,7 +3836,6 @@ namespace UIMF_File
 
             this.flag_kill_mouse = false;
         }
-
 
         // /////////////////////////////////////////////////////////////////////
         // UpdateCursorReading()
@@ -4801,17 +4178,6 @@ namespace UIMF_File
             g.DrawLines(p, pts);
         }
 
-#if false
-        private void DrawInterpolation(Graphics g)
-        {
-            if (_interpolation_points.Count == 4)
-            {
-                // Create the convex shape out of the points:
-
-            }
-        }
-#endif
-
         private void CreateProgressBar()
         {
             try
@@ -5112,20 +4478,6 @@ namespace UIMF_File
             {
                 // s_data = new double[tof.Length];
                 // Array.Copy(tof, s_data, tof.Length);
-#if false
-                //   _tof_max = int.MinValue;
-                //    _tof_min = int.MaxValue;
-
-                for (int i = 0; i < tof.Length; i++)
-                {
-                    s_data[i] = tof[i];
-                    /*     if(s_data[i] > _tof_max)
-                             _tof_max = (int)tof[i];
-                         else if(s_data[i] < _tof_min)
-                             _tof_min = (int)tof[i];
-                     */
-                }
-#endif
                 this.flag_enterBinRange = true;
                 double minY = 0;
                 double maxY = 0;
@@ -5174,8 +4526,8 @@ namespace UIMF_File
                         min_BinValue = min_TOF;
                         increment_BinValue = increment_TOF;
 
-                        // this.plot_TOF.Update();
-                        // this.plot_TOF.Enabled = false;
+                        //this.plot_TOF.Update();
+                        //this.plot_TOF.Enabled = false;
                         //this.plot_TOF.PlotX(tic_TOF, min_BinValue, increment_BinValue); //wfd
                         this.waveform_TOFPlot.Points = new BasicArrayPointList(tic_TOF, Enumerable.Range(0, tic_TOF.Length).Select(x => increment_BinValue * x + min_BinValue).ToArray());
 
@@ -5199,8 +4551,8 @@ namespace UIMF_File
                         min_BinValue = mzMin;
                         increment_BinValue = increment_TOF;
 
-                        //  this.plot_TOF.Update();
-                        //  this.plot_TOF.Enabled = false;
+                        //this.plot_TOF.Update();
+                        //this.plot_TOF.Enabled = false;
                         //this.plot_TOF.PlotX(tic_TOF, min_BinValue, increment_BinValue); //wfd
                         this.waveform_TOFPlot.Points = new BasicArrayPointList(tic_TOF, Enumerable.Range(0, tic_TOF.Length).Select(x => increment_BinValue * x + min_BinValue).ToArray());
 
@@ -5213,19 +4565,12 @@ namespace UIMF_File
                 this.plot_TOF.GraphPane.YAxis.Scale.Max = maxY;// + 0.5; // Adding/subtracting 0.5 to keep outer positions the same messes up other computations.
                 this.plot_TOF.GraphPane.AxisChange();
                 this.plot_TOF.Refresh();
-                //   this.plot_TOF.Enabled = true;
-#if false
-                if (Math.Abs(this.plot_TOF.PlotAreaBounds.Height- this.pnl_2DMap.Height) > 5)
-                {
-                    this.IonMobilityDataView_Resize((object)null, (EventArgs)null);
-                    this.flag_update2DGraph = true;
-                }
-#endif
+                //this.plot_TOF.Enabled = true;
                 this.flag_enterBinRange = false;
             }
             catch (Exception ex)
             {
-                // MessageBox.Show("Plot Axis Mobility: " + ex.StackTrace.ToString() + "\n\n" + ex.ToString());
+                //MessageBox.Show("Plot Axis Mobility: " + ex.StackTrace.ToString() + "\n\n" + ex.ToString());
                 this.plot_TOF.BackColor = Color.OrangeRed;
                 Thread.Sleep(100);
                 this.flag_update2DGraph = true;
@@ -5307,7 +4652,6 @@ namespace UIMF_File
 
             this.flag_update2DGraph = true;
         }
-
 
         protected virtual void vsb_2DMap_Scroll(object sender, ScrollEventArgs e)
         {
@@ -5403,7 +4747,6 @@ namespace UIMF_File
             this.pb_PlayUpOut.Show();
         }
 
-
         // /////////////////////////////////////////////////////////////
         // Drag-Drop IMF file onto the graph
         //
@@ -5443,72 +4786,7 @@ namespace UIMF_File
             this.ptr_UIMFDatabase = (UIMFDataWrapper)this.array_Experiments[this.index_CurrentExperiment];
 
             this.vsb_2DMap.Value = 0;
-            /*
-            if (this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType()) <= 1)
-            {
-                this.rb_CompleteChromatogram.Enabled = false;
-                this.rb_PartialChromatogram.Enabled = false;
 
-                this.pnl_Chromatogram.Enabled = false;
-                MessageBox.Show("frames <=1");
-
-                this.slide_FrameSelect.Hide();
-                this.pb_PlayLeftIn.Hide();
-                this.pb_PlayLeftOut.Hide();
-                this.pb_PlayRightIn.Hide();
-                this.pb_PlayRightOut.Hide();
-
-                this.lbl_FrameRange.Hide();
-                this.num_FrameRange.Hide();
-
-                this.num_FrameRange.Value = Convert.ToDecimal(this.ptr_UIMFDatabase.frame_width);
-                this.lbl_FramesShown.Hide();
-            }
-            else
-            {
-                MessageBox.Show("frames >1");
-                this.rb_CompleteChromatogram.Enabled = true;
-                this.rb_PartialChromatogram.Enabled = true;
-
-                this.pnl_Chromatogram.Enabled = true;
-
-                this.slide_FrameSelect.Show();
-                this.slide_FrameSelect.Range = new NationalInstruments.UI.Range(0, this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType()) - 1);
-                this.pb_PlayLeftIn.Show();
-                this.pb_PlayLeftOut.Show();
-                this.pb_PlayRightIn.Show();
-                this.pb_PlayRightOut.Show();
-
-                this.lbl_FrameRange.Show();
-                this.num_FrameRange.Show();
-
-                this.slide_FrameSelect.Value = this.ptr_UIMFDatabase.current_frame_index;
-
-                if (this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType()) < 10)
-                {
-                    this.slide_FrameSelect.MajorDivisions.Interval = 1;
-                    this.slide_FrameSelect.MinorDivisions.TickVisible = false;
-                }
-                else
-                {
-                    int interval = (this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType()) / 5) - ((this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType()) / 5) % 10);
-                    if (interval > 0)
-                        this.slide_FrameSelect.MajorDivisions.Interval = interval;
-                    else
-                        this.slide_FrameSelect.MajorDivisions.Interval = 1;
-                    if (this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames < 50)
-                        this.slide_FrameSelect.MinorDivisions.TickVisible = false;
-                    else
-                        this.slide_FrameSelect.MinorDivisions.Interval = this.slide_FrameSelect.MajorDivisions.Interval / 2;
-                }
-
-                this.num_FrameRange.Value = Convert.ToDecimal(this.ptr_UIMFDatabase.frame_width);
-                if (this.num_FrameRange.Value > 1)
-                    this.lbl_FramesShown.Show();
-                else
-                    this.lbl_FramesShown.Hide();
-            }
-            */
             if (this.ptr_UIMFDatabase.CurrentFrameIndex < this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames - 1)
                 this.num_FrameIndex.Value = 0;
             this.num_FrameIndex.Maximum = this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames - 1;
@@ -5750,7 +5028,6 @@ namespace UIMF_File
             this.plot_TOF.Width = 200;
             this.plot_Mobility.Height = 150;
         }
-
 
         // //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //
@@ -6017,7 +5294,6 @@ namespace UIMF_File
             this.form_ExportExperiment.Dispose();
         }
 
-
         private void menuItem_SuperFrame_Click(object obj, System.EventArgs e)
         {
             MessageBox.Show("menuItem_SuperFrame_Click needs work");
@@ -6060,19 +5336,6 @@ namespace UIMF_File
 
         private void btn_ShowChromatogram_Click(object sender, EventArgs e)
         {
-#if false
-            if (this.ptr_Experiment.NumFrames < 2)
-            {
-                if (!((this.cb_Chromatogram.CheckState == CheckState.Checked) || (this.cb_Chromatogram.CheckState == CheckState.Indeterminate)))
-                    return;
-
-                MessageBox.Show("Chromatogram's are not available with less than 2 frames");
-
-                this.cb_Chromatogram.Checked = false;
-                this.cb_Chromatogram.Enabled = false;
-                return;
-            }
-#endif
             if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
             {
                 this.Chromatogram_GUI_Settings();
@@ -6340,29 +5603,12 @@ namespace UIMF_File
             int[] bytes_Bin;
 
             double bin_width;
-#if false
-            int bin_compression; // due to dropping down to .25 nsec bins
-#endif
 
             file_accum_IMF = Path.Combine(Path.GetDirectoryName(this.ptr_UIMFDatabase.UimfDataFile), Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UimfDataFile) + ".Accum_" + this.ptr_UIMFDatabase.CurrentFrameNum.ToString() + ".IMF");
 
             num_BinTICs = new int[this.ptr_UIMFDatabase.UimfFrameParams.Scans];
             bytes_Bin = new int[this.ptr_UIMFDatabase.UimfFrameParams.Scans];
-
-#if false
-            if (this.UIMF_GlobalParams.BinWidth == .25)
-            {
-                bin_width = 1;
-                bin_compression = 4;
-            }
-            else
-            {
-                bin_width = this.UIMF_GlobalParams.BinWidth;
-                bin_compression = 1;
-            }
-#else
             bin_width = this.ptr_UIMFDatabase.UimfGlobalParams.BinWidth;
-#endif
             /////////////////////////////////////////////////////////
             //////                                             //////
             //////                                             //////
@@ -6374,11 +5620,7 @@ namespace UIMF_File
             sw_IMF.WriteLine("DataType: 11");
             sw_IMF.WriteLine("DataSubType: int");
             sw_IMF.WriteLine("TOFSpectra: " + this.ptr_UIMFDatabase.UimfFrameParams.Scans.ToString());
-#if false
-            sw_IMF.WriteLine("NumBins: " + (this.UIMF_GlobalParams.Bins / bin_compression).ToString());
-#else
             sw_IMF.WriteLine("NumBins: " + this.ptr_UIMFDatabase.UimfGlobalParams.Bins.ToString());
-#endif
             sw_IMF.WriteLine("BinWidth: " + bin_width.ToString("0.00") + " ns");
             sw_IMF.WriteLine("Accumulations: " + this.ptr_UIMFDatabase.UimfFrameParams.GetValueInt32(FrameParamKeyType.Accumulations).ToString());
             sw_IMF.WriteLine("TimeOffset: " + this.ptr_UIMFDatabase.UimfGlobalParams.GetValue(GlobalParamKeyType.TimeOffset, 0).ToString());
@@ -6450,7 +5692,6 @@ namespace UIMF_File
                 num_BinTICs[k] = counter_TIC;
                 bytes_Bin[k] = counter_bin;
             }
-
 
             // Go back to the Escape Position, then pass the number of TOFSpectraPerFrame
             bw_IMF.Seek((int)escape_position + 4, SeekOrigin.Begin);
@@ -6652,13 +5893,6 @@ namespace UIMF_File
             this.Update();
 
             this.Calibrate_Frame(this.ptr_UIMFDatabase.CurrentFrameIndex, out slope, out intercept, out total_calibrants_matched);
-
-            /*
-            MessageBox.Show("tick_Calibrate: " + this.current_frame_index.ToString() + "\n" +
-                slope.ToString() + "\n" +
-                intercept.ToString() + "\n" +
-                total_calibrants_matched.ToString());
-            */
 
             if (double.IsNaN(slope) || double.IsNaN(intercept))
             {
@@ -6865,7 +6099,6 @@ namespace UIMF_File
             int uimf_bins;
 
             uimf_writer.CreateTables("int");
-
 
             gp = this.ptr_UIMFDatabase.GetGlobalParams();
             MessageBox.Show("gp: " + gp.NumFrames.ToString());
@@ -7265,33 +6498,5 @@ namespace UIMF_File
 
             UIMF_Writer.Dispose();
         }
-
-#if false
-        private void pb_Expand_Click(object sender, EventArgs e)
-        {
-            this.pb_Expand.Hide();
-
-            this.flag_isFullscreen = true;
-
-            this.max_plot_height = this.tab_DataViewer.ClientSize.Height - 400;
-            this.max_plot_width = this.tab_DataViewer.ClientSize.Width - 100;
-
-            this.flag_ResizeThis = true;
-            this.flag_update2DGraph = true;
-        }
-
-        private void pb_Shrink_Click(object sender, EventArgs e)
-        {
-            this.pb_Shrink.Hide();
-
-            this.flag_isFullscreen = false;
-
-            this.max_plot_width = this.tab_DataViewer.ClientSize.Width;
-            this.max_plot_height = this.tab_DataViewer.ClientSize.Height;
-
-            this.flag_ResizeThis = true;
-            this.flag_update2DGraph = true;
-        }
-#endif
     }
 }
