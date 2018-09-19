@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Collections;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Threading;
 using System.IO;
@@ -42,82 +43,79 @@ namespace UIMF_File
         private bool flag_display_as_TOF;
 
         // For drawing on the pb_2DMap
-        protected bool _mouseDragging;
-        protected Point _mouseDownPoint;
-        protected Point _mouseMovePoint;
+        private bool _mouseDragging;
+        private Point _mouseDownPoint;
+        private Point _mouseMovePoint;
 
-        protected bool flag_collecting_data = false;
+        private bool flag_collecting_data = false;
 
         // Four elements used for Fast Pixellation
         private int pixel_width;
         private Byte* pBase = null;
-        protected Bitmap bitmap;
+        private Bitmap bitmap;
         private Bitmap tmp_Bitmap;
         private BitmapData bitmapData = null;
-        Point[] corner_2DMap = new Point[4];
+        private Point[] corner_2DMap = new Point[4];
 
         // Variables for mapping
-        protected int current_valuesPerPixelX, current_valuesPerPixelY;
-        protected int new_minMobility, new_maxMobility;
-        protected int current_minMobility, current_maxMobility;
-        protected int new_minBin, new_maxBin;
-        protected int current_minBin, current_maxBin;
+        private int current_valuesPerPixelX, current_valuesPerPixelY;
+        private int new_minMobility, new_maxMobility;
+        private int current_minMobility, current_maxMobility;
+        private int new_minBin, new_maxBin;
+        private int current_minBin, current_maxBin;
 
         private int chromatogram_valuesPerPixelX, chromatogram_valuesPerPixelY;
         private double[] chromatogram_driftTIC;
         private double[] chromatogram_tofTIC;
 
         // Save previous zoom points
-        protected ArrayList _zoomX = new ArrayList();
-        protected ArrayList _zoomBin = new ArrayList();
+        private List<Point> _zoomX = new List<Point>();
+        private List<Point> _zoomBin = new List<Point>();
 
         //private System.Windows.Forms.Timer timer_GraphFrame;
-        protected System.Threading.Thread thread_GraphFrame;
+        private System.Threading.Thread thread_GraphFrame;
         private System.Threading.Thread thread_Calibrate;
 
         // Smoothing and slicing
         private bool _useDriftTime = true;
-        private Point _contextMenuLocation;
 
-        // Non-square zoom
-        private ArrayList _interpolation_points = new ArrayList();
-        protected bool flag_selection_drift = false;
-        protected int selection_min_drift, selection_max_drift;
+        private bool flag_selection_drift = false;
+        private int selection_min_drift, selection_max_drift;
 
         private System.Drawing.Font map_font = new System.Drawing.Font("Verdana", 7);
         private System.Drawing.Brush fore_brush = new SolidBrush(Color.White);
         private System.Drawing.Brush back_brush = new SolidBrush(Color.DimGray);
 
         private double mean_TOFScanTime = 0.0;
-        protected bool flag_enterMobilityRange = true;
-        protected bool flag_enterBinRange = true;
-        protected bool flag_viewMobility = true;
-        protected bool flag_update2DGraph = false;
-        protected bool flag_Chromatogram_Frames = false;
+        private bool flag_enterMobilityRange = true;
+        private bool flag_enterBinRange = true;
+        private bool flag_viewMobility = true;
+        private bool flag_update2DGraph = false;
+        private bool flag_Chromatogram_Frames = false;
 
         private const int MIN_GRAPHED_BINS = 20;
         private const int MIN_GRAPHED_MOBILITY = 10;
-        protected int maximum_Mobility = 0;
-        protected int maximum_Bins = 0;
+        private int maximum_Mobility = 0;
+        private int maximum_Bins = 0;
 
         private int minMobility_Chromatogram = 0;
         private int maxMobility_Chromatogram = 599;
         private int minFrame_Chromatogram = 0;
         private int maxFrame_Chromatogram = 499;
 
-        protected UIMF_File.Utilities.Intensity_ColorMap slider_ColorMap;
+        private UIMF_File.Utilities.Intensity_ColorMap slider_ColorMap;
 
-        protected int posX_MaxIntensity = 0;
-        protected int posY_MaxIntensity = 0;
+        private int posX_MaxIntensity = 0;
+        private int posY_MaxIntensity = 0;
 
-        protected int[][] data_2D;
+        private int[][] data_2D;
         private double[][] text_data_2D;
 
         // private int[] new_data_driftTIC;
-        protected double[] data_driftTIC;
+        private double[] data_driftTIC;
         // private int[] new_data_tofTIC;
-        protected double[] data_tofTIC;
-        protected int data_maxIntensity;
+        private double[] data_tofTIC;
+        private int data_maxIntensity;
 
         private int[][] chromat_data;
         private int chromat_max;
@@ -126,39 +124,39 @@ namespace UIMF_File
 
         private const int DESIRED_WIDTH_CHROMATOGRAM = 1500;
 
-        protected const int DRIFT_PLOT_WIDTH_DIFF = 12;
+        private const int DRIFT_PLOT_WIDTH_DIFF = 12;
 
-        protected const int plot_Mobility_HEIGHT = 150;
+        private const int plot_Mobility_HEIGHT = 150;
 
-        public bool flag_chromatograph_collected_PARTIAL = false;
-        public bool flag_chromatograph_collected_COMPLETE = false;
+        private bool flag_chromatograph_collected_PARTIAL = false;
+        private bool flag_chromatograph_collected_COMPLETE = false;
 
-        protected bool flag_GraphingFrame = false;
+        private bool flag_GraphingFrame = false;
 
-        protected bool flag_Alive = true;
+        private bool flag_Alive = true;
 
-        public bool flag_kill_mouse = false;
-        protected object lock_graphing = new object();
+        private bool flag_kill_mouse = false;
+        private object lock_graphing = new object();
 
         private UIMF_File.Utilities.ExportExperiment form_ExportExperiment;
 
         private int flag_MovingCorners = -1;
 
-        protected int max_plot_width = 200;
-        protected int max_plot_height = 200;
+        private int max_plot_width = 200;
+        private int max_plot_height = 200;
 
         private int current_frame_compression;
 
-        public UIMF_File.PostProcessing pnl_postProcessing = null;
+        private UIMF_File.PostProcessing pnl_postProcessing = null;
 
-        protected bool flag_Closing = false;
-        protected bool flag_FrameTypeChanged = false;
+        private bool flag_Closing = false;
+        private bool flag_FrameTypeChanged = false;
 
-        protected bool flag_ResizeThis = false;
-        protected bool flag_Resizing = false;
+        private bool flag_ResizeThis = false;
+        private bool flag_Resizing = false;
 
-        private ArrayList array_Experiments;
-        public UIMF_File.UIMFDataWrapper ptr_UIMFDatabase;
+        private List<UIMFDataWrapper> experimentsList;
+        private UIMF_File.UIMFDataWrapper ptr_UIMFDatabase;
         private int index_CurrentExperiment = 0;
 
         private UIMFDataWrapper.ReadFrameType current_frame_type;
@@ -174,11 +172,10 @@ namespace UIMF_File
         {
             try
             {
-                this.array_Experiments = new ArrayList();
+                this.experimentsList = new List<UIMFDataWrapper>();
 
                 this.build_Interface(true);
 
-                this.cb_FrameType.Items.Add("Thermo File");
                 this.cb_FrameType.SelectedIndex = 0;
 
                 this.hsb_2DMap.Visible = this.vsb_2DMap.Visible = false;
@@ -204,12 +201,12 @@ namespace UIMF_File
 
         public DataViewer(string uimf_file, bool flag_enablecontrols)
         {
-            this.array_Experiments = new ArrayList();
+            this.experimentsList = new List<UIMFDataWrapper>();
 
             try
             {
                 this.ptr_UIMFDatabase = new UIMFDataWrapper(uimf_file);
-                this.array_Experiments.Add(this.ptr_UIMFDatabase);
+                this.experimentsList.Add(this.ptr_UIMFDatabase);
             }
             catch (Exception ex)
             {
@@ -1324,7 +1321,7 @@ namespace UIMF_File
             {
                 if (this.lb_DragDropFiles.GetSelected(exp_index))
                 {
-                    this.ptr_UIMFDatabase = (UIMFDataWrapper)this.array_Experiments[exp_index];
+                    this.ptr_UIMFDatabase = this.experimentsList[exp_index];
 
                     start_index = this.ptr_UIMFDatabase.CurrentFrameIndex - (this.ptr_UIMFDatabase.FrameWidth - 1);
                     end_index = this.ptr_UIMFDatabase.CurrentFrameIndex;
@@ -1417,7 +1414,7 @@ namespace UIMF_File
             }
 
             // point to the selected experiment whether it is enabled or not
-            this.ptr_UIMFDatabase = (UIMFDataWrapper)this.array_Experiments[this.index_CurrentExperiment];
+            this.ptr_UIMFDatabase = this.experimentsList[this.index_CurrentExperiment];
 
             if (!this.flag_isFullscreen)
             {

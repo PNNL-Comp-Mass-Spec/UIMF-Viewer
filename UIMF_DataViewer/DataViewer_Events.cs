@@ -587,7 +587,6 @@ namespace UIMF_File
 
         private void pnl_2DMap_MouseLeave(object sender, System.EventArgs e)
         {
-            _interpolation_points.Clear();
         }
 
         protected virtual void pnl_2DMap_DblClick(object sender, System.EventArgs e)
@@ -834,11 +833,11 @@ namespace UIMF_File
                     this.pnl_2DMap_DblClick((object)null, (System.EventArgs)null);
                     return;
                 }
-                new_minMobility = ((Point)_zoomX[_zoomX.Count - 2]).X;
-                new_maxMobility = ((Point)_zoomX[_zoomX.Count - 2]).Y;
+                new_minMobility = _zoomX[_zoomX.Count - 2].X;
+                new_maxMobility = _zoomX[_zoomX.Count - 2].Y;
 
-                new_minBin = ((Point)_zoomBin[_zoomBin.Count - 2]).X;
-                new_maxBin = ((Point)_zoomBin[_zoomBin.Count - 2]).Y;
+                new_minBin = _zoomBin[_zoomBin.Count - 2].X;
+                new_maxBin = _zoomBin[_zoomBin.Count - 2].Y;
 
                 _zoomX.RemoveAt(_zoomX.Count - 1);
                 _zoomBin.RemoveAt(_zoomBin.Count - 1);
@@ -1538,7 +1537,7 @@ namespace UIMF_File
                 {
                     if (this.lb_DragDropFiles.GetSelected(exp_index))
                     {
-                        this.ptr_UIMFDatabase = (UIMFDataWrapper)this.array_Experiments[exp_index];
+                        this.ptr_UIMFDatabase = this.experimentsList[exp_index];
 
                         start_index = this.ptr_UIMFDatabase.CurrentFrameIndex - (this.ptr_UIMFDatabase.FrameWidth - 1);
                         end_index = this.ptr_UIMFDatabase.CurrentFrameIndex;
@@ -2470,7 +2469,7 @@ namespace UIMF_File
                 this.hsb_2DMap.Show();
             }
 
-            this.ptr_UIMFDatabase = (UIMFDataWrapper)this.array_Experiments[this.index_CurrentExperiment];
+            this.ptr_UIMFDatabase = this.experimentsList[this.index_CurrentExperiment];
 
             this.vsb_2DMap.Value = 0;
 
@@ -2526,7 +2525,7 @@ namespace UIMF_File
                     if (File.Exists(files[i]) && (Path.GetExtension(files[i]).ToLower() == ".uimf"))
                     {
                         this.ptr_UIMFDatabase = new UIMFDataWrapper(files[i]);
-                        this.array_Experiments.Add(this.ptr_UIMFDatabase);
+                        this.experimentsList.Add(this.ptr_UIMFDatabase);
 
                         this.lb_DragDropFiles.Items.Add(files[i]);
                         this.lb_DragDropFiles.ClearSelected();
