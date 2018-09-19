@@ -1269,18 +1269,6 @@ namespace UIMF_File
 
             if (max_plot_width < total_mobility)
             {
-                // in this case we will not overlap pixels.  We can create another scrollbar to handle too wide plots
-                this.current_valuesPerPixelX = -1;
-
-                this.current_minMobility = this.hsb_2DMap.Value;
-                this.current_maxMobility = this.current_minMobility + this.max_plot_width;
-
-                if (this.current_maxMobility > this.maximum_Mobility)
-                {
-                    this.current_maxMobility = this.maximum_Mobility;
-                    this.current_minMobility = Convert.ToInt32(this.num_minMobility.Value); // 0; // this.maximum_Mobility - this.max_plot_width;
-                }
-
                 this.current_valuesPerPixelX = (total_mobility / this.max_plot_width) + 1;
 
                 this.current_maxMobility = this.current_minMobility + (this.max_plot_width * this.current_valuesPerPixelX);
