@@ -39,6 +39,49 @@ namespace UIMF_File
 
         #region Fields
 
+        private struct ZoomInfo : IEquatable<ZoomInfo>
+        {
+            public int XMin { get; set; }
+            public int XMax { get; set; }
+            public int YMin { get; set; }
+            public int YMax { get; set; }
+
+            public ZoomInfo(int xMin, int xMax, int yMin, int yMax)
+            {
+                XMin = xMin;
+                XMax = xMax;
+                YMin = yMin;
+                YMax = yMax;
+            }
+
+            #region Equality
+
+            public bool Equals(ZoomInfo other)
+            {
+                return XMin == other.XMin && XMax == other.XMax && YMin == other.YMin && YMax == other.YMax;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                return obj is ZoomInfo other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    var hashCode = XMin;
+                    hashCode = (hashCode * 397) ^ XMax;
+                    hashCode = (hashCode * 397) ^ YMin;
+                    hashCode = (hashCode * 397) ^ YMax;
+                    return hashCode;
+                }
+            }
+
+            #endregion
+        }
+
         // mz==something, TOF==null
         private bool flag_display_as_TOF;
 
@@ -69,8 +112,7 @@ namespace UIMF_File
         private double[] chromatogram_tofTIC;
 
         // Save previous zoom points
-        private List<Point> _zoomX = new List<Point>();
-        private List<Point> _zoomBin = new List<Point>();
+        private List<ZoomInfo> _zoom = new List<ZoomInfo>();
 
         //private System.Windows.Forms.Timer timer_GraphFrame;
         private System.Threading.Thread thread_GraphFrame;

@@ -144,14 +144,25 @@ namespace UIMF_File
                     this.new_maxBin = this.maximum_Bins;
 
                 // save new zoom...
-                _zoomX.Add(new Point(new_minMobility, new_maxMobility));
-                _zoomBin.Add(new Point(new_minBin, new_maxBin));
+                this.SaveZoom(new_minMobility, new_maxMobility, new_minBin, new_maxBin);
 
                 this.current_maxBin = this.new_maxBin;
                 this.current_minBin = this.new_minBin;
 
                 this.flag_update2DGraph = true;
             }
+        }
+
+        private void SaveZoom(int minMobility, int maxMobility, int minBin, int maxBin)
+        {
+            var newZoom = new ZoomInfo(minMobility, maxMobility, minBin, maxBin);
+
+            if (_zoom.Count > 0 && newZoom.Equals(_zoom[_zoom.Count - 1]))
+            {
+                return;
+            }
+
+            _zoom.Add(newZoom);
         }
 
         #region Background Slider Events
@@ -653,8 +664,7 @@ namespace UIMF_File
             else
             {
                 // Reinitialize
-                _zoomX.Clear();
-                _zoomBin.Clear();
+                _zoom.Clear();
 
                 this.new_minBin = 0;
                 this.new_minMobility = 0;
@@ -824,8 +834,7 @@ namespace UIMF_File
             if (sender == this.menuItemZoomFull)
             {
                 // Reinitialize
-                _zoomX.Clear();
-                _zoomBin.Clear();
+                _zoom.Clear();
 
                 this.new_minBin = 0;
                 this.new_minMobility = 0;
@@ -842,19 +851,20 @@ namespace UIMF_File
             }
             else if (sender == this.menuItemZoomPrevious)
             {
-                if (_zoomX.Count < 2)
+                if (_zoom.Count < 2)
                 {
                     this.pnl_2DMap_DblClick((object)null, (System.EventArgs)null);
                     return;
                 }
-                new_minMobility = _zoomX[_zoomX.Count - 2].X;
-                new_maxMobility = _zoomX[_zoomX.Count - 2].Y;
 
-                new_minBin = _zoomBin[_zoomBin.Count - 2].X;
-                new_maxBin = _zoomBin[_zoomBin.Count - 2].Y;
+                var newZoom = _zoom[_zoom.Count - 2];
+                new_minMobility = newZoom.XMin;
+                new_maxMobility = newZoom.XMax;
 
-                _zoomX.RemoveAt(_zoomX.Count - 1);
-                _zoomBin.RemoveAt(_zoomBin.Count - 1);
+                new_minBin = newZoom.YMin;
+                new_maxBin = newZoom.YMax;
+
+                _zoom.RemoveAt(_zoom.Count - 1);
 
                 this.flag_update2DGraph = true;
             }
@@ -876,8 +886,7 @@ namespace UIMF_File
                 if (new_maxBin > this.maximum_Bins)
                     new_maxBin = this.maximum_Bins - 1;
 
-                _zoomX.Add(new Point(new_minMobility, new_maxMobility));
-                _zoomBin.Add(new Point(new_minBin, new_maxBin));
+                SaveZoom(new_minMobility, new_maxMobility, new_minBin, new_maxBin);
 
                 this.flag_update2DGraph = true;
 
@@ -1883,8 +1892,7 @@ namespace UIMF_File
             new_maxMobility = max;
             new_minMobility = min;
 
-            _zoomX.Add(new Point(min, max));
-            _zoomBin.Add(new Point(new_minBin, new_maxBin));
+            SaveZoom(new_minMobility, new_maxMobility, new_minBin, new_maxBin);
 
             this.flag_update2DGraph = true;
 
@@ -1953,8 +1961,7 @@ namespace UIMF_File
                 else
                     this.new_maxBin = (int)max;
 
-                _zoomX.Add(new Point(new_minMobility, new_maxMobility));
-                _zoomBin.Add(new Point(new_minBin, new_maxBin));
+                SaveZoom(new_minMobility, new_maxMobility, new_minBin, new_maxBin);
 
                 // this.lbl_ExperimentDate.Text = (new_maxBin * (TenthsOfNanoSecondsPerBin * 1e-4)).ToString() + " < " + new_maxBin.ToString();
                 this.flag_update2DGraph = true;
@@ -2026,8 +2033,7 @@ namespace UIMF_File
                 else
                     this.new_minBin = (int)min;
 
-                _zoomX.Add(new Point(new_minMobility, new_maxMobility));
-                _zoomBin.Add(new Point(new_minBin, new_maxBin));
+                SaveZoom(new_minMobility, new_maxMobility, new_minBin, new_maxBin);
 
                 // this.lbl_ExperimentDate.Text = (new_maxBin * (TenthsOfNanoSecondsPerBin * 1e-4)).ToString() + " < " + new_maxBin.ToString();
                 this.flag_update2DGraph = true;
@@ -2134,8 +2140,7 @@ namespace UIMF_File
             Invoke(new ThreadStart(format_Screen));
 
             // Reinitialize
-            _zoomX.Clear();
-            _zoomBin.Clear();
+            _zoom.Clear();
 
             this.new_minBin = 0;
             this.new_minMobility = 0;
