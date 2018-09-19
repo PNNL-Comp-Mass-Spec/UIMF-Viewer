@@ -74,7 +74,6 @@ namespace UIMF_File
         protected System.Windows.Forms.Label label5;
         protected System.Windows.Forms.Label label3;
         protected System.Windows.Forms.Label lbl_CursorScanTime;
-        //public NationalInstruments.UI.WindowsForms.Slide slide_Threshold;
         public SliderLabeled slide_Threshold;
         public ElementHost elementHost_Threshold;
         private System.Windows.Forms.MenuItem menuItem1;
@@ -100,7 +99,6 @@ namespace UIMF_File
         protected VScrollBar vsb_2DMap;
         private TextBox tb_CalT0;
         private TextBox tb_CalA;
-        //private NationalInstruments.UI.WindowsForms.Slide slide_FrameSelect;
         private SliderLabeled slide_FrameSelect;
         private ElementHost elementHost_FrameSelect;
         private Label lbl_FrameRange;

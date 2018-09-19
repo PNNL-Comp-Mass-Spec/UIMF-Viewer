@@ -13,7 +13,7 @@ using ZedGraph;
 // ******************************************************************************************************
 // * Programmer:  William Danielson
 // *
-// * Description:  Base object for the Int and Short Viewer.  The changes were to drastic to also
+// * Description:  Base object for the Int and Short Viewer.  The changes were too drastic to also
 // *               include the float viewer.
 // *
 // * Revisions:
@@ -124,30 +124,10 @@ namespace UIMF_File
 
         private int export_Spectra = 0;
 
-        private const int ANCHOR_POINT_TOP = 500;
-        private const int ANCHOR_POINT_LEFT = 0;
-
-        private const int PANEL_ANCHOR_POINT_LEFT = 20;
-
-        private const int axis_TOF_DESIRED_HEIGHT = 514;
-        private const int axis_TOF_SIZE_DIFF = 26;
-
-        private const int LEGEND_BUFFER_WIDTH = 20;
-
         private const int DESIRED_WIDTH_CHROMATOGRAM = 1500;
 
-        private const int DRIFT_PLOT_LOCATION_X = -6;
-        private const int DRIFT_PLOT_LOCATION_Y = -6;
         protected const int DRIFT_PLOT_WIDTH_DIFF = 12;
-        private const int DRIFT_PLOT_HEIGHT_DIFF = 9;
 
-        private const int TOF_PLOT_LOCATION_X = -6;
-        private const int TOF_PLOT_LOCATION_Y = -6;
-        private const int TOF_PLOT_WIDTH_DIFF = 10;
-        private const int TOF_PLOT_HEIGHT_DIFF = 11;
-
-        private const int TIC_INTENSITY_AXIS_DIST = 3;
-        const int PLOT_TOF_WIDTH = 200;
         protected const int plot_Mobility_HEIGHT = 150;
 
         public bool flag_chromatograph_collected_PARTIAL = false;
@@ -251,7 +231,6 @@ namespace UIMF_File
             for (int i = 0; i < 5; i++)
                 this.cb_FrameType.Items.Add(this.ptr_UIMFDatabase.FrameTypeDescription(i));
 
-            //this.slide_FrameSelect.Range = new NationalInstruments.UI.Range(0, this.ptr_UIMFDatabase.UIMF_GlobalParams.NumFrames);
             this.slide_FrameSelect.Minimum = 0;
             this.slide_FrameSelect.Maximum = this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames;
 
@@ -2094,20 +2073,17 @@ namespace UIMF_File
                     if (current_valuesPerPixelY > 0)
                     {
                         current_maxBin = current_minBin + (this.pnl_2DMap.Height * current_valuesPerPixelY) - 1;
-                        // TODO: //this.waveform_TOFPlot.PointStyle = NationalInstruments.UI.PointStyle.None;
                         this.waveform_TOFPlot.Symbol = new Symbol(SymbolType.None, Color.DarkBlue);
                     }
                     else
                     {
                         if (current_valuesPerPixelY < -5)
                         {
-                            // TODO: //this.waveform_TOFPlot.PointStyle = NationalInstruments.UI.PointStyle.EmptyCircle;
                             this.waveform_TOFPlot.Symbol = new Symbol(SymbolType.Circle, Color.DarkBlue);
                             this.waveform_TOFPlot.Symbol.Fill.Color = Color.Transparent;
                         }
                         else
                         {
-                            // TODO: //this.waveform_TOFPlot.PointStyle = NationalInstruments.UI.PointStyle.None;
                             this.waveform_TOFPlot.Symbol = new Symbol(SymbolType.None, Color.DarkBlue);
                         }
                     }
@@ -2552,26 +2528,22 @@ namespace UIMF_File
             {
                 plot_Mobility.HitSize = (current_valuesPerPixelX >= 1) ? new SizeF(1.0f, 2 * plot_Mobility_HEIGHT) : new SizeF(-current_valuesPerPixelX, 2 * plot_Mobility.Height);
 
-                //	plot_Mobility.Left = DRIFT_PLOT_LOCATION_X;
                 //	plot_Mobility.Width = this.pnl_2DMap.Width + DRIFT_PLOT_WIDTH_DIFF;
 
                 if (current_valuesPerPixelX < -5)
                 {
                     if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
                     {
-                        //this.waveform_MobilityPlot.PointStyle = NationalInstruments.UI.PointStyle.None;
                         this.waveform_MobilityPlot.Symbol = new Symbol(SymbolType.None, Color.Salmon);
                     }
                     else
                     {
-                        //this.waveform_MobilityPlot.PointStyle = NationalInstruments.UI.PointStyle.EmptyCircle;
                         this.waveform_MobilityPlot.Symbol = new Symbol(SymbolType.Circle, Color.Salmon);
                         this.waveform_MobilityPlot.Symbol.Fill.Color = Color.Transparent;
                     }
                 }
                 else
                 {
-                    //this.waveform_MobilityPlot.PointStyle = NationalInstruments.UI.PointStyle.None;
                     this.waveform_MobilityPlot.Symbol = new Symbol(SymbolType.None, Color.Salmon);
                 }
 
@@ -2661,7 +2633,6 @@ namespace UIMF_File
                         // these values are used to prevent the values from changing during the plotting... yikes!
                         min_MobilityValue = this.current_minMobility;
                         increment_MobilityValue = 1.0;
-                        // TODO: //this.xAxis_Mobility.MajorDivisions.LabelFormat = new NationalInstruments.UI.FormatString(NationalInstruments.UI.FormatStringMode.Numeric, "F0");
                         this.plot_Mobility.GraphPane.XAxis.Scale.Format = "F0";
                         //this.plot_Mobility.PlotY(tic_Mobility, 0, this.current_maxMobility - this.current_minMobility + 1, min_MobilityValue, increment_MobilityValue);
                         this.plot_Mobility.GraphPane.CurveList[0].Points = new BasicArrayPointList(Enumerable.Range(0, this.current_maxMobility - this.current_minMobility + 1).Select(x => x * increment_MobilityValue + min_MobilityValue).ToArray(),
@@ -2675,7 +2646,6 @@ namespace UIMF_File
                         // these values are used to prevent the values from changing during the plotting... yikes!
                         min_MobilityValue = this.current_minMobility * this.mean_TOFScanTime / 1000000.0;
                         increment_MobilityValue = mean_TOFScanTime / 1000000.0;
-                        // TODO: //this.xAxis_Mobility.MajorDivisions.LabelFormat = new NationalInstruments.UI.FormatString(NationalInstruments.UI.FormatStringMode.Numeric, "F2");
                         this.plot_Mobility.GraphPane.XAxis.Scale.Format = "F2";
                         //this.plot_Mobility.PlotY(tic_Mobility, min_MobilityValue, increment_MobilityValue);
                         this.plot_Mobility.GraphPane.CurveList[0].Points = new BasicArrayPointList(Enumerable.Range(0, tic_Mobility.Length).Select(x => x * increment_MobilityValue + min_MobilityValue).ToArray(), tic_Mobility);
