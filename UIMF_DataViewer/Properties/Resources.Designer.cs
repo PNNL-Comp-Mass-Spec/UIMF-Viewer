@@ -63,49 +63,9 @@ namespace UIMF_DataViewer.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Entrance_IMS4 {
-            get {
-                object obj = ResourceManager.GetObject("Entrance_IMS4", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap Entrance_IMS41 {
-            get {
-                object obj = ResourceManager.GetObject("Entrance_IMS41", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap Exit_IMS4 {
-            get {
-                object obj = ResourceManager.GetObject("Exit_IMS4", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap expand_button {
             get {
                 object obj = ResourceManager.GetObject("expand_button", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap IMS4a {
-            get {
-                object obj = ResourceManager.GetObject("IMS4a", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

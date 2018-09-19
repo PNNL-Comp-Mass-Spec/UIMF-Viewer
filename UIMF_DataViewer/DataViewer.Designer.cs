@@ -40,7 +40,6 @@ namespace UIMF_File
         private System.Windows.Forms.MenuItem menuItem_Exportnew_driftTIC;
         protected ZedGraph.ZedGraphControl plot_TOF;
         protected System.Windows.Forms.Label label2;
-        // private UIMF_File.Utilities.VerticalLabel verticalLabel_Threshold;
         private System.Windows.Forms.MenuItem menuItem_ExportCompressed;
         private System.Windows.Forms.MenuItem menuItem_ExportComplete;
         private System.Windows.Forms.MenuItem menuItem_ExportAll;

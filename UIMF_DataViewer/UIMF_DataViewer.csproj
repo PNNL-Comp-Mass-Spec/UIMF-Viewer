@@ -53,12 +53,6 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="InstrumentSettings.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="InstrumentSettings.Designer.cs">
-      <DependentUpon>InstrumentSettings.cs</DependentUpon>
-    </Compile>
     <Compile Include="PostProcessing.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -109,18 +103,11 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Utilities\TextExport.cs" />
-    <Compile Include="Utilities\VerticalLabel.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="WpfControls\SliderLabeled.cs" />
     <Compile Include="WpfControls\TickBarLabeled.cs" />
     <Compile Include="WpfControls\WpfConversions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="InstrumentSettings.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>InstrumentSettings.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="PostProcessing.resx">
       <DependentUpon>PostProcessing.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -150,10 +137,6 @@
       <DependentUpon>ProgressBar.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Utilities\VerticalLabel.resx">
-      <DependentUpon>VerticalLabel.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -175,9 +158,6 @@
     <None Include="Resources\triangle_right_out.GIF" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Images\Entrance_IMS4.png" />
-    <Content Include="Images\Exit_IMS4.png" />
-    <Content Include="Images\IMS4a.png" />
     <Content Include="Resources\expand_button.gif" />
     <Content Include="Resources\shrink_button.jpg" />
     <None Include="Images\triangle_up_in.GIF" />

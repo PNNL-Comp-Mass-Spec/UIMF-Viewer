@@ -31,8 +31,6 @@ namespace UIMF_File
 
         public IntSafeArray ArrayFrameNum { get; private set; } = new IntSafeArray(0);
 
-        private double[] defaultFragVoltages = (double[]) null;
-
         public UIMFLibrary.MzCalibrator MzCalibration { get; private set; }
 
         public Dictionary<int, FrameType> FrameTypeDict { get; private set; }
@@ -44,7 +42,8 @@ namespace UIMF_File
 
             FrameTypeDict = this.GetMasterFrameList();
 
-            this.defaultFragVoltages = this.GetDefaultFragVoltages();
+            // Load initial information
+            this.SetCurrentFrameType(ReadFrameType.AllFrames, true);
 
             this.CurrentFrameIndex = 0;
 
@@ -65,36 +64,6 @@ namespace UIMF_File
                 return "All Frames";
             else
                 return FrameTypeDescription((FrameType)frameType);
-        }
-
-        public double[] GetDefaultFragVoltages()
-        {
-            if (defaultFragVoltages == null)
-            {
-                // get the MS1 frames and use the fragmentation voltages on that.
-                var currentFrameType = CurrentFrameType;
-                int numFrames = this.SetCurrentFrameType(ReadFrameType.MS1);
-
-                // if there are MS1 frames, set the default voltages.
-                if (numFrames > 0)
-                {
-                    this.LoadFrame(0); // will be a MS frame
-
-                    if (this.UimfFrameParams.HasParameter(FrameParamKeyType.FragmentationProfile))
-                    {
-                        var fragSequence = FrameParamUtilities.ConvertByteArrayToFragmentationSequence(Convert.FromBase64String(this.UimfFrameParams.GetValueString(FrameParamKeyType.FragmentationProfile)));
-                        if (fragSequence.Length == 4)
-                            defaultFragVoltages = fragSequence;
-                        else
-                            defaultFragVoltages = (double[]) null;
-                    }
-                }
-
-                // reset the frame type.
-                this.SetCurrentFrameType(currentFrameType);
-            }
-
-            return defaultFragVoltages;
         }
 
         public int MapBinCalibration(int currentBin, double newSlope, double newIntercept)
