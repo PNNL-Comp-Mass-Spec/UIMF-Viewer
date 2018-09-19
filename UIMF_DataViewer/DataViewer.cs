@@ -156,7 +156,7 @@ namespace UIMF_File
         private bool flag_Resizing = false;
 
         private List<UIMFDataWrapper> experimentsList;
-        private UIMF_File.UIMFDataWrapper ptr_UIMFDatabase;
+        private UIMF_File.UIMFDataWrapper uimfReader;
         private int index_CurrentExperiment = 0;
 
         private UIMFDataWrapper.ReadFrameType current_frame_type;
@@ -205,8 +205,8 @@ namespace UIMF_File
 
             try
             {
-                this.ptr_UIMFDatabase = new UIMFDataWrapper(uimf_file);
-                this.experimentsList.Add(this.ptr_UIMFDatabase);
+                this.uimfReader = new UIMFDataWrapper(uimf_file);
+                this.experimentsList.Add(this.uimfReader);
             }
             catch (Exception ex)
             {
@@ -214,7 +214,7 @@ namespace UIMF_File
             }
 
             this.current_minBin = 0;
-            this.current_maxBin = this.maximum_Bins = this.ptr_UIMFDatabase.UimfGlobalParams.Bins;
+            this.current_maxBin = this.maximum_Bins = this.uimfReader.UimfGlobalParams.Bins;
 
             try
             {
@@ -226,35 +226,35 @@ namespace UIMF_File
             }
 
             for (int i = 0; i < 5; i++)
-                this.cb_FrameType.Items.Add(this.ptr_UIMFDatabase.FrameTypeDescription(i));
+                this.cb_FrameType.Items.Add(this.uimfReader.FrameTypeDescription(i));
 
             this.slide_FrameSelect.Minimum = 0;
-            this.slide_FrameSelect.Maximum = this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames;
+            this.slide_FrameSelect.Maximum = this.uimfReader.UimfGlobalParams.NumFrames;
 
             this.current_minBin = 0;
             this.current_maxBin = 10;
 
-            this.lb_DragDropFiles.Items.Add(this.ptr_UIMFDatabase.UimfDataFile);
-            this.cb_ExperimentControlled.Items.Add(Path.GetFileName(this.ptr_UIMFDatabase.UimfDataFile));
+            this.lb_DragDropFiles.Items.Add(this.uimfReader.UimfDataFile);
+            this.cb_ExperimentControlled.Items.Add(Path.GetFileName(this.uimfReader.UimfDataFile));
             this.cb_ExperimentControlled.SelectedIndex = 0;
 
-            this.cb_FrameType.SelectedIndex = (int)this.ptr_UIMFDatabase.CurrentFrameType;
-            this.Filter_FrameType(this.ptr_UIMFDatabase.CurrentFrameType);
-            this.ptr_UIMFDatabase.CurrentFrameIndex = 0;
+            this.cb_FrameType.SelectedIndex = (int)this.uimfReader.CurrentFrameType;
+            this.Filter_FrameType(this.uimfReader.CurrentFrameType);
+            this.uimfReader.CurrentFrameIndex = 0;
 
-            this.ptr_UIMFDatabase.SetCurrentFrameType(current_frame_type, true);
+            this.uimfReader.SetCurrentFrameType(current_frame_type, true);
             this.cb_FrameType.SelectedIndexChanged += this.cb_FrameType_SelectedIndexChanged;
 
             Generate2DIntensityArray();
             this.GraphFrame(this.data_2D, flag_enablecontrols);
 
-            if (!string.IsNullOrWhiteSpace(this.ptr_UIMFDatabase.UimfGlobalParams.GetValue(GlobalParamKeyType.InstrumentName, "")))
+            if (!string.IsNullOrWhiteSpace(this.uimfReader.UimfGlobalParams.GetValue(GlobalParamKeyType.InstrumentName, "")))
             {
-                this.flag_isTIMS = (this.ptr_UIMFDatabase.UimfGlobalParams.GetValue(GlobalParamKeyType.InstrumentName, "").StartsWith("TIMS") ? true : false);
+                this.flag_isTIMS = (this.uimfReader.UimfGlobalParams.GetValue(GlobalParamKeyType.InstrumentName, "").StartsWith("TIMS") ? true : false);
                 if (this.flag_isTIMS)
-                    this.plot_Mobility.set_TIMSRamp(this.ptr_UIMFDatabase.UimfFrameParams.MassCalibrationCoefficients.a2, this.ptr_UIMFDatabase.UimfFrameParams.MassCalibrationCoefficients.b2,
-                        this.ptr_UIMFDatabase.UimfFrameParams.MassCalibrationCoefficients.c2, this.ptr_UIMFDatabase.UimfFrameParams.Scans,
-                        (int)(7500000.0 / this.ptr_UIMFDatabase.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength))); // msec gap
+                    this.plot_Mobility.set_TIMSRamp(this.uimfReader.UimfFrameParams.MassCalibrationCoefficients.a2, this.uimfReader.UimfFrameParams.MassCalibrationCoefficients.b2,
+                        this.uimfReader.UimfFrameParams.MassCalibrationCoefficients.c2, this.uimfReader.UimfFrameParams.Scans,
+                        (int)(7500000.0 / this.uimfReader.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength))); // msec gap
             }
             else
                 this.flag_isTIMS = false;
@@ -262,26 +262,26 @@ namespace UIMF_File
             this.num_TICThreshold.Visible = false;
             this.btn_TIC.Visible = false;
 
-            if (this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames > DESIRED_WIDTH_CHROMATOGRAM)
-                this.num_FrameCompression.Value = this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames / DESIRED_WIDTH_CHROMATOGRAM;
+            if (this.uimfReader.UimfGlobalParams.NumFrames > DESIRED_WIDTH_CHROMATOGRAM)
+                this.num_FrameCompression.Value = this.uimfReader.UimfGlobalParams.NumFrames / DESIRED_WIDTH_CHROMATOGRAM;
             else
                 this.num_FrameCompression.Value = 1;
             this.current_frame_compression = Convert.ToInt32(this.num_FrameCompression.Value);
 
-            this.Width = this.pnl_2DMap.Left + this.ptr_UIMFDatabase.UimfFrameParams.Scans + 170;
+            this.Width = this.pnl_2DMap.Left + this.uimfReader.UimfFrameParams.Scans + 170;
 
-            this.pnl_postProcessing.InitializeCalibrants(1, this.ptr_UIMFDatabase.UimfFrameParams.CalibrationSlope, this.ptr_UIMFDatabase.UimfFrameParams.CalibrationIntercept);
+            this.pnl_postProcessing.InitializeCalibrants(1, this.uimfReader.UimfFrameParams.CalibrationSlope, this.uimfReader.UimfFrameParams.CalibrationIntercept);
 
-            this.pnl_postProcessing.tb_SaveDecodeFilename.Text = Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UimfDataFile);
-            this.pnl_postProcessing.tb_SaveDecodeDirectory.Text = Path.GetDirectoryName(this.ptr_UIMFDatabase.UimfDataFile);
+            this.pnl_postProcessing.tb_SaveDecodeFilename.Text = Path.GetFileNameWithoutExtension(this.uimfReader.UimfDataFile);
+            this.pnl_postProcessing.tb_SaveDecodeDirectory.Text = Path.GetDirectoryName(this.uimfReader.UimfDataFile);
 
-            if (this.ptr_UIMFDatabase.UimfGlobalParams.BinWidth != .25)
+            if (this.uimfReader.UimfGlobalParams.BinWidth != .25)
                 this.pnl_postProcessing.gb_Compress4GHz.Hide();
             else
             {
                 this.pnl_postProcessing.btn_Compress1GHz.Click += this.btn_Compress1GHz_Click;
-                this.pnl_postProcessing.tb_SaveCompressFilename.Text = Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UimfDataFile);
-                this.pnl_postProcessing.tb_SaveCompressDirectory.Text = Path.GetDirectoryName(this.ptr_UIMFDatabase.UimfDataFile);
+                this.pnl_postProcessing.tb_SaveCompressFilename.Text = Path.GetFileNameWithoutExtension(this.uimfReader.UimfDataFile);
+                this.pnl_postProcessing.tb_SaveCompressDirectory.Text = Path.GetDirectoryName(this.uimfReader.UimfDataFile);
             }
         }
 
@@ -314,7 +314,7 @@ namespace UIMF_File
 
             if (disposing)
             {
-                ptr_UIMFDatabase.Dispose();
+                uimfReader.Dispose();
 
                 if (components != null)
                 {
@@ -331,7 +331,7 @@ namespace UIMF_File
         private void IonMobilityDataView_Closed(object sender, System.EventArgs e)
         {
             RegistrySave(Microsoft.Win32.Registry.CurrentUser.CreateSubKey("Software").CreateSubKey(AppDomain.CurrentDomain.FriendlyName));
-            ptr_UIMFDatabase.Dispose();
+            uimfReader.Dispose();
         }
 
         #endregion
@@ -923,14 +923,14 @@ namespace UIMF_File
             {
                 this.flag_selection_drift = false;
 
-                this.lbl_ExperimentDate.Text = this.ptr_UIMFDatabase.UimfGlobalParams.GetValue(GlobalParamKeyType.DateStarted, "");
+                this.lbl_ExperimentDate.Text = this.uimfReader.UimfGlobalParams.GetValue(GlobalParamKeyType.DateStarted, "");
                 this.update_CalibrationCoefficients();
 
                 // Initialize boundaries
                 new_minMobility = 0;
-                new_maxMobility = this.ptr_UIMFDatabase.UimfFrameParams.Scans - 1; //  this.imfReader.Experiment_Properties.TOFSpectraPerFrame-1;
+                new_maxMobility = this.uimfReader.UimfFrameParams.Scans - 1; //  this.imfReader.Experiment_Properties.TOFSpectraPerFrame-1;
                 new_minBin = 0;
-                new_maxBin = this.ptr_UIMFDatabase.UimfGlobalParams.Bins - 1;
+                new_maxBin = this.uimfReader.UimfGlobalParams.Bins - 1;
 
                 this.maximum_Mobility = new_maxMobility;
                 this.maximum_Bins = new_maxBin;
@@ -951,7 +951,7 @@ namespace UIMF_File
 
                 try
                 {
-                    this.mean_TOFScanTime = this.ptr_UIMFDatabase.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength);
+                    this.mean_TOFScanTime = this.uimfReader.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength);
                     // MessageBox.Show("mean_tof = " + this.mean_TOFScanTime.ToString());
                     decimal val = Convert.ToDecimal(this.mean_TOFScanTime);
                 }
@@ -967,7 +967,7 @@ namespace UIMF_File
                 this.current_minMobility = this.new_minMobility;
                 this.current_maxMobility = this.new_maxMobility;
 
-                if (this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames < 2)
+                if (this.uimfReader.UimfGlobalParams.NumFrames < 2)
                 {
                     this.elementHost_FrameSelect.Hide();
                     this.num_FrameRange.Hide();
@@ -1001,7 +1001,7 @@ namespace UIMF_File
                 this.num_minMobility.Minimum = Convert.ToDecimal(0);
                 this.num_minMobility.Maximum = Convert.ToDecimal(this.maximum_Mobility);
 
-                this.Text = Path.GetFileNameWithoutExtension(this.ptr_UIMFDatabase.UimfDataFile);
+                this.Text = Path.GetFileNameWithoutExtension(this.uimfReader.UimfDataFile);
 
                 this.AutoScrollPosition = new Point(0, 0);
 
@@ -1035,18 +1035,18 @@ namespace UIMF_File
             this.slide_FrameSelect.Dispatcher.Invoke(() => frameSelectValue = this.slide_FrameSelect.Value);
 
             // Determine the frame size
-            if (this.ptr_UIMFDatabase.CurrentFrameIndex != Convert.ToInt32(frameSelectValue))
+            if (this.uimfReader.CurrentFrameIndex != Convert.ToInt32(frameSelectValue))
             {
                 flag_newframe = true;
-                this.ptr_UIMFDatabase.CurrentFrameIndex = Convert.ToInt32(frameSelectValue);
+                this.uimfReader.CurrentFrameIndex = Convert.ToInt32(frameSelectValue);
             }
 
             this.get_ViewableIntensities();
 
             if (flag_newframe && this.flag_isTIMS)
-                this.plot_Mobility.set_TIMSRamp(this.ptr_UIMFDatabase.UimfFrameParams.MassCalibrationCoefficients.a2, this.ptr_UIMFDatabase.UimfFrameParams.MassCalibrationCoefficients.b2,
-                    this.ptr_UIMFDatabase.UimfFrameParams.MassCalibrationCoefficients.c2, this.ptr_UIMFDatabase.UimfFrameParams.Scans,
-                    (int) (7500000.0/this.ptr_UIMFDatabase.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength))); // msec gap
+                this.plot_Mobility.set_TIMSRamp(this.uimfReader.UimfFrameParams.MassCalibrationCoefficients.a2, this.uimfReader.UimfFrameParams.MassCalibrationCoefficients.b2,
+                    this.uimfReader.UimfFrameParams.MassCalibrationCoefficients.c2, this.uimfReader.UimfFrameParams.Scans,
+                    (int) (7500000.0/this.uimfReader.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength))); // msec gap
 
             if (this.flag_Closing)
             {
@@ -1093,18 +1093,18 @@ namespace UIMF_File
             float select_PPM = (float)(select_MZ * Convert.ToDouble(this.num_PPM.Value) / 1000000.0);
             if (this.cb_EnableMZRange.Checked)
             {
-                // min_TOF = (this.current_minBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin * 1e-4);
+                // min_TOF = (this.current_minBin * this.uimfReader.TenthsOfNanoSecondsPerBin * 1e-4);
 
-                min_MZRange_bin = (int)(((double)this.ptr_UIMFDatabase.MzCalibration.MZtoTOF(select_MZ - select_PPM)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-                max_MZRange_bin = (int)(((double)this.ptr_UIMFDatabase.MzCalibration.MZtoTOF(select_MZ + select_PPM)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                min_MZRange_bin = (int)(((double)this.uimfReader.MzCalibration.MZtoTOF(select_MZ - select_PPM)) / this.uimfReader.TenthsOfNanoSecondsPerBin);
+                max_MZRange_bin = (int)(((double)this.uimfReader.MzCalibration.MZtoTOF(select_MZ + select_PPM)) / this.uimfReader.TenthsOfNanoSecondsPerBin);
 
-                this.current_minBin = (int)(((double)this.ptr_UIMFDatabase.MzCalibration.MZtoTOF((float)(select_MZ - (select_PPM * 1.5)))) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-                this.current_maxBin = (int)(((double)this.ptr_UIMFDatabase.MzCalibration.MZtoTOF((float)(select_MZ + (select_PPM * 1.5)))) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                this.current_minBin = (int)(((double)this.uimfReader.MzCalibration.MZtoTOF((float)(select_MZ - (select_PPM * 1.5)))) / this.uimfReader.TenthsOfNanoSecondsPerBin);
+                this.current_maxBin = (int)(((double)this.uimfReader.MzCalibration.MZtoTOF((float)(select_MZ + (select_PPM * 1.5)))) / this.uimfReader.TenthsOfNanoSecondsPerBin);
             }
             else
             {
                 min_MZRange_bin = 0;
-                max_MZRange_bin = this.ptr_UIMFDatabase.UimfGlobalParams.Bins;
+                max_MZRange_bin = this.uimfReader.UimfGlobalParams.Bins;
             }
 
             if (this.current_maxBin < this.current_minBin)
@@ -1321,10 +1321,10 @@ namespace UIMF_File
             {
                 if (this.lb_DragDropFiles.GetSelected(exp_index))
                 {
-                    this.ptr_UIMFDatabase = this.experimentsList[exp_index];
+                    this.uimfReader = this.experimentsList[exp_index];
 
-                    start_index = this.ptr_UIMFDatabase.CurrentFrameIndex - (this.ptr_UIMFDatabase.FrameWidth - 1);
-                    end_index = this.ptr_UIMFDatabase.CurrentFrameIndex;
+                    start_index = this.uimfReader.CurrentFrameIndex - (this.uimfReader.FrameWidth - 1);
+                    end_index = this.uimfReader.CurrentFrameIndex;
 
                     if (Convert.ToInt32(this.num_FrameRange.Value) > 1)
                     {
@@ -1345,7 +1345,7 @@ namespace UIMF_File
                         {
                             if (this.data_2D == null)
                                 MessageBox.Show("null");
-                            this.data_2D = this.ptr_UIMFDatabase.AccumulateFrameData(frames, this.flag_display_as_TOF, this.current_minMobility, this.current_minBin, min_MZRange_bin, max_MZRange_bin, this.data_2D, this.current_valuesPerPixelY);
+                            this.data_2D = this.uimfReader.AccumulateFrameData(frames, this.flag_display_as_TOF, this.current_minMobility, this.current_minBin, min_MZRange_bin, max_MZRange_bin, this.data_2D, this.current_valuesPerPixelY);
                         }
                         catch (Exception ex)
                         {
@@ -1354,11 +1354,11 @@ namespace UIMF_File
                     }
 #endif
                     /*/
-                    this.data_2D = this.ptr_UIMFDatabase.AccumulateFrameData(this.ptr_UIMFDatabase.ArrayFrameNum[start_index], this.ptr_UIMFDatabase.ArrayFrameNum[end_index], this.flag_display_as_TOF,
+                    this.data_2D = this.uimfReader.AccumulateFrameData(this.uimfReader.ArrayFrameNum[start_index], this.uimfReader.ArrayFrameNum[end_index], this.flag_display_as_TOF,
                         this.current_minMobility, this.current_minMobility + data_width, this.current_minBin, this.current_minBin + (data_height * this.current_valuesPerPixelY),
                         this.current_valuesPerPixelY, this.data_2D, min_MZRange_bin, max_MZRange_bin);
                     /*/
-                    this.data_2D = this.ptr_UIMFDatabase.AccumulateFrameDataByCount(this.ptr_UIMFDatabase.ArrayFrameNum[start_index], this.ptr_UIMFDatabase.ArrayFrameNum[end_index], this.flag_display_as_TOF,
+                    this.data_2D = this.uimfReader.AccumulateFrameDataByCount(this.uimfReader.ArrayFrameNum[start_index], this.uimfReader.ArrayFrameNum[end_index], this.flag_display_as_TOF,
                         this.current_minMobility, data_width, this.current_minBin, data_height, this.current_valuesPerPixelY, /*this.data_2D*/ null, min_MZRange_bin, max_MZRange_bin);
                     /**/
 
@@ -1414,7 +1414,7 @@ namespace UIMF_File
             }
 
             // point to the selected experiment whether it is enabled or not
-            this.ptr_UIMFDatabase = this.experimentsList[this.index_CurrentExperiment];
+            this.uimfReader = this.experimentsList[this.index_CurrentExperiment];
 
             if (!this.flag_isFullscreen)
             {
@@ -1544,8 +1544,8 @@ namespace UIMF_File
 
             int compression;
             int compression_collection;
-            int total_frames = this.ptr_UIMFDatabase.GetNumberOfFrames(this.ptr_UIMFDatabase.CurrentFrameType);
-            int total_scans = this.ptr_UIMFDatabase.UimfFrameParams.Scans;
+            int total_frames = this.uimfReader.GetNumberOfFrames(this.uimfReader.CurrentFrameType);
+            int total_scans = this.uimfReader.UimfFrameParams.Scans;
 
             int data_height;
             int data_width = total_frames / Convert.ToInt32(this.num_FrameCompression.Value);
@@ -1559,15 +1559,15 @@ namespace UIMF_File
 
             if (this.cb_EnableMZRange.Checked)
             {
-                min_MZRange_bin = (int) (((double) this.ptr_UIMFDatabase.MzCalibration.MZtoTOF(select_MZ - select_PPM)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-                max_MZRange_bin = (int) (((double) this.ptr_UIMFDatabase.MzCalibration.MZtoTOF(select_MZ + select_PPM)) / this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                min_MZRange_bin = (int) (((double) this.uimfReader.MzCalibration.MZtoTOF(select_MZ - select_PPM)) / this.uimfReader.TenthsOfNanoSecondsPerBin);
+                max_MZRange_bin = (int) (((double) this.uimfReader.MzCalibration.MZtoTOF(select_MZ + select_PPM)) / this.uimfReader.TenthsOfNanoSecondsPerBin);
 
                 // MessageBox.Show(min_MZRange_bin.ToString() + "<" + max_MZRange_bin.ToString());
             }
             else
             {
                 min_MZRange_bin = 0;
-                max_MZRange_bin = this.ptr_UIMFDatabase.UimfGlobalParams.Bins;
+                max_MZRange_bin = this.uimfReader.UimfGlobalParams.Bins;
             }
 
             if (!this.flag_chromatograph_collected_COMPLETE && !this.flag_chromatograph_collected_PARTIAL)
@@ -1596,7 +1596,7 @@ namespace UIMF_File
                         frame_index = (mobility_index * Convert.ToInt32(this.num_FrameCompression.Value)) + compression;
                         //MessageBox.Show(frame_index.ToString());
 
-                        mobility_data = this.ptr_UIMFDatabase.GetDriftChromatogram(frame_index, min_MZRange_bin, max_MZRange_bin);
+                        mobility_data = this.uimfReader.GetDriftChromatogram(frame_index, min_MZRange_bin, max_MZRange_bin);
                         for (i = 0; i < mobility_data.Length; i++)
                             this.chromat_data[mobility_index][i] += mobility_data[i];
                     }
@@ -1893,11 +1893,11 @@ namespace UIMF_File
                         if (this.flag_FrameTypeChanged)
                         {
                             this.flag_FrameTypeChanged = false;
-                            this.Filter_FrameType(this.ptr_UIMFDatabase.CurrentFrameType);
-                            this.ptr_UIMFDatabase.CurrentFrameIndex = 0;
+                            this.Filter_FrameType(this.uimfReader.CurrentFrameType);
+                            this.uimfReader.CurrentFrameIndex = 0;
                         }
 
-                        if (this.ptr_UIMFDatabase.GetNumberOfFrames(this.ptr_UIMFDatabase.CurrentFrameType) <= 0)
+                        if (this.uimfReader.GetNumberOfFrames(this.uimfReader.CurrentFrameType) <= 0)
                         {
                             this.flag_update2DGraph = false;
                             break;
@@ -1910,7 +1910,7 @@ namespace UIMF_File
                             break;
                         }
 
-                        current_frame_number = this.ptr_UIMFDatabase.LoadFrame(this.ptr_UIMFDatabase.CurrentFrameIndex);
+                        current_frame_number = this.uimfReader.LoadFrame(this.uimfReader.CurrentFrameIndex);
                         if (new_frame_number != current_frame_number)
                         {
                             new_frame_number = current_frame_number;
@@ -1918,14 +1918,14 @@ namespace UIMF_File
                             this.update_CalibrationCoefficients();
                         }
 
-                        if (this.ptr_UIMFDatabase.CurrentFrameIndex < this.ptr_UIMFDatabase.GetNumberOfFrames(this.ptr_UIMFDatabase.CurrentFrameType))
+                        if (this.uimfReader.CurrentFrameIndex < this.uimfReader.GetNumberOfFrames(this.uimfReader.CurrentFrameType))
                         {
                             //#if false
                             if (this.menuItem_ScanTime.Checked)
                             {
                                 // MessageBox.Show("tof scan time: " + this.mean_TOFScanTime.ToString());
                                 // Get the mean TOF scan time
-                                this.mean_TOFScanTime = this.ptr_UIMFDatabase.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength);
+                                this.mean_TOFScanTime = this.uimfReader.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength);
                                 if (this.mean_TOFScanTime <= 0)
                                 {
                                     this.menuItem_Mobility.PerformClick();
@@ -2027,8 +2027,8 @@ namespace UIMF_File
         //
         public void Graph_2DPlot()
         {
-            int frame_index = this.ptr_UIMFDatabase.CurrentFrameIndex;
-            if (frame_index >= this.ptr_UIMFDatabase.GetNumberOfFrames(this.ptr_UIMFDatabase.CurrentFrameType))
+            int frame_index = this.uimfReader.CurrentFrameIndex;
+            if (frame_index >= this.uimfReader.GetNumberOfFrames(this.uimfReader.CurrentFrameType))
             {
                 MessageBox.Show("Graph_2DPlot: "+frame_index+"\n\nAttempting to graph frame beyond list");
                 return;
@@ -2059,7 +2059,7 @@ namespace UIMF_File
 
                     // For initial viz., don't want to expand widths of datasets with few TOFs
                     // if(current_maxMobility == this.imfReader.Experiment_Properties.TOFSpectraPerFrame-1 && current_minMobility== 0)
-                    if (current_maxMobility == this.ptr_UIMFDatabase.UimfFrameParams.Scans - 1 && current_minMobility == 0)
+                    if (current_maxMobility == this.uimfReader.UimfFrameParams.Scans - 1 && current_minMobility == 0)
                         current_valuesPerPixelX = 1;
 
                     current_valuesPerPixelY = ((current_maxBin - current_minBin + 1 < this.pnl_2DMap.Height) ?
@@ -2472,7 +2472,7 @@ namespace UIMF_File
             this.progress_ReadingFile.Top = this.pnl_2DMap.Top + this.pnl_2DMap.Height / 2;
             this.progress_ReadingFile.Left = this.pnl_2DMap.Left;
             this.progress_ReadingFile.Width = this.pnl_2DMap.Width;
-            this.progress_ReadingFile.Maximum = (this.ptr_UIMFDatabase.UimfGlobalParams.NumFrames / Convert.ToInt32(this.num_FrameCompression.Value)) + 1;
+            this.progress_ReadingFile.Maximum = (this.uimfReader.UimfGlobalParams.NumFrames / Convert.ToInt32(this.num_FrameCompression.Value)) + 1;
             this.progress_ReadingFile.Show();
 
             this.progress_ReadingFile.BringToFront();
@@ -2558,7 +2558,7 @@ namespace UIMF_File
 
                     this.flag_enterMobilityRange = true;
 #if !NEEDS_WORK
-                    this.maxFrame_Chromatogram = this.ptr_UIMFDatabase.LoadFrame((int)this.slide_FrameSelect.Maximum);
+                    this.maxFrame_Chromatogram = this.uimfReader.LoadFrame((int)this.slide_FrameSelect.Maximum);
                     this.num_maxMobility.Value = this.num_maxMobility.Maximum = this.maxFrame_Chromatogram;
 #else // needs work
                     if (this.minFrame_Chromatogram < 0)
@@ -2606,7 +2606,7 @@ namespace UIMF_File
                     }
                     else
                     {
-                        increment_MobilityValue = this.mean_TOFScanTime * (this.maximum_Mobility + 1) * this.ptr_UIMFDatabase.UimfFrameParams.GetValueInt32(FrameParamKeyType.Accumulations) / 1000000.0 / 1000.0;
+                        increment_MobilityValue = this.mean_TOFScanTime * (this.maximum_Mobility + 1) * this.uimfReader.UimfFrameParams.GetValueInt32(FrameParamKeyType.Accumulations) / 1000000.0 / 1000.0;
                         //this.plot_Mobility.PlotY(tic_Mobility, (double)this.minFrame_Chromatogram * increment_MobilityValue, increment_MobilityValue);
                         this.plot_Mobility.GraphPane.CurveList[0].Points = new BasicArrayPointList(Enumerable.Range(0, tic_Mobility.Length).Select(x => x * increment_MobilityValue + this.minFrame_Chromatogram * increment_MobilityValue).ToArray(), tic_Mobility);
 
@@ -2745,8 +2745,8 @@ namespace UIMF_File
                         this.minMobility_Chromatogram = 0;
                     this.num_minBin.Value = Convert.ToDecimal(this.minMobility_Chromatogram);
 
-                    if (this.maxMobility_Chromatogram > this.ptr_UIMFDatabase.UimfFrameParams.Scans - 1)
-                        this.maxMobility_Chromatogram = this.ptr_UIMFDatabase.UimfFrameParams.Scans - 1;
+                    if (this.maxMobility_Chromatogram > this.uimfReader.UimfFrameParams.Scans - 1)
+                        this.maxMobility_Chromatogram = this.uimfReader.UimfFrameParams.Scans - 1;
                     this.num_maxBin.Value = Convert.ToDecimal(this.maxMobility_Chromatogram);
 
                     if (this.flag_viewMobility)
@@ -2759,19 +2759,19 @@ namespace UIMF_File
                     }
                     else
                     {
-                        //this.plot_TOF.PlotX(tic_TOF, this.minMobility_Chromatogram, this.ptr_UIMFDatabase.UIMF_FrameParameters.AverageTOFLength / 1000000.0);
-                        this.waveform_TOFPlot.Points = new BasicArrayPointList(tic_TOF, Enumerable.Range(0, tic_TOF.Length).Select(x => this.ptr_UIMFDatabase.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength) / 1000000.0 * x + this.minMobility_Chromatogram).ToArray());
+                        //this.plot_TOF.PlotX(tic_TOF, this.minMobility_Chromatogram, this.uimfReader.UIMF_FrameParameters.AverageTOFLength / 1000000.0);
+                        this.waveform_TOFPlot.Points = new BasicArrayPointList(tic_TOF, Enumerable.Range(0, tic_TOF.Length).Select(x => this.uimfReader.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength) / 1000000.0 * x + this.minMobility_Chromatogram).ToArray());
 
                         minY = this.minMobility_Chromatogram;
-                        maxY = this.ptr_UIMFDatabase.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength) / 1000000.0 * (tic_TOF.Length - 1) + this.minMobility_Chromatogram;
+                        maxY = this.uimfReader.UimfFrameParams.GetValueDouble(FrameParamKeyType.AverageTOFLength) / 1000000.0 * (tic_TOF.Length - 1) + this.minMobility_Chromatogram;
                     }
                 }
                 else
                 {
                     if (flag_display_as_TOF)
                     {
-                        double min_TOF = (this.current_minBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin * 1e-4);
-                        double max_TOF = (this.current_maxBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin * 1e-4);
+                        double min_TOF = (this.current_minBin * this.uimfReader.TenthsOfNanoSecondsPerBin * 1e-4);
+                        double max_TOF = (this.current_maxBin * this.uimfReader.TenthsOfNanoSecondsPerBin * 1e-4);
                         double increment_TOF = (max_TOF - min_TOF) / (double)(this.pnl_2DMap.Height);
                         if (current_valuesPerPixelY < 0)
                             increment_TOF *= (double)-current_valuesPerPixelY;
@@ -2795,8 +2795,8 @@ namespace UIMF_File
                     {
                         // Confirmed working... 061213
                         // Much more difficult to find where the mz <-> TOF index correlation
-                        double mzMin = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ(this.current_minBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
-                        double mzMax = this.ptr_UIMFDatabase.MzCalibration.TOFtoMZ(this.current_maxBin * this.ptr_UIMFDatabase.TenthsOfNanoSecondsPerBin);
+                        double mzMin = this.uimfReader.MzCalibration.TOFtoMZ(this.current_minBin * this.uimfReader.TenthsOfNanoSecondsPerBin);
+                        double mzMax = this.uimfReader.MzCalibration.TOFtoMZ(this.current_maxBin * this.uimfReader.TenthsOfNanoSecondsPerBin);
 
                         double increment_TOF = (mzMax - mzMin) / (double)this.pnl_2DMap.Height;
                         if (current_valuesPerPixelY < 0)
