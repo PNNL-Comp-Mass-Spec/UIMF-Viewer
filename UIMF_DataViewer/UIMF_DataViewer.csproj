@@ -86,6 +86,7 @@
     </Compile>
     <Compile Include="DataViewer_Events.cs">
       <DependentUpon>DataViewer.cs</DependentUpon>
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="Utilities\Calibrator.cs" />
     <Compile Include="Utilities\ExportExperiment.cs">

@@ -181,7 +181,7 @@ namespace UIMF_File
         public UIMF_File.UIMFDataWrapper ptr_UIMFDatabase;
         private int index_CurrentExperiment = 0;
 
-        private int current_frame_type;
+        private UIMFDataWrapper.ReadFrameType current_frame_type;
         private bool flag_isTIMS = false;
 
         private bool flag_isFullscreen = false;
@@ -264,11 +264,11 @@ namespace UIMF_File
             this.cb_ExperimentControlled.Items.Add(Path.GetFileName(this.ptr_UIMFDatabase.UimfDataFile));
             this.cb_ExperimentControlled.SelectedIndex = 0;
 
-            this.cb_FrameType.SelectedIndex = this.ptr_UIMFDatabase.get_FrameType();
-            this.Filter_FrameType(this.ptr_UIMFDatabase.get_FrameType());
+            this.cb_FrameType.SelectedIndex = (int)this.ptr_UIMFDatabase.CurrentFrameType;
+            this.Filter_FrameType(this.ptr_UIMFDatabase.CurrentFrameType);
             this.ptr_UIMFDatabase.CurrentFrameIndex = 0;
 
-            this.ptr_UIMFDatabase.set_FrameType(current_frame_type, true);
+            this.ptr_UIMFDatabase.SetCurrentFrameType(current_frame_type, true);
             this.cb_FrameType.SelectedIndexChanged += this.cb_FrameType_SelectedIndexChanged;
 
             Generate2DIntensityArray();
@@ -1395,7 +1395,7 @@ namespace UIMF_File
                         this.current_valuesPerPixelY, this.data_2D, min_MZRange_bin, max_MZRange_bin);
                     /*/
                     this.data_2D = this.ptr_UIMFDatabase.AccumulateFrameDataByCount(this.ptr_UIMFDatabase.ArrayFrameNum[start_index], this.ptr_UIMFDatabase.ArrayFrameNum[end_index], this.flag_display_as_TOF,
-                        this.current_minMobility, data_width, this.current_minBin, data_height, this.current_valuesPerPixelY, this.data_2D, min_MZRange_bin, max_MZRange_bin);
+                        this.current_minMobility, data_width, this.current_minBin, data_height, this.current_valuesPerPixelY, /*this.data_2D*/ null, min_MZRange_bin, max_MZRange_bin);
                     /**/
 
                     try
@@ -1580,7 +1580,7 @@ namespace UIMF_File
 
             int compression;
             int compression_collection;
-            int total_frames = this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType());
+            int total_frames = this.ptr_UIMFDatabase.GetNumberOfFrames(this.ptr_UIMFDatabase.CurrentFrameType);
             int total_scans = this.ptr_UIMFDatabase.UimfFrameParams.Scans;
 
             int data_height;
@@ -1929,11 +1929,11 @@ namespace UIMF_File
                         if (this.flag_FrameTypeChanged)
                         {
                             this.flag_FrameTypeChanged = false;
-                            this.Filter_FrameType(this.ptr_UIMFDatabase.get_FrameType());
+                            this.Filter_FrameType(this.ptr_UIMFDatabase.CurrentFrameType);
                             this.ptr_UIMFDatabase.CurrentFrameIndex = 0;
                         }
 
-                        if (this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType()) <= 0)
+                        if (this.ptr_UIMFDatabase.GetNumberOfFrames(this.ptr_UIMFDatabase.CurrentFrameType) <= 0)
                         {
                             this.flag_update2DGraph = false;
                             break;
@@ -1954,7 +1954,7 @@ namespace UIMF_File
                             this.update_CalibrationCoefficients();
                         }
 
-                        if (this.ptr_UIMFDatabase.CurrentFrameIndex < this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType()))
+                        if (this.ptr_UIMFDatabase.CurrentFrameIndex < this.ptr_UIMFDatabase.GetNumberOfFrames(this.ptr_UIMFDatabase.CurrentFrameType))
                         {
                             //#if false
                             if (this.menuItem_ScanTime.Checked)
@@ -2064,7 +2064,7 @@ namespace UIMF_File
         public void Graph_2DPlot()
         {
             int frame_index = this.ptr_UIMFDatabase.CurrentFrameIndex;
-            if (frame_index >= this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType()))
+            if (frame_index >= this.ptr_UIMFDatabase.GetNumberOfFrames(this.ptr_UIMFDatabase.CurrentFrameType))
             {
                 MessageBox.Show("Graph_2DPlot: "+frame_index+"\n\nAttempting to graph frame beyond list");
                 return;

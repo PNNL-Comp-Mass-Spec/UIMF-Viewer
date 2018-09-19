@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
 using System.Linq;
 using UIMFLibrary;
 
@@ -28,25 +29,35 @@ namespace UIMF_File
         public int CurrentFrameIndex;
         public int FrameWidth;
 
-        private int currentFrameType;
-        public int[] ArrayFrameNum { get; private set; } = new int[0];
+        public IntSafeArray ArrayFrameNum { get; private set; } = new IntSafeArray(0);
 
         private double[] defaultFragVoltages = (double[]) null;
 
         public UIMFLibrary.MzCalibrator MzCalibration { get; private set; }
+
+        public Dictionary<int, FrameType> FrameTypeDict { get; private set; }
 
         public UIMFDataWrapper(string uimfFile)
             : base(uimfFile)
         {
             this.UimfDataFile = uimfFile;
 
+            FrameTypeDict = this.GetMasterFrameList();
+
             this.defaultFragVoltages = this.GetDefaultFragVoltages();
 
-            this.currentFrameType = this.get_FrameType();
             this.CurrentFrameIndex = 0;
 
             this.FrameWidth = 1;
         }
+
+        /// <summary>
+        /// Returns the currently selected frame type
+        /// </summary>
+        /// <returns></returns>
+        public ReadFrameType CurrentFrameType { get; private set; }
+
+        public FrameType CurrentFrameNumFrameType => FrameTypeDict[CurrentFrameNum];
 
         public string FrameTypeDescription(int frameType)
         {
@@ -61,11 +72,11 @@ namespace UIMF_File
             if (defaultFragVoltages == null)
             {
                 // get the MS1 frames and use the fragmentation voltages on that.
-                int current_frame_type = get_FrameType();
-                int num_frames = this.set_FrameType(1);
+                var currentFrameType = CurrentFrameType;
+                int numFrames = this.SetCurrentFrameType(ReadFrameType.MS1);
 
                 // if there are MS1 frames, set the default voltages.
-                if (num_frames > 0)
+                if (numFrames > 0)
                 {
                     this.LoadFrame(0); // will be a MS frame
 
@@ -80,7 +91,7 @@ namespace UIMF_File
                 }
 
                 // reset the frame type.
-                this.set_FrameType(current_frame_type);
+                this.SetCurrentFrameType(currentFrameType);
             }
 
             return defaultFragVoltages;
@@ -150,102 +161,68 @@ namespace UIMF_File
 
         /// <summary>
         /// Returns the frame index for the given frame number
-        /// Only searches frame numbers of the current frame type (get_FrameType)
+        /// Only searches frame numbers of the current frame type <see cref="CurrentFrameType"/>
         /// </summary>
         /// <param name="frameNumber"></param>
         /// <returns>Frame Index if found; otherwise; a negative number if not a valid frame number</returns>
         public int GetFrameIndex(int frameNumber)
         {
-            return Array.BinarySearch(this.ArrayFrameNum, frameNumber);
-        }
-
-        /// <summary>
-        /// Returns the current frame type
-        /// </summary>
-        /// <returns></returns>
-        public int get_FrameType()
-        {
-            return this.currentFrameType;
-        }
-
-        /// <summary>
-        /// Set the frame type (using enum FrameType)
-        /// </summary>
-        /// <param name="eFrameType">Frame type to set; see FrameType for types</param>
-        /// <returns>The number of frames in the file that have the given frame type</returns>
-        public int set_FrameType(int eFrameType)
-        {
-            bool force_reload = false;
-            return set_FrameType(eFrameType, force_reload);
+            return ArrayFrameNum.BinarySearch(frameNumber);
         }
 
         /// <summary>
         /// Set the frame type
         /// </summary>
-        /// <param name="frame_type">Frame type to set; see FrameType for types</param>
-        /// <param name="force_reload">True to force a re-load of the data from the Frame_Parameters table</param>
+        /// <param name="frameType">Frame type to set; see FrameType for types</param>
+        /// <param name="forceReload">True to force a re-load of the data from the Frame_Parameters table</param>
         /// <returns>The number of frames in the file that have the given frame type</returns>
-        public int set_FrameType(int frame_type, bool force_reload)
+        public int SetCurrentFrameType(ReadFrameType frameType, bool forceReload = false)
         {
-            int frame_count;
-            int i;
-
             // If the frame type is already correct, then we don't need to re-query the database
-            if ((this.currentFrameType == frame_type) && !force_reload)
-                return this.ArrayFrameNum.Length;
+            if ((CurrentFrameType == frameType) && !forceReload)
+                return ArrayFrameNum.Length;
 
-            currentFrameType = frame_type;
+            CurrentFrameType = frameType;
 
-            var preparedStatement = this.m_dbConnection.CreateCommand();
-            if (frame_type == 0)
-                preparedStatement.CommandText = "SELECT COUNT(FrameNum) FROM Frame_Parameters";
-            else
-                preparedStatement.CommandText = "SELECT COUNT(FrameNum) FROM Frame_Parameters WHERE FrameType = " + this.currentFrameType.ToString();
-            var sqliteDataReader = preparedStatement.ExecuteReader();
-
-            sqliteDataReader.Read();
-            frame_count = Convert.ToInt32(sqliteDataReader[0]);
-            sqliteDataReader.Dispose();
-
-            if (frame_count == 0)
+            if (CurrentFrameType != ReadFrameType.AllFrames)
             {
-                this.ArrayFrameNum = new int[0];
-                return 0;
+                var frameNums = GetFrameNumbers((FrameType) frameType);
+                if (frameNums.Length == 0)
+                {
+                    ArrayFrameNum = new IntSafeArray(0);
+                    return 0;
+                }
+
+                ArrayFrameNum = new IntSafeArray(frameNums);
             }
-
-            // build an array of frame numbers for instant referencing.
-            this.ArrayFrameNum = new int[frame_count];
-            preparedStatement.Dispose();
-
-            preparedStatement = this.m_dbConnection.CreateCommand();
-            if (frame_type == 0)
-                preparedStatement.CommandText = "SELECT FrameNum FROM Frame_Parameters ORDER BY FrameNum ASC";
             else
-                preparedStatement.CommandText = "SELECT FrameNum FROM Frame_Parameters WHERE FrameType = " + this.currentFrameType.ToString() + " ORDER BY FrameNum ASC";
-
-            sqliteDataReader = preparedStatement.ExecuteReader();
-
-            i = 0;
-            while (sqliteDataReader.Read())
             {
-                this.ArrayFrameNum[i] = Convert.ToInt32(sqliteDataReader[0]);
-                i++;
+                FrameTypeDict = GetMasterFrameList();
+                if (FrameTypeDict.Count == 0)
+                {
+                    ArrayFrameNum = new IntSafeArray(0);
+                    return 0;
+                }
+
+                ArrayFrameNum = new IntSafeArray(FrameTypeDict.Select(x => x.Key).OrderBy(x => x).ToArray());
             }
 
             this.CurrentFrameNum = this.ArrayFrameNum[0];
             this.UimfFrameParams = this.GetFrameParams(this.ArrayFrameNum[0]);
             this.MzCalibration = this.GetMzCalibrator(this.UimfFrameParams);
 
-            preparedStatement.Dispose();
-
-            //MessageBox.Show(frame_count.ToString());
-            return frame_count;
+            return ArrayFrameNum.Count;
         }
 
         public int LoadFrame(int frameIndex)
         {
-            if ((frameIndex < this.ArrayFrameNum.Length) && (frameIndex > 0))
+            if ((frameIndex < this.ArrayFrameNum.Length) && (frameIndex >= 0))
             {
+                if (ArrayFrameNum[frameIndex] == CurrentFrameNum)
+                {
+                    return ArrayFrameNum[frameIndex];
+                }
+
                 this.CurrentFrameNum = this.ArrayFrameNum[frameIndex];
                 this.UimfFrameParams = this.GetFrameParams(this.ArrayFrameNum[frameIndex]);
                 this.MzCalibration = this.GetMzCalibrator(this.UimfFrameParams);
@@ -261,14 +238,13 @@ namespace UIMF_File
         /// </summary>
         /// <param name="frameType"></param>
         /// <returns></returns>
-        public int get_NumFrames(int frameType)
+        public int GetNumberOfFrames(ReadFrameType frameType)
         {
-            return this.set_FrameType(frameType);
+            return this.SetCurrentFrameType(frameType);
         }
 
         public new double GetBinForPixel(int pixel)
         {
-            // TODO: Renamed to "GetBinForPixel", and the UIMFLibrary version returns -1 on error...
             if (this.calibrationTable == null)
             {
                 // Random, likely safe return value...
@@ -278,181 +254,6 @@ namespace UIMF_File
                 return this.calibrationTable[pixel];
             else
                 return this.calibrationTable[this.calibrationTable.Length - 1]; // return maximum bin
-        }
-
-        public int[][] AccumulateFrameData(int frameIndex, bool flagTOF, int startScan, int startBin, int minMzBin, int maxMzBin, int[][] frameData, int yCompression)
-        {
-            if ((frameIndex < 0) || (frameIndex >= this.ArrayFrameNum.Length))
-                return frameData;
-
-            int i;
-
-            int dataWidth = frameData.Length;
-            int dataHeight = frameData[0].Length;
-
-            byte[] compressedBinIntensity;
-            byte[] streamBinIntensity = new byte[this.m_globalParameters.Bins * 4];
-            int scansData;
-            int indexCurrentBin;
-            int intBinIntensity;
-            int decompressLength;
-            int pixelY = 0;
-            int currentScan;
-            int endBin;
-
-            // this.UIMF_FrameParameters = this.GetFrameParameters(this.array_FrameNum[frame_index]);
-
-            if (yCompression > 0)
-                endBin = startBin + (dataHeight * yCompression);
-            else if (yCompression < 0)
-                endBin = startBin + dataHeight - 1;
-            else
-            {
-                throw new Exception("UIMFLibrary accumulate_PlotData: Compression == 0");
-            }
-
-            // ensure the correct Frame parameters are set
-            if (this.ArrayFrameNum[frameIndex] != this.CurrentFrameNum)
-            {
-                this.CurrentFrameNum = this.ArrayFrameNum[frameIndex];
-                this.UimfFrameParams = this.GetFrameParams(this.ArrayFrameNum[frameIndex]);
-                this.MzCalibration = this.GetMzCalibrator(this.UimfFrameParams);
-            }
-
-            // Create a calibration lookup table -- for speed
-            this.calibrationTable = new double[dataHeight];
-            if (flagTOF)
-            {
-                for (i = 0; i < dataHeight; i++)
-                    this.calibrationTable[i] = startBin + ((double)i * (double)(endBin - startBin) / (double)dataHeight);
-            }
-            else
-            {
-                double mz_min = (double)this.MzCalibration.TOFtoMZ((float)((startBin / this.m_globalParameters.BinWidth) * TenthsOfNanoSecondsPerBin));
-                double mz_max = (double)this.MzCalibration.TOFtoMZ((float)((endBin / this.m_globalParameters.BinWidth) * TenthsOfNanoSecondsPerBin));
-
-                for (i = 0; i < dataHeight; i++)
-                    this.calibrationTable[i] = (double)this.MzCalibration.MZtoTOF(mz_min + ((double)i * (mz_max - mz_min) / (double)dataHeight)) * this.m_globalParameters.BinWidth / (double)TenthsOfNanoSecondsPerBin;
-            }
-
-            // This function extracts intensities from selected scans and bins in a single frame
-            // and returns a two-dimetional array intensities[scan][bin]
-            // frameNum is mandatory and all other arguments are optional
-            var preparedStatement = this.m_dbConnection.CreateCommand();
-            preparedStatement.CommandText = "SELECT ScanNum, Intensities FROM Frame_Scans WHERE FrameNum = " + this.ArrayFrameNum[frameIndex].ToString() + " AND ScanNum >= " + startScan.ToString() + " AND ScanNum <= " + (startScan + dataWidth - 1).ToString();
-            var sqliteDataReader = preparedStatement.ExecuteReader();
-            preparedStatement.Dispose();
-
-            // accumulate the data into the plot_data
-            if (yCompression < 0)
-            {
-                pixelY = 1;
-
-                //MessageBox.Show(start_bin.ToString() + " " + end_bin.ToString());
-
-                for (scansData = 0; ((scansData < dataWidth) && sqliteDataReader.Read()); scansData++)
-                {
-                    currentScan = Convert.ToInt32(sqliteDataReader["ScanNum"]) - startScan;
-                    compressedBinIntensity = (byte[])(sqliteDataReader["Intensities"]);
-
-                    if (compressedBinIntensity.Length == 0)
-                        continue;
-
-                    indexCurrentBin = 0;
-                    //decompress_length = CLZF2.Decompress(compressed_BinIntensity, compressed_BinIntensity.Length, ref stream_BinIntensity, this.m_globalParameters.Bins * 4);
-                    decompressLength = CLZF2.Decompress(compressedBinIntensity, ref streamBinIntensity);
-
-                    int previousValue = 0;
-                    int binData;
-                    for (binData = 0; (binData < decompressLength) && (indexCurrentBin <= endBin); binData += 4)
-                    {
-                        intBinIntensity = BitConverter.ToInt32(streamBinIntensity, binData);
-
-                        if (intBinIntensity < 0)
-                        {
-                            indexCurrentBin += -intBinIntensity;   // concurrent zeros
-                        }
-                        else if (intBinIntensity == 0 && (previousValue.Equals(short.MinValue) || previousValue.Equals(int.MinValue)))
-                        {
-                            // Do nothing: this is to handle an old bug in the run-length zero encoding, that would do a
-                            // double-output of a zero (output a zero, and add it to the zero count) if there were enough
-                            // consecutive zeroes to hit the underflow limit
-                            // Really, the encoding we are using should never output a zero.
-                        }
-                        else if ((indexCurrentBin < minMzBin) || (indexCurrentBin < startBin))
-                            indexCurrentBin++;
-                        else if (indexCurrentBin > maxMzBin)
-                            break;
-                        else
-                        {
-                            frameData[currentScan][indexCurrentBin - startBin] += intBinIntensity;
-                            indexCurrentBin++;
-                        }
-                        previousValue = intBinIntensity;
-                    }
-                }
-            }
-            else    // each pixel accumulates more than 1 bin of data
-            {
-                for (scansData = 0; ((scansData < dataWidth) && sqliteDataReader.Read()); scansData++)
-                {
-                    currentScan = Convert.ToInt32(sqliteDataReader["ScanNum"]) - startScan;
-
-                    compressedBinIntensity = (byte[])(sqliteDataReader["Intensities"]);
-
-                    if (compressedBinIntensity.Length == 0)
-                        continue;
-
-                    indexCurrentBin = 0;
-                    //decompress_length = LZFCompressionUtil.Decompress(ref compressed_BinIntensity, compressed_BinIntensity.Length, ref stream_BinIntensity, this.m_globalParameters.Bins * 4);
-                    decompressLength = CLZF2.Decompress(compressedBinIntensity, ref streamBinIntensity);
-
-                    pixelY = 1;
-
-                    double calibrated_bin = 0;
-                    int previousValue = 0;
-                    int bin_value;
-                    for (bin_value = 0; (bin_value < decompressLength) && (indexCurrentBin < endBin); bin_value += 4)
-                    {
-                        intBinIntensity = BitConverter.ToInt32(streamBinIntensity, bin_value);
-
-                        if (intBinIntensity < 0)
-                        {
-                            indexCurrentBin += -intBinIntensity; // concurrent zeros
-                        }
-                        else if (intBinIntensity == 0 && (previousValue.Equals(short.MinValue) || previousValue.Equals(int.MinValue)))
-                        {
-                            // Do nothing: this is to handle an old bug in the run-length zero encoding, that would do a
-                            // double-output of a zero (output a zero, and add it to the zero count) if there were enough
-                            // consecutive zeroes to hit the underflow limit
-                            // Really, the encoding we are using should never output a zero.
-                        }
-                        else if ((indexCurrentBin < minMzBin) || (indexCurrentBin < startBin))
-                            indexCurrentBin++;
-                        else if (indexCurrentBin > maxMzBin)
-                            break;
-                        else
-                        {
-                            calibrated_bin = (double)indexCurrentBin;
-
-                            for (i = pixelY; i < dataHeight; i++)
-                            {
-                                if (this.calibrationTable[i] > calibrated_bin)
-                                {
-                                    pixelY = i;
-                                    frameData[currentScan][pixelY] += intBinIntensity;
-                                    break;
-                                }
-                            }
-                            indexCurrentBin++;
-                        }
-                        previousValue = intBinIntensity;
-                    }
-                }
-            }
-
-            sqliteDataReader.Close();
-            return frameData;
         }
 
         /// <summary>
@@ -495,7 +296,7 @@ namespace UIMF_File
             {
                 endBin = startBin - 1 + binCount * yCompression;
             }
-            return AccumulateFrameData(startFrameNumber, endFrameNumber, flagTOF, startScan, endScan, startBin, endBin, false, yCompression, frameData,
+            return AccumulateFrameData(startFrameNumber, endFrameNumber, flagTOF, startScan, endScan, startBin, endBin, yCompression, frameData,
                 minMzBin, maxMzBin, zeroOutData, xCompression);
         }
 
@@ -533,45 +334,6 @@ namespace UIMF_File
         public int[][] AccumulateFrameData(int startFrameNumber, int endFrameNumber, bool flagTOF, int startScan, int endScan, int startBin, int endBin,
             int yCompression = -1, int[][] frameData = null, int minMzBin = -1, int maxMzBin = -1, bool zeroOutData = true, int xCompression = -1)
         {
-            return AccumulateFrameData(startFrameNumber, endFrameNumber, flagTOF, startScan, endScan, startBin, endBin, false, yCompression, frameData,
-                minMzBin, maxMzBin, zeroOutData, xCompression);
-        }
-
-        /// <summary>
-        /// Retrieves a given frame (or frames) and sums them in order to be viewed on a heatmap view or other 2D representation visually.
-        /// </summary>
-        /// <param name="startFrameNumber">
-        /// </param>
-        /// <param name="endFrameNumber">
-        /// </param>
-        /// <param name="flagTOF">
-        /// </param>
-        /// <param name="startScan">
-        /// </param>
-        /// <param name="endScan">
-        /// </param>
-        /// <param name="startBin">
-        /// </param>
-        /// <param name="endBin">
-        /// </param>
-        /// <param name="noScale"></param>
-        /// <param name="yCompression">
-        /// </param>
-        /// <param name="frameData"></param>
-        /// <param name="maxMzBin"></param>
-        /// <param name="zeroOutData"></param>
-        /// <param name="xCompression">
-        /// </param>
-        /// <param name="minMzBin"></param>
-        /// <returns>
-        /// Frame data to be utilized in visualization as a multidimensional array
-        /// </returns>
-        /// <remarks>
-        /// This function is used by the UIMF Viewer and by Atreyu
-        /// </remarks>
-        private int[][] AccumulateFrameData(int startFrameNumber, int endFrameNumber, bool flagTOF, int startScan, int endScan, int startBin, int endBin,
-            bool noScale, int yCompression = -1, int[][] frameData = null, int minMzBin = -1, int maxMzBin = -1, bool zeroOutData = true, int xCompression = -1)
-        {
             if (endFrameNumber - startFrameNumber < 0)
             {
                 throw new ArgumentException("Start frame cannot be greater than end frame", nameof(endFrameNumber));
@@ -579,7 +341,7 @@ namespace UIMF_File
 
             var width = endScan - startScan + 1;
             var height = endBin - startBin + 1;
-            if (yCompression > 1 && !noScale)
+            if (yCompression > 1)
             {
                 height = (int)Math.Round((double)height / yCompression);
             }
@@ -854,6 +616,100 @@ namespace UIMF_File
             }
 
             return driftChromatogram;
+        }
+
+        public class IntSafeArray : IEnumerable<int>
+        {
+            private int[] backingArray;
+
+            public IntSafeArray(int count)
+            {
+                backingArray = new int[count];
+                Count = count;
+            }
+
+            public IntSafeArray(int[] data)
+            {
+                backingArray = data;
+                Count = data.Length;
+            }
+
+            public int Count { get; }
+
+            public int Length => backingArray.Length;
+
+            public IEnumerator<int> GetEnumerator()
+            {
+                return (IEnumerator<int>)backingArray.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            public int this[int index]
+            {
+                get
+                {
+                    if (index < 0)
+                    {
+                        return backingArray[0];
+                    }
+
+                    if (index >= Count)
+                    {
+                        return backingArray[Count - 1];
+                    }
+
+                    return backingArray[index];
+                }
+                set
+                {
+                    if (index < 0 || index >= Count)
+                    {
+                        throw new IndexOutOfRangeException($"'{index}' is not in range '0-{Count - 1}'!");
+                    }
+
+                    backingArray[index] = value;
+                }
+            }
+
+            public int BinarySearch(int value)
+            {
+                return Array.BinarySearch(backingArray, value);
+            }
+        }
+
+        /// <summary>
+        /// Frame type. A copy of UIMFData.FrameType, with a enum type for '0'
+        /// </summary>
+        public enum ReadFrameType
+        {
+            /// <summary>
+            /// Any frame type
+            /// </summary>
+            AllFrames = 0,
+
+            /// <summary>
+            /// MS1
+            /// </summary>
+            MS1 = 1,
+
+            /// <summary>
+            /// MS2
+            /// </summary>
+            MS2 = 2,
+
+            /// <summary>
+            /// Calibration
+            /// </summary>
+            Calibration = 3,
+
+            /// <summary>
+            /// Prescan
+            /// </summary>
+            Prescan = 4
         }
     }
 }

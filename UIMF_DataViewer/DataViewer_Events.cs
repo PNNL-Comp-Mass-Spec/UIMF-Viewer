@@ -348,7 +348,7 @@ namespace UIMF_File
                 if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
                 {
                     this.minFrame_Chromatogram = 0;
-                    this.maxFrame_Chromatogram = this.ptr_UIMFDatabase.set_FrameType(this.current_frame_type) - 1;
+                    this.maxFrame_Chromatogram = this.ptr_UIMFDatabase.SetCurrentFrameType(this.current_frame_type) - 1;
 
                     // select the range of frames
                     if (this.chromatogram_valuesPerPixelX < 0)
@@ -629,8 +629,8 @@ namespace UIMF_File
 
                 if (frame_number < 1)
                     frame_number = 1;
-                if (frame_number > this.ptr_UIMFDatabase.get_NumFrames(this.current_frame_type))
-                    frame_number = this.ptr_UIMFDatabase.get_NumFrames(this.current_frame_type) - 1;
+                if (frame_number > this.ptr_UIMFDatabase.GetNumberOfFrames(this.current_frame_type))
+                    frame_number = this.ptr_UIMFDatabase.GetNumberOfFrames(this.current_frame_type) - 1;
 
                 this.slide_FrameSelect.Value = frame_number;
 
@@ -1117,7 +1117,7 @@ namespace UIMF_File
         // mike wants complete dump.
         private void export_ChromatogramIntensityMatrix(string filename)
         {
-            int frames_width = this.ptr_UIMFDatabase.get_NumFrames(this.ptr_UIMFDatabase.get_FrameType());
+            int frames_width = this.ptr_UIMFDatabase.GetNumberOfFrames(this.ptr_UIMFDatabase.CurrentFrameType);
             double[] frames_axis = new double[frames_width];
             int mob_height = this.ptr_UIMFDatabase.UimfFrameParams.Scans;
             double[] drift_axis = new double[mob_height];
@@ -1763,7 +1763,7 @@ namespace UIMF_File
 
                 try
                 {
-                    this.ptr_UIMFDatabase.GetSpectrum(this.ptr_UIMFDatabase.CurrentFrameNum, (DataReader.FrameType)this.ptr_UIMFDatabase.get_FrameType(), k, out spectrum_array, out bins_array);
+                    this.ptr_UIMFDatabase.GetSpectrum(this.ptr_UIMFDatabase.CurrentFrameNum, this.ptr_UIMFDatabase.CurrentFrameNumFrameType, k, out spectrum_array, out bins_array);
                 }
                 catch (Exception ex)
                 {
@@ -2102,14 +2102,15 @@ namespace UIMF_File
         {
             this.flag_CinemaPlot = false;
 
-            this.Filter_FrameType(this.cb_FrameType.SelectedIndex);
+            var frameTypeEnum = (UIMFDataWrapper.ReadFrameType)this.cb_FrameType.SelectedIndex;
+            this.Filter_FrameType(frameTypeEnum);
 
             this.flag_FrameTypeChanged = true;
             this.flag_update2DGraph = true;
 
         }
 
-        private void Filter_FrameType(int frame_type)
+        private void Filter_FrameType(UIMFDataWrapper.ReadFrameType frame_type)
         {
             if (this.current_frame_type == frame_type)
                 return;
@@ -2117,7 +2118,7 @@ namespace UIMF_File
             int frame_count = 0;
             object[] read_values = new object[0];
 
-            frame_count = this.ptr_UIMFDatabase.set_FrameType(frame_type);
+            frame_count = this.ptr_UIMFDatabase.SetCurrentFrameType(frame_type);
             this.current_frame_type = frame_type;
             this.ptr_UIMFDatabase.CurrentFrameIndex = -1;
 
@@ -2136,8 +2137,8 @@ namespace UIMF_File
             if (frame_count == 0)
                 return;
 
-            if (this.ptr_UIMFDatabase.get_NumFrames(frame_type) > DESIRED_WIDTH_CHROMATOGRAM)
-                this.num_FrameCompression.Value = this.ptr_UIMFDatabase.get_NumFrames(frame_type) / DESIRED_WIDTH_CHROMATOGRAM;
+            if (this.ptr_UIMFDatabase.GetNumberOfFrames(frame_type) > DESIRED_WIDTH_CHROMATOGRAM)
+                this.num_FrameCompression.Value = this.ptr_UIMFDatabase.GetNumberOfFrames(frame_type) / DESIRED_WIDTH_CHROMATOGRAM;
             else
             {
                 this.rb_PartialChromatogram.Enabled = false;
@@ -2490,7 +2491,7 @@ namespace UIMF_File
             else
                 this.elementHost_FrameSelect.Hide();  // hidden elsewhere; but if there is only one frame this needs to disappear.
 
-            this.cb_FrameType.SelectedIndex = (int)this.ptr_UIMFDatabase.get_FrameType();
+            this.cb_FrameType.SelectedIndex = (int)this.ptr_UIMFDatabase.CurrentFrameType;
 
             this.flag_update2DGraph = true;
         }
@@ -2537,14 +2538,14 @@ namespace UIMF_File
                         this.cb_ExperimentControlled.Items.Add(Path.GetFileNameWithoutExtension(files[i]));
                         this.cb_ExperimentControlled.SelectedIndex = this.cb_ExperimentControlled.Items.Count - 1;
 
-                        this.Filter_FrameType(this.ptr_UIMFDatabase.get_FrameType());
+                        this.Filter_FrameType(this.ptr_UIMFDatabase.CurrentFrameType);
                         this.ptr_UIMFDatabase.CurrentFrameIndex = 0;
-                        this.ptr_UIMFDatabase.set_FrameType(current_frame_type, true);
+                        this.ptr_UIMFDatabase.SetCurrentFrameType(current_frame_type, true);
 
                         Generate2DIntensityArray();
                         this.GraphFrame(this.data_2D, true);
 
-                        this.cb_FrameType.SelectedIndex = (int)this.ptr_UIMFDatabase.get_FrameType();
+                        this.cb_FrameType.SelectedIndex = (int)this.ptr_UIMFDatabase.CurrentFrameType;
                     }
                     else
                         MessageBox.Show(this, "'" + Path.GetFileName(files[i]) + "' is not in correct format.\n\nOnly UIMF files can be added.");
@@ -3273,7 +3274,7 @@ namespace UIMF_File
                     double[] binList = new double[410000];
                     int[] intensityList = new int[410000];
 
-                    uimf_bins = this.ptr_UIMFDatabase.GetSpectrum(this.ptr_UIMFDatabase.ArrayFrameNum[i], (DataReader.FrameType)this.ptr_UIMFDatabase.get_FrameType(), j, out binList, out intensityList);
+                    uimf_bins = this.ptr_UIMFDatabase.GetSpectrum(this.ptr_UIMFDatabase.ArrayFrameNum[i], this.ptr_UIMFDatabase.FrameTypeDict[this.ptr_UIMFDatabase.ArrayFrameNum[i]], j, out binList, out intensityList);
                     var nzVals = new Tuple<int, int>[uimf_bins];
 
                     for (int k = 0; k < uimf_bins; k++)
@@ -3291,7 +3292,7 @@ namespace UIMF_File
 
         private void format_Screen()
         {
-            int frame_count = this.ptr_UIMFDatabase.get_NumFrames(this.current_frame_type);
+            int frame_count = this.ptr_UIMFDatabase.GetNumberOfFrames(this.current_frame_type);
 
             if (frame_count == 0)
             {
@@ -3459,7 +3460,7 @@ namespace UIMF_File
             this.frame_progress.Update();
             this.frame_progress.Initialize();
 
-            for (current_frame = 0; ((current_frame < (int)this.ptr_UIMFDatabase.get_FrameType()) && !this.frame_progress.flag_Stop); current_frame++)
+            for (current_frame = 0; ((current_frame < (int)this.ptr_UIMFDatabase.CurrentFrameType) && !this.frame_progress.flag_Stop); current_frame++)
             {
                 this.frame_progress.SetValue(current_frame, (int)stop_watch.ElapsedMilliseconds);
 
@@ -3476,7 +3477,7 @@ namespace UIMF_File
                         current_intensities[j] = 0;
                     }
 
-                    this.ptr_UIMFDatabase.GetSpectrum(this.ptr_UIMFDatabase.ArrayFrameNum[current_frame], (DataReader.FrameType)this.ptr_UIMFDatabase.get_FrameType(), i, out array_Bins, out array_Intensity);
+                    this.ptr_UIMFDatabase.GetSpectrum(this.ptr_UIMFDatabase.ArrayFrameNum[current_frame], this.ptr_UIMFDatabase.FrameTypeDict[this.ptr_UIMFDatabase.ArrayFrameNum[current_frame]], i, out array_Bins, out array_Intensity);
 
                     for (j = 0; j < array_Bins.Length; j++)
                         current_intensities[(int)array_Bins[j] / 4] += array_Intensity[j];
