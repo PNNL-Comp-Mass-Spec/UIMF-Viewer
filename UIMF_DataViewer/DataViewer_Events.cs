@@ -24,10 +24,6 @@ namespace UIMF_File
                     this.tabpages_Main.Width = this.Width;
                 }
             }
-            else if (this.tabpages_Main.SelectedTab == this.tab_InstrumentSettings)
-            {
-                this.pnl_InstrumentSettings.update_Frame(this.ptr_UIMFDatabase.CurrentFrameIndex, this.ptr_UIMFDatabase.GetFrameParams(this.ptr_UIMFDatabase.CurrentFrameIndex));
-            }
         }
 
         private void tabpages_Main_DrawItem(object sender, System.Windows.Forms.DrawItemEventArgs e)

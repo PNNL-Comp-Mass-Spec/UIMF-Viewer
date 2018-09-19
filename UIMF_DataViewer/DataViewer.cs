@@ -248,8 +248,6 @@ namespace UIMF_File
                 MessageBox.Show("failed to build interface()\n\n" + ex.ToString());
             }
 
-            this.pnl_InstrumentSettings.set_defaultFragmentationVoltages(this.ptr_UIMFDatabase.GetDefaultFragVoltages());
-
             for (int i = 0; i < 5; i++)
                 this.cb_FrameType.Items.Add(this.ptr_UIMFDatabase.FrameTypeDescription(i));
 
@@ -382,13 +380,6 @@ namespace UIMF_File
             this.pb_PlayDownIn.Visible = false;
             this.pb_PlayUpOut.Visible = false;
             this.pb_PlayUpIn.Visible = false;
-
-            this.pnl_InstrumentSettings = new UIMF_DataViewer.InstrumentSettings();
-            this.tab_InstrumentSettings.Controls.Add(this.pnl_InstrumentSettings);
-            this.pnl_InstrumentSettings.Top = 0;
-            this.pnl_InstrumentSettings.Left = 0;
-            this.pnl_InstrumentSettings.Width = Screen.PrimaryScreen.Bounds.Width;
-            this.pnl_InstrumentSettings.Height = Screen.PrimaryScreen.Bounds.Height;
 
             this.pnl_postProcessing = new PostProcessing(MainKey);
             this.pnl_postProcessing.Left = 0;
@@ -941,9 +932,6 @@ namespace UIMF_File
             this.pb_PlayUpIn.Top = this.pb_PlayUpOut.Top = this.lb_DragDropFiles.Top + ((this.lb_DragDropFiles.Height / 2) - this.pb_PlayUpOut.Height - 2);
             this.pb_PlayDownIn.Top = this.pb_PlayDownOut.Top = this.lb_DragDropFiles.Top + (this.lb_DragDropFiles.Height / 2) + 2;
             this.pb_PlayDownIn.Left = this.pb_PlayDownOut.Left = this.pb_PlayUpIn.Left = this.pb_PlayUpOut.Left = this.lb_DragDropFiles.Left - this.pb_PlayUpIn.Width - 4;
-
-            if (this.tabpages_Main.SelectedTab == this.tab_InstrumentSettings)
-                this.pnl_InstrumentSettings.Resize_This();
 
             // redraw
             this.flag_Resizing = false;

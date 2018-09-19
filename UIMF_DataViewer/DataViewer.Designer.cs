@@ -141,15 +141,12 @@ namespace UIMF_File
         protected CheckBox cb_EnableMZRange;
         protected Label lbl_Chromatogram;
         protected ComboBox cb_FrameType;
-        private TabPage tab_InstrumentSettings;
         protected ListBox lb_DragDropFiles;
         private PictureBox pb_PlayDownIn;
         private PictureBox pb_PlayDownOut;
         private PictureBox pb_PlayUpIn;
         private PictureBox pb_PlayUpOut;
         protected CheckBox cb_Exclusive;
-
-        private UIMF_DataViewer.InstrumentSettings pnl_InstrumentSettings;
 
         protected ComboBox cb_ExperimentControlled;
         protected Panel pnl_FrameControl;
@@ -264,7 +261,6 @@ namespace UIMF_File
             this.num_MZ = new System.Windows.Forms.NumericUpDown();
             this.cb_EnableMZRange = new System.Windows.Forms.CheckBox();
             this.pnl_2DMap = new System.Windows.Forms.Panel();
-            this.tab_InstrumentSettings = new System.Windows.Forms.TabPage();
             this.tab_PostProcessing = new System.Windows.Forms.TabPage();
             this.pb_Shrink = new System.Windows.Forms.PictureBox();
             this.pb_Expand = new System.Windows.Forms.PictureBox();
@@ -1079,7 +1075,6 @@ namespace UIMF_File
             //
             this.tabpages_Main.Alignment = System.Windows.Forms.TabAlignment.Left;
             this.tabpages_Main.Controls.Add(this.tab_DataViewer);
-            this.tabpages_Main.Controls.Add(this.tab_InstrumentSettings);
             this.tabpages_Main.Controls.Add(this.tab_PostProcessing);
             this.tabpages_Main.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
             this.tabpages_Main.Font = new System.Drawing.Font("Comic Sans MS", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -1338,17 +1333,6 @@ namespace UIMF_File
             this.pnl_2DMap.Name = "pnl_2DMap";
             this.pnl_2DMap.Size = new System.Drawing.Size(500, 484);
             this.pnl_2DMap.TabIndex = 2;
-            //
-            // tab_InstrumentSettings
-            //
-            this.tab_InstrumentSettings.Font = new System.Drawing.Font("Verdana", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tab_InstrumentSettings.Location = new System.Drawing.Point(32, 4);
-            this.tab_InstrumentSettings.Name = "tab_InstrumentSettings";
-            this.tab_InstrumentSettings.Padding = new System.Windows.Forms.Padding(3);
-            this.tab_InstrumentSettings.Size = new System.Drawing.Size(980, 872);
-            this.tab_InstrumentSettings.TabIndex = 1;
-            this.tab_InstrumentSettings.Text = "   Instrument Settings    ";
-            this.tab_InstrumentSettings.UseVisualStyleBackColor = true;
             //
             // tab_PostProcessing
             //
