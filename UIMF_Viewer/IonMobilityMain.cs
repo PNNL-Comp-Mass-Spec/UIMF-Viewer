@@ -57,6 +57,23 @@ namespace IonMobility
         [STAThread]
         static void Main(string[] args)
         {
+            if (args.Length > 0)
+            {
+                var path = args[0];
+                if (File.Exists(path) || Directory.Exists(path))
+                {
+                    var uimf = GetUimfFileInPath(path);
+                    if (!string.IsNullOrWhiteSpace(uimf))
+                    {
+                        var frame_dataViewer = new UIMF_File.DataViewer(path, true);
+                        frame_dataViewer.num_TICThreshold.Value = 300;
+
+                        Application.Run(frame_dataViewer);
+                    }
+                }
+
+                return;
+            }
             bool created;
             System.Threading.Mutex mtx = new System.Threading.Mutex(false,
                 "UIMF_Viewer_Mutex", out created);
@@ -107,10 +124,19 @@ namespace IonMobility
 
             try
             {
+#if DEBUG
+                // Old method, enabled for debug: Limit to 5 files, each file is a direct child window of IonMobilityMain
                 var frame_dataViewer = new UIMF_File.DataViewer(path, true);
                 frame_dataViewer.num_TICThreshold.Value = 300;
 
                 this.open_Experiments.Add(frame_dataViewer);
+#else
+                // New method: IonMobilityMain facilitates opening new UIMF files with its 'always on top' drag-n-drop window, but each file is its own process.
+                var exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                var psi = new System.Diagnostics.ProcessStartInfo(exePath);
+                psi.Arguments = path;
+                System.Diagnostics.Process.Start(psi);
+#endif
             }
             catch (Exception ex)
             {
@@ -128,6 +154,26 @@ namespace IonMobility
             }
         }
 
+        private static string GetUimfFileInPath(string path)
+        {
+            //detect whether its a directory or file
+            FileAttributes attr = File.GetAttributes(path);
+            if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+            {
+                var files = System.IO.Directory.GetFiles(path, "*.UIMF");
+                if (files.Length == 0)
+                    return null;
+                path = files[0];
+            }
+
+            if (Path.GetExtension(path).ToUpper() == ".UIMF")
+            {
+                return path;
+            }
+
+            return null;
+        }
+
         private void IonMobilityAcqMain_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
@@ -137,19 +183,11 @@ namespace IonMobility
                 return;
             }
 
-            //detect whether its a directory or file
-            FileAttributes attr = File.GetAttributes(files[0]);
-            if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
-            {
-                files = System.IO.Directory.GetFiles(files[0], "*.UIMF");
-                if (files.Length == 0)
-                    return;
-            }
+            var path = GetUimfFileInPath(files[0]);
 
-
-            if (Path.GetExtension(files[0]).ToUpper() == ".UIMF")
+            if (!string.IsNullOrWhiteSpace(path))
             {
-                GraphExperiment(files[0]);
+                GraphExperiment(path);
                 return;
             }
 
