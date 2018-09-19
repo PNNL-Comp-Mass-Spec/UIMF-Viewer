@@ -460,6 +460,7 @@ namespace UIMF_File
                     this.new_maxMobility = this.maximum_Mobility;
 
                     this.AutoScrollPosition = new Point(0, 0);
+                    this.hsb_2DMap.Value = 0;
                     this.uimfReader.CurrentFrameIndex = (int)this.slide_FrameSelect.Value;
 
                     this.Chromatogram_CheckedChanged();
@@ -666,6 +667,7 @@ namespace UIMF_File
                 this.flag_selection_drift = false;
                 this.plot_Mobility.ClearRange();
                 this.flag_update2DGraph = true;
+                this.hsb_2DMap.Value = 0;
 
                 this.AutoScrollPosition = new Point(0, 0);
                 // this.ResizeThis();
@@ -832,6 +834,9 @@ namespace UIMF_File
 
                 this.flag_selection_drift = false;
                 this.plot_Mobility.ClearRange();
+
+                this.AutoScrollPosition = new Point(0, 0);
+                this.hsb_2DMap.Value = 0;
 
                 this.flag_update2DGraph = true;
             }
