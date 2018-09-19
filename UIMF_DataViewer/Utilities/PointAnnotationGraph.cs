@@ -233,6 +233,8 @@ namespace UIMF_File.Utilities
 
             base.OnMouseLeave(e);
 
+            xPosition = -1000;
+            yPosition = -1000;
             if (this.GraphPane.CurveList.Count > 1)
             {
                 var curveIndex = this.GraphPane.CurveList.IndexOf(CursorLabel);
@@ -243,9 +245,6 @@ namespace UIMF_File.Utilities
                 }
             }
 
-            xPosition = -1000;
-            yPosition = -1000;
-            // TODO: //this.Cursors[0].Visible = false;
             //this.Invalidate();
         }
 
