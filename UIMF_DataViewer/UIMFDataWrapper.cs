@@ -265,6 +265,11 @@ namespace UIMF_File
             {
                 endBin = startBin - 1 + binCount * yCompression;
             }
+
+            if (xCompression >= 0)
+            {
+                endScan = startScan - 1 + scanCount * xCompression;
+            }
             return AccumulateFrameData(startFrameNumber, endFrameNumber, flagTOF, startScan, endScan, startBin, endBin, yCompression, frameData,
                 minMzBin, maxMzBin, zeroOutData, xCompression);
         }
@@ -313,6 +318,15 @@ namespace UIMF_File
             if (yCompression > 1)
             {
                 height = (int)Math.Round((double)height / yCompression);
+            }
+
+            if (xCompression > 1)
+            {
+                width = (int) Math.Round((double) width / xCompression);
+            }
+            else
+            {
+                xCompression = 1; // For math simplicity
             }
 
             if (frameData == null || width != frameData.Length || height != frameData[0].Length)
@@ -405,7 +419,7 @@ namespace UIMF_File
                                             "FROM Frame_Scans " +
                                             "WHERE FrameNum = " + currentFrameNumber +
                                             " AND ScanNum >= " + startScan +
-                                            " AND ScanNum <= " + (startScan + width - 1);
+                                            " AND ScanNum <= " + (startScan + (width * xCompression) - 1);
 
                     using (var reader = dbCommand.ExecuteReader())
                     {
@@ -413,11 +427,11 @@ namespace UIMF_File
                         // accumulate the data into the plot_data
                         if (yCompression <= 1)
                         {
-                            AccumulateFrameDataNoCompression(reader, width, startScan, startBin, endBin, ref frameData, minMzBin, maxMzBin);
+                            AccumulateFrameDataNoYCompression(reader, width, startScan, startBin, endBin, ref frameData, minMzBin, maxMzBin, xCompression);
                         }
                         else
                         {
-                            AccumulateFrameDataWithCompression(reader, width, height, startScan, startBin, endBin, ref frameData, minMzBin, maxMzBin);
+                            AccumulateFrameDataWithYCompression(reader, width, height, startScan, startBin, endBin, ref frameData, minMzBin, maxMzBin, xCompression);
                         }
                     }
                 }
@@ -426,17 +440,10 @@ namespace UIMF_File
             return frameData;
         }
 
-        private void AccumulateFrameDataNoCompression(
-            IDataReader reader,
-            int width,
-            int startScan,
-            int startBin,
-            int endBin,
-            ref int[][] frameData,
-            int minMzBin,
-            int maxMzBin)
+        private void AccumulateFrameDataNoYCompression(IDataReader reader, int width, int startScan, int startBin, int endBin,
+            ref int[][] frameData, int minMzBin, int maxMzBin, int xCompression)
         {
-            for (var scansData = 0; (scansData < width) && reader.Read(); scansData++)
+            for (var scansData = 0; (scansData / xCompression < width) && reader.Read(); scansData++)
             {
                 var scanNum = GetInt32(reader, "ScanNum");
                 ValidateScanNumber(scanNum);
@@ -447,6 +454,12 @@ namespace UIMF_File
                 if (compressedBinIntensity.Length == 0)
                 {
                     continue;
+                }
+
+                var compressedScan = currentScan;
+                if (xCompression > 1)
+                {
+                    compressedScan = currentScan / xCompression;
                 }
 
                 var binIntensities = IntensityConverterCLZF.Decompress(compressedBinIntensity, out int _);
@@ -462,24 +475,16 @@ namespace UIMF_File
                     {
                         break;
                     }
-                    frameData[currentScan][binIndex - startBin] += binIntensity.Item2;
+                    frameData[compressedScan][binIndex - startBin] += binIntensity.Item2;
                 }
             }
         }
 
-        private void AccumulateFrameDataWithCompression(
-            IDataReader reader,
-            int width,
-            int height,
-            int startScan,
-            int startBin,
-            int endBin,
-            ref int[][] frameData,
-            int minMzBin,
-            int maxMzBin)
+        private void AccumulateFrameDataWithYCompression(IDataReader reader, int width, int height, int startScan, int startBin,
+            int endBin, ref int[][] frameData, int minMzBin, int maxMzBin, int xCompression)
         {
             // each pixel accumulates more than 1 bin of data
-            for (var scansData = 0; scansData < width && reader.Read(); scansData++)
+            for (var scansData = 0; scansData / xCompression < width && reader.Read(); scansData++)
             {
                 var scanNum = GetInt32(reader, "ScanNum");
                 ValidateScanNumber(scanNum);
@@ -490,6 +495,12 @@ namespace UIMF_File
                 if (compressedBinIntensity.Length == 0)
                 {
                     continue;
+                }
+
+                var compressedScan = currentScan;
+                if (xCompression > 1)
+                {
+                    compressedScan = currentScan / xCompression;
                 }
 
                 var pixelY = 1;
@@ -515,7 +526,7 @@ namespace UIMF_File
                         if (calibrationTable[j] > calibratedBin)
                         {
                             pixelY = j;
-                            frameData[currentScan][pixelY] += binIntensity.Item2;
+                            frameData[compressedScan][pixelY] += binIntensity.Item2;
                             break;
                         }
                     }

@@ -94,8 +94,17 @@ namespace UIMF_File
 
                 // Calculate the data enclosing boundaries
                 // Need to do new_maxMobility first since new_minMobilitychanges beforehand
-                new_maxMobility = (current_valuesPerPixelX == 1) ? (int)max_Px : (int)(new_minMobility + (max_Px / -current_valuesPerPixelX));
-                new_minMobility = (current_valuesPerPixelX == 1) ? (int)min_Px : (int)(new_minMobility + (min_Px / -current_valuesPerPixelX));
+                if (current_valuesPerPixelX <= 0)
+                {
+                    new_maxMobility = (int) (new_minMobility + (max_Px / -current_valuesPerPixelX));
+                    new_minMobility = (int) (new_minMobility + (min_Px / -current_valuesPerPixelX));
+                }
+                else
+                {
+                    new_maxMobility = (int)max_Px * current_valuesPerPixelX;
+                    new_minMobility = (int)min_Px * current_valuesPerPixelX;
+                }
+
 
                 if (new_maxMobility - new_minMobility < MIN_GRAPHED_MOBILITY)
                 {
@@ -3297,8 +3306,8 @@ namespace UIMF_File
                 this.pb_PlayRightIn.Visible = this.pb_PlayRightOut.Visible = false;
                 this.elementHost_FrameSelect.Visible = false;
 
-                this.plot_TOF.GraphPane.CurveList[0].Points = new BasicArrayPointList(new double[0], new double[0]);
-                this.plot_Mobility.GraphPane.CurveList[0].Points = new BasicArrayPointList(new double[0], new double[0]);
+                this.waveform_TOFPlot.Points = new BasicArrayPointList(new double[0], new double[0]);
+                this.waveform_MobilityPlot.Points = new BasicArrayPointList(new double[0], new double[0]);
 
                 this.lbl_FrameRange.Visible = false;
                 this.num_FrameRange.Visible = false;

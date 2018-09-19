@@ -1229,7 +1229,6 @@ namespace UIMF_File
                     this.current_minMobility = Convert.ToInt32(this.num_minMobility.Value); // 0; // this.maximum_Mobility - this.max_plot_width;
                 }
 
-#if false
                 this.current_valuesPerPixelX = (total_mobility / this.max_plot_width) + 1;
 
                 this.current_maxMobility = this.current_minMobility + (this.max_plot_width * this.current_valuesPerPixelX);
@@ -1240,7 +1239,6 @@ namespace UIMF_File
                 }
                 if (this.current_maxMobility > this.maximum_Mobility)
                     this.current_maxMobility = this.maximum_Mobility;
-#endif
             }
             else
             {
@@ -1359,7 +1357,7 @@ namespace UIMF_File
                         this.current_valuesPerPixelY, this.data_2D, min_MZRange_bin, max_MZRange_bin);
                     /*/
                     this.data_2D = this.uimfReader.AccumulateFrameDataByCount(this.uimfReader.ArrayFrameNum[start_index], this.uimfReader.ArrayFrameNum[end_index], this.flag_display_as_TOF,
-                        this.current_minMobility, data_width, this.current_minBin, data_height, this.current_valuesPerPixelY, /*this.data_2D*/ null, min_MZRange_bin, max_MZRange_bin);
+                        this.current_minMobility, data_width, this.current_minBin, data_height, this.current_valuesPerPixelY, /*this.data_2D*/ null, min_MZRange_bin, max_MZRange_bin, xCompression: this.current_valuesPerPixelX);
                     /**/
 
                     try
@@ -2547,6 +2545,7 @@ namespace UIMF_File
                 plot_Mobility.XMax = this.pnl_2DMap.Width + DRIFT_PLOT_WIDTH_DIFF;
                 double minX = 0;
                 double maxX = 0;
+                int xCompressionMultiplier = current_valuesPerPixelX > 1 ? current_valuesPerPixelX : 1;
 
                 if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
                 {
@@ -2596,7 +2595,7 @@ namespace UIMF_File
                     if ((this.mean_TOFScanTime == 0) || this.flag_Chromatogram_Frames)
                     {
                         //this.plot_Mobility.PlotY(tic_Mobility, (double)0, 1.0 * Convert.ToDouble(this.num_FrameCompression.Value));
-                        this.plot_Mobility.GraphPane.CurveList[0].Points = new BasicArrayPointList(Enumerable.Range(0, tic_Mobility.Length).Select(x => x * Convert.ToDouble(this.num_FrameCompression.Value)).ToArray(), tic_Mobility);
+                        this.waveform_MobilityPlot.Points = new BasicArrayPointList(Enumerable.Range(0, tic_Mobility.Length).Select(x => x * Convert.ToDouble(this.num_FrameCompression.Value) * xCompressionMultiplier).ToArray(), tic_Mobility);
 
                         //this.xAxis_Mobility.Caption = "Frame Number";
                         this.plot_Mobility.GraphPane.XAxis.Title.Text = "Frame Number";
@@ -2608,7 +2607,7 @@ namespace UIMF_File
                     {
                         increment_MobilityValue = this.mean_TOFScanTime * (this.maximum_Mobility + 1) * this.uimfReader.UimfFrameParams.GetValueInt32(FrameParamKeyType.Accumulations) / 1000000.0 / 1000.0;
                         //this.plot_Mobility.PlotY(tic_Mobility, (double)this.minFrame_Chromatogram * increment_MobilityValue, increment_MobilityValue);
-                        this.plot_Mobility.GraphPane.CurveList[0].Points = new BasicArrayPointList(Enumerable.Range(0, tic_Mobility.Length).Select(x => x * increment_MobilityValue + this.minFrame_Chromatogram * increment_MobilityValue).ToArray(), tic_Mobility);
+                        this.waveform_MobilityPlot.Points = new BasicArrayPointList(Enumerable.Range(0, tic_Mobility.Length).Select(x => x * increment_MobilityValue * xCompressionMultiplier + this.minFrame_Chromatogram * increment_MobilityValue).ToArray(), tic_Mobility);
 
                         //this.xAxis_Mobility.Caption = "Frames - Time (sec)";
                         this.plot_Mobility.GraphPane.XAxis.Title.Text = "Frames - Time (sec)";
@@ -2632,7 +2631,7 @@ namespace UIMF_File
                         increment_MobilityValue = 1.0;
                         this.plot_Mobility.GraphPane.XAxis.Scale.Format = "F0";
                         //this.plot_Mobility.PlotY(tic_Mobility, 0, this.current_maxMobility - this.current_minMobility + 1, min_MobilityValue, increment_MobilityValue);
-                        this.plot_Mobility.GraphPane.CurveList[0].Points = new BasicArrayPointList(Enumerable.Range(0, this.current_maxMobility - this.current_minMobility + 1).Select(x => x * increment_MobilityValue + min_MobilityValue).ToArray(),
+                        this.waveform_MobilityPlot.Points = new BasicArrayPointList(Enumerable.Range(0, this.current_maxMobility - this.current_minMobility + 1).Select(x => x * increment_MobilityValue * xCompressionMultiplier + min_MobilityValue).ToArray(),
                             tic_Mobility.Take(this.current_maxMobility - this.current_minMobility + 1).ToArray());
 
                         minX = min_MobilityValue;
@@ -2645,7 +2644,7 @@ namespace UIMF_File
                         increment_MobilityValue = mean_TOFScanTime / 1000000.0;
                         this.plot_Mobility.GraphPane.XAxis.Scale.Format = "F2";
                         //this.plot_Mobility.PlotY(tic_Mobility, min_MobilityValue, increment_MobilityValue);
-                        this.plot_Mobility.GraphPane.CurveList[0].Points = new BasicArrayPointList(Enumerable.Range(0, tic_Mobility.Length).Select(x => x * increment_MobilityValue + min_MobilityValue).ToArray(), tic_Mobility);
+                        this.waveform_MobilityPlot.Points = new BasicArrayPointList(Enumerable.Range(0, tic_Mobility.Length).Select(x => x * increment_MobilityValue * xCompressionMultiplier + min_MobilityValue).ToArray(), tic_Mobility);
 
                         minX = min_MobilityValue;
                         maxX = (tic_Mobility.Length - 1) * increment_MobilityValue + min_MobilityValue - 1; // TODO: Revisit this last "- 1" - why is it needed?
