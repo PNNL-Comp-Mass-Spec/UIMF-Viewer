@@ -268,7 +268,17 @@ namespace UIMF_File
                 this.num_FrameCompression.Value = 1;
             this.current_frame_compression = Convert.ToInt32(this.num_FrameCompression.Value);
 
-            this.Width = this.pnl_2DMap.Left + this.uimfReader.UimfFrameParams.Scans + 170;
+            // Do some math, prevent the viewer from expanding across multiple screens when first opened.
+            if (this.pnl_2DMap.Left + this.uimfReader.UimfFrameParams.Scans + 170 < Screen.FromControl(this).Bounds.Width)
+            {
+                this.Width = this.pnl_2DMap.Left + this.uimfReader.UimfFrameParams.Scans + 170;
+            }
+            else
+            {
+                var maxMapWidth = Screen.FromControl(this).Bounds.Width - this.pnl_2DMap.Left - 170;
+                var xCompression = (int) (this.uimfReader.UimfFrameParams.Scans / (double) maxMapWidth + 0.99999); // Round up
+                this.Width = ((int) (this.uimfReader.UimfFrameParams.Scans / (double) xCompression)) + 30 + this.pnl_2DMap.Left + 170;
+            }
 
             this.pnl_postProcessing.InitializeCalibrants(1, this.uimfReader.UimfFrameParams.CalibrationSlope, this.uimfReader.UimfFrameParams.CalibrationIntercept);
 
