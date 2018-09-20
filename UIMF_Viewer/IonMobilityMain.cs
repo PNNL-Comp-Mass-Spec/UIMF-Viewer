@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using System.IO;
 using System.Linq;
-using UIMF_DataViewer;
 using UIMF_File;
 
 namespace IonMobility
@@ -65,7 +64,7 @@ namespace IonMobility
                     var uimf = GetUimfFileInPath(path);
                     if (!string.IsNullOrWhiteSpace(uimf))
                     {
-                        var frame_dataViewer = new UIMF_File.DataViewer(path, true);
+                        var frame_dataViewer = new UIMF_File.DataViewer(uimf, true);
                         frame_dataViewer.num_TICThreshold.Value = 300;
 
                         Application.Run(frame_dataViewer);
@@ -134,7 +133,7 @@ namespace IonMobility
                 // New method: IonMobilityMain facilitates opening new UIMF files with its 'always on top' drag-n-drop window, but each file is its own process.
                 var exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
                 var psi = new System.Diagnostics.ProcessStartInfo(exePath);
-                psi.Arguments = path;
+                psi.Arguments = $"\"{path}\"";
                 System.Diagnostics.Process.Start(psi);
 #endif
             }
