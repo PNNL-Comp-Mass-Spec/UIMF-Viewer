@@ -2402,22 +2402,28 @@ namespace UIMF_File
 
         protected virtual void hsb_2DMap_Scroll(object sender, ScrollEventArgs e)
         {
-            int oldMin = this.current_minMobility;
-            int oldMax = this.current_maxMobility;
+            int diff = this.maximum_Mobility - this.hsb_2DMap.Maximum;
+            if (_zoom.Count > 0)
+            {
+                diff = _zoom[_zoom.Count - 1].XDiff;
+            }
 
-            this.current_minMobility = this.new_minMobility = this.hsb_2DMap.Value;
-            this.current_maxMobility = this.new_maxMobility = (oldMax + (this.new_minMobility - oldMin));
+            this.new_minMobility = Math.Min(this.hsb_2DMap.Value, this.hsb_2DMap.Maximum);
+            this.new_maxMobility = this.new_minMobility + diff;
 
             this.flag_update2DGraph = true;
         }
 
         protected virtual void vsb_2DMap_Scroll(object sender, ScrollEventArgs e)
         {
-            int oldMin = this.current_minBin;
-            int oldMax = this.current_maxBin;
+            int diff = this.maximum_Bins - this.vsb_2DMap.Maximum;
+            if (_zoom.Count > 0)
+            {
+                diff = _zoom[_zoom.Count - 1].YDiff;
+            }
 
             this.new_minBin = this.vsb_2DMap.Maximum - this.vsb_2DMap.Value;
-            this.new_maxBin = (oldMax + (this.new_minBin - oldMin));
+            this.new_maxBin = this.new_minBin + diff;
 
             this.flag_update2DGraph = true;
         }

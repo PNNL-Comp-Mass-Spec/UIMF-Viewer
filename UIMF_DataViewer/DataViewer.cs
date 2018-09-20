@@ -46,6 +46,9 @@ namespace UIMF_File
             public int YMin { get; set; }
             public int YMax { get; set; }
 
+            public int XDiff => XMax - XMin;
+            public int YDiff => YMax - YMin;
+
             public ZoomInfo(int xMin, int xMax, int yMin, int yMax)
             {
                 XMin = xMin;
