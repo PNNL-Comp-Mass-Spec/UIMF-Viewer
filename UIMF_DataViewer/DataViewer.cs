@@ -893,6 +893,7 @@ namespace UIMF_File
             // Middle Bottom
             this.num_minMobility.Top = this.plot_Mobility.Top + plot_Mobility_HEIGHT + 5;
             this.num_maxMobility.Top = this.num_minMobility.Top;
+            this.lbl_TIC.Top = this.num_minMobility.Top;
 
             // pb_2DMap Size
             // max_plot_width *********************************************
@@ -1501,6 +1502,8 @@ namespace UIMF_File
 
                 this.num_minMobility.Left = this.plot_Mobility.Left;
                 this.num_maxMobility.Left = this.plot_Mobility.Left + this.plot_Mobility.Width - this.num_maxMobility.Width; //- (this.plot_Mobility.PlotAreaBounds.Width - this.pnl_2DMap.Width)
+                this.lbl_TIC.Top = this.num_minMobility.Top;
+                this.lbl_TIC.Left = (this.num_maxMobility.Left - this.num_minMobility.Left) / 2 + this.num_minMobility.Left;
 
                 this.pnl_2DMap.Left = this.plot_TOF.Left + this.plot_TOF.Width + (int)this.plot_Mobility.GraphPane.Chart.Rect.Left;
                 this.hsb_2DMap.Left = this.pnl_2DMap.Left;
@@ -1508,9 +1511,31 @@ namespace UIMF_File
                 this.hsb_2DMap.Width = this.pnl_2DMap.Width;
                 this.vsb_2DMap.Left = this.pnl_2DMap.Left + this.pnl_2DMap.Width;
                 }));
+                this.CalcTicDisplayed();
             }
 
             this.flag_collecting_data = false;
+        }
+
+        private void CalcTicDisplayed()
+        {
+            var tic = 0L;
+            if (this.data_2D != null && this.data_2D.Length > 0 && this.data_2D[0].Length > 0)
+            {
+                for (var i = 0; i < this.data_2D.Length; i++)
+                {
+                    tic += this.data_2D[i].Sum();
+                }
+            }
+
+            if (this.lbl_TIC.InvokeRequired)
+            {
+                this.lbl_TIC.Invoke(new MethodInvoker(() => this.lbl_TIC.Text = $"TIC: {tic}"));
+            }
+            else
+            {
+                this.lbl_TIC.Text = $"TIC: {tic}";
+            }
         }
 
         private void calc_TIC()
@@ -1871,6 +1896,8 @@ namespace UIMF_File
 
             this.num_minMobility.Left = this.plot_Mobility.Left;
             this.num_maxMobility.Left = this.plot_Mobility.Left + this.plot_Mobility.Width - this.num_maxMobility.Width; //- ((int)this.plot_Mobility.GraphPane.Chart.Rect.Width - this.pnl_2DMap.Width)
+            this.lbl_TIC.Top = this.num_minMobility.Top;
+            this.lbl_TIC.Left = (this.num_maxMobility.Left - this.num_minMobility.Left) / 2 + this.num_minMobility.Left;
 
             this.cb_FrameType.Top = this.num_minMobility.Top + 40;
             this.cb_FrameType.Left = this.num_minMobility.Left + 5;

@@ -58,6 +58,7 @@ namespace UIMF_File
         protected System.Windows.Forms.Label lbl_TimeOffset;
         protected System.Windows.Forms.NumericUpDown num_minMobility;
         protected System.Windows.Forms.NumericUpDown num_maxMobility;
+        private Label lbl_TIC;
         protected System.Windows.Forms.NumericUpDown num_minBin;
         protected System.Windows.Forms.NumericUpDown num_maxBin;
         protected System.Windows.Forms.Label label4;
@@ -208,6 +209,7 @@ namespace UIMF_File
             this.menuItem_TOFMaximum = new System.Windows.Forms.MenuItem();
             this.num_minMobility = new System.Windows.Forms.NumericUpDown();
             this.num_maxMobility = new System.Windows.Forms.NumericUpDown();
+            this.lbl_TIC = new System.Windows.Forms.Label();
             this.num_maxBin = new System.Windows.Forms.NumericUpDown();
             this.num_minBin = new System.Windows.Forms.NumericUpDown();
             this.slide_Threshold = new SliderLabeled();
@@ -653,6 +655,17 @@ namespace UIMF_File
             this.num_maxMobility.Size = new System.Drawing.Size(91, 21);
             this.num_maxMobility.TabIndex = 26;
             this.num_maxMobility.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            //
+            // lbl_TIC
+            //
+            this.lbl_TIC.AutoSize = true;
+            this.lbl_TIC.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.lbl_TIC.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_TIC.Location = new System.Drawing.Point(24, 80);
+            this.lbl_TIC.Name = "lbl_TIC";
+            this.lbl_TIC.Size = new System.Drawing.Size(86, 14);
+            this.lbl_TIC.TabIndex = 53;
+            this.lbl_TIC.Text = "TIC:";
             //
             // num_maxBin
             //
@@ -1101,6 +1114,7 @@ namespace UIMF_File
             this.tab_DataViewer.Controls.Add(this.pnl_2DMap);
             this.tab_DataViewer.Controls.Add(this.pb_SliderBackground);
             this.tab_DataViewer.Controls.Add(this.num_minMobility);
+            this.tab_DataViewer.Controls.Add(this.lbl_TIC);
             this.tab_DataViewer.Controls.Add(this.num_maxMobility);
             this.tab_DataViewer.Controls.Add(this.num_maxBin);
             this.tab_DataViewer.Controls.Add(this.num_minBin);
