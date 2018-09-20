@@ -171,9 +171,6 @@
     <Content Include="Images\triangle_right_out.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MathNet.Numerics">
-      <Version>4.5.1</Version>
-    </PackageReference>
     <PackageReference Include="System.Data.SQLite.Core">
       <Version>1.0.97</Version>
     </PackageReference>
