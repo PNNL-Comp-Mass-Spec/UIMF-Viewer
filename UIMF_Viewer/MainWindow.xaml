@@ -1,0 +1,31 @@
+﻿<Window x:Class="UIMFViewer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:UIMFViewer"
+        mc:Ignorable="d"
+        Title="UIMF Viewer" SizeToContent="Height"  Width="239" ResizeMode="CanMinimize"
+        Loaded="MainWindow_OnLoaded" Activated="MainWindow_OnActivated" Deactivated="MainWindow_OnDeactivated"
+        AllowDrop="True" DragOver="Main_OnDragOver" Drop="Main_OnDrop"
+        Icon="Images/HeatMap.ico"
+        Closed="MainWindow_OnClosed"
+        d:DataContext="{d:DesignInstance {x:Type local:MainWindowViewModel}, IsDesignTimeCreatable=True}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Menu Grid.Row="0">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open" Command="{Binding OpenFileCommand}" />
+                <MenuItem Header="Single Process Mode" IsCheckable="True" IsChecked="{Binding UseSingleProcess}" />
+                <MenuItem Header="E_xit" Click="MainWindow_Close" />
+            </MenuItem>
+            <MenuItem Header="_About" Click="About_OnClick" />
+        </Menu>
+        <Border Grid.Row="1" BorderThickness="10" BorderBrush="DarkGray" Background="DimGray">
+            <Image Source="Images/PNNL_Color_Logo_Horizontal.png" Stretch="Uniform" />
+        </Border>
+    </Grid>
+</Window>

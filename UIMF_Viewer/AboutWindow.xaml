@@ -1,0 +1,42 @@
+﻿<Window x:Class="UIMFViewer.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:UIMFViewer"
+        mc:Ignorable="d"
+        Title="UIMF Viewer: About" Height="300" SizeToContent="Height" Width="390"
+        ResizeMode="NoResize">
+    <Window.Resources>
+        <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="FontFamily" Value="Arial" />
+            <Setter Property="FontSize" Value="12pt" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="10" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="10" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.Background>
+            <ImageBrush ImageSource="Images/ripple21.gif" />
+        </Grid.Background>
+        <Image Grid.Row="0" Margin="3" Height="88" Source="Images/PNNL_Color_Logo_Horizontal.png" Stretch="Uniform" />
+        <TextBlock Grid.Row="2" Margin="3" HorizontalAlignment="Center">
+            <Run Text="Version: " />
+            <Run Name="VersionString" Text="VerNo" />
+        </TextBlock>
+        <TextBlock Grid.Row="3" Margin="3" HorizontalAlignment="Center">
+            <Run Text="Date: " />
+            <Run Name="VersionDateString" Text="VerNo" />
+        </TextBlock>
+        <TextBlock Grid.Row="5" Margin="3" HorizontalAlignment="Center" Text="Developers:" />
+        <TextBlock Grid.Row="6" Margin="3" HorizontalAlignment="Center" Text="William Danielson, Bryson Gibbons" />
+    </Grid>
+</Window>
