@@ -36,7 +36,7 @@ namespace UIMF_File
     public struct Peptide
     {
         public bool enabled;
-     
+
         public string name;
         public double mz;
         public int charge;
@@ -55,9 +55,9 @@ namespace UIMF_File
     }
 
     /*******************************************************************************************
-    * 
+    *
     * CODE BY MIKE BELOV TO CALIBRATE DATA
-    * 
+    *
     */
     public partial class PostProcessing : System.Windows.Forms.UserControl
     {
@@ -128,14 +128,14 @@ namespace UIMF_File
         private int spectra_with_nonzeroentries = 0;
 
         RegistryKey parent_key;
-        Calibration_Settings settings_Calibration;
+        CalibrationSettings settings_Calibration;
 
         public PostProcessing(RegistryKey main_key)
         {
             parent_key = main_key;
-            this.settings_Calibration = new Calibration_Settings();
+            this.settings_Calibration = new CalibrationSettings();
             //  BinResolution = bin_resolution;
-            
+
 #if COEFFICIENTS
             coef_Sciex.Slope = (double)0.35660427;
             coef_Sciex.Intercept = (double)-0.07565783;
@@ -161,7 +161,7 @@ namespace UIMF_File
             N_TOF_BINS_PER_TOF_SCAN = (long)(t_TOF / TOF_step);
             N_TOF_BINS_PER_IMS_BIN = (long)(N_TIME_STEPS * N_TOF_BINS_PER_TOF_SCAN / N_PRS_BINS);
             N_SCANS_PER_MODULATION_BIN = (long)(t_modulation_IMS / t_TOF);
-             
+
             InitializeComponent();
 
             this.pnl_Success.Enabled = false;
@@ -169,7 +169,7 @@ namespace UIMF_File
             this.Load_Registry();
         }
 
-        /// <summary> 
+        /// <summary>
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
@@ -602,10 +602,10 @@ namespace UIMF_File
                         ((this.sum_intensity2[i - 2] > SIGNAL_THRESHOLD) && (this.sum_intensity2[i - 2] > SNR_noise_level)) ||
                         ((this.sum_intensity2[i - 1] > SIGNAL_THRESHOLD) && (this.sum_intensity2[i - 1] > SNR_noise_level)))
                     {
-                        if ((this.sum_intensity2[i - 2] > this.sum_intensity2[i - 1]) && // 
+                        if ((this.sum_intensity2[i - 2] > this.sum_intensity2[i - 1]) && //
                             (this.sum_intensity2[i - 1] > this.sum_intensity2[i]) &&     // fixed this line
-                            (this.sum_intensity2[i - 3] < this.sum_intensity2[i - 2]) && // 
-                            (this.sum_intensity2[i - 4] < this.sum_intensity2[i - 2]))   // 
+                            (this.sum_intensity2[i - 3] < this.sum_intensity2[i - 2]) && //
+                            (this.sum_intensity2[i - 4] < this.sum_intensity2[i - 2]))   //
                         {
                             peptide_local_max[peak_number] = this.sum_intensity2[i - 2];
                             TOF_offset_local[peak_number] = this.arrival_time_TOF2[i - 2]; // define file pointer position corresponding to the local max signal
@@ -625,7 +625,7 @@ namespace UIMF_File
 
             double peptide_local_max1 = peptide_local_max[0];
 
-            // Analyze all combinations of found peptide peaks and find the two matching the criterium of TOF_checkup. 
+            // Analyze all combinations of found peptide peaks and find the two matching the criterium of TOF_checkup.
             // Then select the smallest index as peak_number_mono
             if ((species_ID == Species.PEPTIDE) || (species_ID == Species.CALIBRANT))
             {
@@ -735,7 +735,7 @@ namespace UIMF_File
                     }
 
                     double[,] local_Variable = {{sum_x4, sum_x3, sum_x2, sum_yx2},
-                                           {sum_x3, sum_x2, sum_x, sum_yx}, 
+                                           {sum_x3, sum_x2, sum_x, sum_yx},
                                            {sum_x2, sum_x,  3, sum_y}};
 
                     pVariable = (double[,])local_Variable.Clone();
@@ -810,32 +810,32 @@ namespace UIMF_File
 
             this.set_ExperimentalCoefficients(mz_Experimental_Slope, mz_Experimental_Intercept);
 
-            // agilent tune mix  
+            // agilent tune mix
             Calibrants[0].mz = 622.02896;
             Calibrants[0].name = "agilent_tune_1";
             Calibrants[0].charge = 1;
 
-            //agilent tune mix  
+            //agilent tune mix
             Calibrants[1].mz = 922.009798;
             Calibrants[1].name = "agilent_tune_2";
             Calibrants[1].charge = 1;
 
-            //agilent tune mix  
+            //agilent tune mix
             Calibrants[2].mz = 1221.990637;
             Calibrants[2].name = "agilent_tune_3";
             Calibrants[2].charge = 1;
 
-            //agilent tune mix  
+            //agilent tune mix
             Calibrants[3].mz = 1521.971475;
             Calibrants[3].name = "agilent_tune_4";
             Calibrants[3].charge = 1;
 
-            //agilent tune mix  
+            //agilent tune mix
             Calibrants[4].mz = 1821.952313;
             Calibrants[4].name = "agilent_tune_5";
             Calibrants[4].charge = 1;
-            
-            //Angiotensin_I 3+ 
+
+            //Angiotensin_I 3+
             Calibrants[5].mz = 432.89975;
             Calibrants[5].name = "Angiotensin_I";
             Calibrants[5].charge = 3;
@@ -845,7 +845,7 @@ namespace UIMF_File
             Calibrants[6].name = "Angiotensin_I";
             Calibrants[6].charge = 2;
 
-            //Bradykinin +3 
+            //Bradykinin +3
             Calibrants[7].mz = 354.1943928;
             Calibrants[7].name = "Bradykinin";
             Calibrants[7].charge = 3;
@@ -875,7 +875,7 @@ namespace UIMF_File
             Calibrants[12].name = "Renin";
             Calibrants[12].charge = 2;
 
-            // "Renin +1 
+            // "Renin +1
             Calibrants[13].mz = 1025.556667;
             Calibrants[13].name = "Renin";
             Calibrants[13].charge = 1;
@@ -923,12 +923,12 @@ namespace UIMF_File
             Calibrants[22].name = "LCVLHEKTPVSEKVTK";
             Calibrants[22].charge = 5;
 
-            //bsa  
+            //bsa
             Calibrants[23].mz = 454.895578;
             Calibrants[23].name = "SLHTLFGDELCK";
             Calibrants[23].charge = 3;
 
-            //bsa  
+            //bsa
             Calibrants[24].mz = 693.813909;
             Calibrants[24].name = "YICDNQDTISSK";
             Calibrants[24].charge = 2;
@@ -943,7 +943,7 @@ namespace UIMF_File
 
                     this.dg_Calibrants.Rows[row].Cells[1].Value = Calibrants[row].name;
                     this.dg_Calibrants.Rows[row].Cells[2].Value = Calibrants[row].mz; // num frames
-                    this.dg_Calibrants.Rows[row].Cells[3].Value = Calibrants[row].charge; 
+                    this.dg_Calibrants.Rows[row].Cells[3].Value = Calibrants[row].charge;
 
                     this.dg_Calibrants.Rows[row].Cells[4].Value = (double)((Math.Sqrt(Calibrants[row].mz) / this.Experimental_Slope) + this.Experimental_Intercept);
                     this.dg_Calibrants.Rows[row].Cells[5].Value = ((double) this.dg_Calibrants.Rows[row].Cells[4].Value) * 1000.0 / bin_width;
@@ -973,7 +973,7 @@ namespace UIMF_File
             {
                 return;
             }
-         
+
             this.Calculated_Intercept = (Math.Sqrt(mz2) * bin1 - Math.Sqrt(mz1) * bin2) / (Math.Sqrt(mz2) - Math.Sqrt(mz1));
             this.Calculated_Slope = Math.Sqrt(mz1) / (bin1 - this.Calculated_Intercept);
 
@@ -1003,7 +1003,7 @@ namespace UIMF_File
 
         public void Load_Registry()
         {
-            this.settings_Calibration = Calibration_Settings.Load(this.parent_key);
+            this.settings_Calibration = CalibrationSettings.Load(this.parent_key);
             for (int i = 0; (i < this.settings_Calibration.num_peptides) && (i < this.dg_Calibrants.Rows.Count); i++)
                 this.dg_Calibrants.Rows[i].Cells[0].Value = this.settings_Calibration.ion_selection[i];
         }
@@ -1028,7 +1028,7 @@ namespace UIMF_File
         //
         public int get_CalibrantCountMatched()
         {
-            int count = 0; 
+            int count = 0;
 
             for (int j = 0; j < this.dg_Calibrants.Rows.Count - 1; ++j)
             {
@@ -1149,21 +1149,21 @@ namespace UIMF_File
     /********************************************************************************************
     *  Calibration Settings - to save to registry!
     */
-    public class Calibration_Settings
+    public class CalibrationSettings
     {
         public bool[] ion_selection;
         public int num_peptides = 0;
 
-        public Calibration_Settings()
+        public CalibrationSettings()
         {
             ion_selection = new bool[num_peptides];
             for (int i = 0; i < num_peptides; i++)
                 ion_selection[i] = false;
         }
 
-        public static Calibration_Settings Load(RegistryKey parent_key)
+        public static CalibrationSettings Load(RegistryKey parent_key)
         {
-            Calibration_Settings p = new Calibration_Settings();
+            CalibrationSettings p = new CalibrationSettings();
 
             try
             {
