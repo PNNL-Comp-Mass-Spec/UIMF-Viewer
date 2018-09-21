@@ -1530,11 +1530,11 @@ namespace UIMF_File
 
             if (this.lbl_TIC.InvokeRequired)
             {
-                this.lbl_TIC.Invoke(new MethodInvoker(() => this.lbl_TIC.Text = $"TIC: {tic}"));
+                this.lbl_TIC.Invoke(new MethodInvoker(() => this.lbl_TIC.Text = $"TIC: {tic:0.00 E+00}"));
             }
             else
             {
-                this.lbl_TIC.Text = $"TIC: {tic}";
+                this.lbl_TIC.Text = $"TIC: {tic:0.00 E+00}";
             }
         }
 
