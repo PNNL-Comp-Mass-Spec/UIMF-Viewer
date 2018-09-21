@@ -94,15 +94,15 @@ namespace UIMF_File
 
                 // Calculate the data enclosing boundaries
                 // Need to do new_maxMobility first since new_minMobilitychanges beforehand
-                if (current_valuesPerPixelX <= 0)
+                if (current_valuesPerPixelX <= 1)
                 {
                     new_maxMobility = (int) (new_minMobility + (max_Px / -current_valuesPerPixelX));
                     new_minMobility = (int) (new_minMobility + (min_Px / -current_valuesPerPixelX));
                 }
                 else
                 {
-                    new_maxMobility = (int)max_Px * current_valuesPerPixelX;
-                    new_minMobility = (int)min_Px * current_valuesPerPixelX;
+                    new_maxMobility = (int) (new_minMobility + max_Px * current_valuesPerPixelX);
+                    new_minMobility = (int) (new_minMobility + min_Px * current_valuesPerPixelX);
                 }
 
 
