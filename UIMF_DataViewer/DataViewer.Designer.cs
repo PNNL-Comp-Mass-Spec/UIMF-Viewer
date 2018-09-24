@@ -920,6 +920,8 @@ namespace UIMF_File
             this.slide_FrameSelect.IsSnapToTickEnabled = true;
             this.slide_FrameSelect.IsSelectionRangeEnabled = true;
             this.slide_FrameSelect.IsMoveToPointEnabled = true;
+            this.slide_FrameSelect.AutoToolTipPlacement = AutoToolTipPlacement.TopLeft;
+            this.slide_FrameSelect.AutoToolTipPrecision = 0;
             this.slide_FrameSelect.Resources = new ResourceDictionary() {Source = new System.Uri("/UIMF_DataViewer;component/WpfControls/SliderLabeledStyle.xaml", System.UriKind.Relative)};
             this.elementHost_FrameSelect.Location = new System.Drawing.Point(272, 36);
             this.elementHost_FrameSelect.Size = new System.Drawing.Size(276, 47);
