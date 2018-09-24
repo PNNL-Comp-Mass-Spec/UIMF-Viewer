@@ -118,12 +118,16 @@ namespace UIMF_DataViewer.WpfControls
             var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
             var size = new Size(this.ActualWidth, this.ActualHeight);
             var numberOfTicks = this.Maximum - this.Minimum;
+            var maxFormattedText = new FormattedText(Maximum.ToString(StringFormat), CultureInfo.CurrentUICulture, this.FlowDirection, typeface,
+                FontSize, Foreground, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+            var maxDisplayedLabels = numberOfTicks;
             var tickMaxLength = 0.0;
             var tickOffset = 1.0;
             var tickDirection = 1.0;
             var startPoint = new Point(0.0, 0.0);
             var endPoint = new Point(0.0, 0.0);
             var reservedPadding = this.ReservedSpace * 0.5;
+            var textMinPadding = 15;
             switch (this.Placement)
             {
                 case TickBarPlacement.Left:
@@ -131,6 +135,7 @@ namespace UIMF_DataViewer.WpfControls
                         return;
                     size.Height -= this.ReservedSpace;
                     tickMaxLength = -TickLength;
+                    maxDisplayedLabels = size.Height / (maxFormattedText.Height + textMinPadding);
                     startPoint = new Point(size.Width, size.Height + reservedPadding);
                     endPoint = new Point(size.Width, reservedPadding);
                     tickOffset = size.Height / numberOfTicks * -1.0;
@@ -141,6 +146,7 @@ namespace UIMF_DataViewer.WpfControls
                         return;
                     size.Width -= this.ReservedSpace;
                     tickMaxLength = -TickLength;
+                    maxDisplayedLabels = size.Width / (maxFormattedText.Width + textMinPadding);
                     startPoint = new Point(reservedPadding, size.Height);
                     endPoint = new Point(reservedPadding + size.Width, size.Height);
                     tickOffset = size.Width / numberOfTicks;
@@ -151,6 +157,7 @@ namespace UIMF_DataViewer.WpfControls
                         return;
                     size.Height -= this.ReservedSpace;
                     tickMaxLength = TickLength;
+                    maxDisplayedLabels = size.Height / (maxFormattedText.Height + textMinPadding);
                     startPoint = new Point(0.0, size.Height + reservedPadding);
                     endPoint = new Point(0.0, reservedPadding);
                     tickOffset = size.Height / numberOfTicks * -1.0;
@@ -161,6 +168,7 @@ namespace UIMF_DataViewer.WpfControls
                         return;
                     size.Width -= this.ReservedSpace;
                     tickMaxLength = TickLength;
+                    maxDisplayedLabels = size.Width / (maxFormattedText.Width + textMinPadding);
                     startPoint = new Point(reservedPadding, 0.0);
                     endPoint = new Point(reservedPadding + size.Width, 0.0);
                     tickOffset = size.Width / numberOfTicks;
@@ -178,6 +186,14 @@ namespace UIMF_DataViewer.WpfControls
                 endPoint = swap;
             }
 
+            var minTickFrequencyText = (this.Maximum - this.Minimum) / maxDisplayedLabels + 1; // +1 to leave a larger gap near the max, rather than overlapping
+            if ((this.TickFrequency % 1).Equals(0))
+            {
+                minTickFrequencyText = (int)Math.Round(minTickFrequencyText, MidpointRounding.AwayFromZero);
+            }
+
+            var maxDynamicTick = Maximum - minTickFrequencyText;
+
             var pen = new Pen(this.Fill, 1.0);
             var snapsToDevicePixels = this.SnapsToDevicePixels;
             var visualXSnappingGuidelines = snapsToDevicePixels ? new DoubleCollection() : null;
@@ -190,6 +206,11 @@ namespace UIMF_DataViewer.WpfControls
                     var minTickFrequency = (this.Maximum - this.Minimum) / size.Height;
                     if (tickFrequency < minTickFrequency)
                         tickFrequency = minTickFrequency;
+                }
+
+                if (tickFrequency < minTickFrequencyText)
+                {
+                    tickFrequency = minTickFrequencyText;
                 }
 
                 dc.DrawLine(pen, startPoint, new Point(startPoint.X + tickMaxLength, startPoint.Y));
@@ -222,7 +243,7 @@ namespace UIMF_DataViewer.WpfControls
                 }
                 else if (tickFrequency > 0.0)
                 {
-                    for (var i = tickFrequency; i < numberOfTicks; i += tickFrequency)
+                    for (var i = tickFrequency; i < numberOfTicks && i <= maxDynamicTick; i += tickFrequency)
                     {
                         var y = i * tickOffset + startPoint.Y;
                         dc.DrawLine(pen, new Point(startPoint.X, y), new Point(startPoint.X + tickLength, y));
@@ -274,6 +295,11 @@ namespace UIMF_DataViewer.WpfControls
                         tickFrequency = minTickFrequency;
                 }
 
+                if (tickFrequency < minTickFrequencyText)
+                {
+                    tickFrequency = minTickFrequencyText;
+                }
+
                 dc.DrawLine(pen, startPoint, new Point(startPoint.X, startPoint.Y + tickMaxLength));
                 DrawLabel(Minimum, startPoint.X, startPoint.Y, typeface, dc);
                 dc.DrawLine(pen, new Point(endPoint.X, startPoint.Y), new Point(endPoint.X, startPoint.Y + tickMaxLength));
@@ -304,7 +330,7 @@ namespace UIMF_DataViewer.WpfControls
                 }
                 else if (tickFrequency > 0.0)
                 {
-                    for (var i = tickFrequency; i < numberOfTicks; i += tickFrequency)
+                    for (var i = tickFrequency; i < numberOfTicks && i <= maxDynamicTick; i += tickFrequency)
                     {
                         var x = i * tickOffset + startPoint.X;
                         dc.DrawLine(pen, new Point(x, startPoint.Y), new Point(x, startPoint.Y + tickLength));
