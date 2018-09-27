@@ -2671,7 +2671,8 @@ namespace UIMF_File
                         this.plot_Mobility.GraphPane.XAxis.Title.Text = "Frame Number";
 
                         minX = 0;
-                        maxX = (tic_Mobility.Length - 1) * Convert.ToDouble(this.num_FrameCompression.Value) - 1; // TODO: Revisit this last "- 1" - why is it needed?
+                        //maxX = (tic_Mobility.Length - 1) * Convert.ToDouble(this.num_FrameCompression.Value) * xCompressionMultiplier;
+                        maxX = this.waveform_MobilityPlot.Points[this.waveform_MobilityPlot.Points.Count - 1].X;
                     }
                     else
                     {
@@ -2683,7 +2684,8 @@ namespace UIMF_File
                         this.plot_Mobility.GraphPane.XAxis.Title.Text = "Frames - Time (sec)";
 
                         minX = (double)this.minFrame_Chromatogram * increment_MobilityValue;
-                        maxX = (tic_Mobility.Length - 1) * increment_MobilityValue + this.minFrame_Chromatogram * increment_MobilityValue - 1; // TODO: Revisit this last "- 1" - why is it needed?
+                        //maxX = (tic_Mobility.Length - 1) * increment_MobilityValue * xCompressionMultiplier + this.minFrame_Chromatogram * increment_MobilityValue;
+                        maxX = this.waveform_MobilityPlot.Points[this.waveform_MobilityPlot.Points.Count - 1].X;
                     }
                 }
                 else
@@ -2701,11 +2703,12 @@ namespace UIMF_File
                         increment_MobilityValue = 1.0;
                         this.plot_Mobility.GraphPane.XAxis.Scale.Format = "F0";
                         //this.plot_Mobility.PlotY(tic_Mobility, 0, this.current_maxMobility - this.current_minMobility + 1, min_MobilityValue, increment_MobilityValue);
-                        this.waveform_MobilityPlot.Points = new BasicArrayPointList(Enumerable.Range(0, this.current_maxMobility - this.current_minMobility + 1).Select(x => x * increment_MobilityValue * xCompressionMultiplier + min_MobilityValue).ToArray(),
+                        this.waveform_MobilityPlot.Points = new BasicArrayPointList(Enumerable.Range(0, tic_Mobility.Length).Select(x => x * increment_MobilityValue * xCompressionMultiplier + min_MobilityValue).ToArray(),
                             tic_Mobility.Take(this.current_maxMobility - this.current_minMobility + 1).ToArray());
 
                         minX = min_MobilityValue;
-                        maxX = (this.current_maxMobility - this.current_minMobility + 1) * increment_MobilityValue + min_MobilityValue - 1; // TODO: Revisit this last "- 1" - why is it needed?
+                        //maxX = (tic_Mobility.Length - 1) * increment_MobilityValue * xCompressionMultiplier + min_MobilityValue;
+                        maxX = this.waveform_MobilityPlot.Points[this.waveform_MobilityPlot.Points.Count - 1].X;
                     }
                     else
                     {
@@ -2717,7 +2720,8 @@ namespace UIMF_File
                         this.waveform_MobilityPlot.Points = new BasicArrayPointList(Enumerable.Range(0, tic_Mobility.Length).Select(x => x * increment_MobilityValue * xCompressionMultiplier + min_MobilityValue).ToArray(), tic_Mobility);
 
                         minX = min_MobilityValue;
-                        maxX = (tic_Mobility.Length - 1) * increment_MobilityValue + min_MobilityValue - 1; // TODO: Revisit this last "- 1" - why is it needed?
+                        //maxX = (tic_Mobility.Length - 1) * increment_MobilityValue * xCompressionMultiplier + min_MobilityValue;
+                        maxX = this.waveform_MobilityPlot.Points[this.waveform_MobilityPlot.Points.Count - 1].X;
                     }
 
                     // set min and max here, they will not adjust to zooming

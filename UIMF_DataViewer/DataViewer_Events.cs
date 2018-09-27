@@ -2258,7 +2258,7 @@ namespace UIMF_File
                 (this.tabpages_FrameInfo.SelectedTab != this.tabPage_Cursor))
                 return;
 
-            double mobility = (current_valuesPerPixelX == 1 ? e.X : this.current_minMobility + (e.X / -this.current_valuesPerPixelX));
+            double mobility = (current_valuesPerPixelX >= 1 ? e.X * current_valuesPerPixelX : this.current_minMobility + (e.X / -this.current_valuesPerPixelX));
 
             this.lbl_CursorMobility.Text = mobility.ToString();
             if (this.mean_TOFScanTime != -1.0)
