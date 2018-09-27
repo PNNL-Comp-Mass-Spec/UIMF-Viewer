@@ -1097,6 +1097,16 @@ namespace UIMF_File
                 this.uimfReader.CurrentFrameIndex = Convert.ToInt32(frameSelectValue);
             }
 
+            if (this.flag_viewMobility)
+                this.plot_Mobility.GraphPane.XAxis.Title.Text = "Mobility - Scans";
+            else
+                this.plot_Mobility.GraphPane.XAxis.Title.Text = "Mobility - Time (msec)";
+
+            if (this.flag_display_as_TOF)
+                this.plot_TOF.GraphPane.YAxis.Title.Text = "Time of Flight (usec)";
+            else
+                this.plot_TOF.GraphPane.YAxis.Title.Text = "m/z";
+
             this.get_ViewableIntensities();
 
             if (flag_newframe && this.flag_isTIMS)
@@ -1108,16 +1118,6 @@ namespace UIMF_File
             {
                 return;
             }
-
-            if (this.flag_viewMobility)
-                this.plot_Mobility.GraphPane.XAxis.Title.Text = "Mobility - Scans";
-            else
-                this.plot_Mobility.GraphPane.XAxis.Title.Text = "Mobility - Time (msec)";
-
-            if (this.flag_display_as_TOF)
-                this.plot_TOF.GraphPane.YAxis.Title.Text = "Time of Flight (usec)";
-            else
-                this.plot_TOF.GraphPane.YAxis.Title.Text = "m/z";
 
             GC.WaitForPendingFinalizers();
             GC.Collect();
@@ -1865,6 +1865,11 @@ namespace UIMF_File
                     }
                 }
 
+            if (this.flag_viewMobility)
+                this.plot_TOF.GraphPane.YAxis.Title.Text = "Mobility - Scans";
+            else
+                this.plot_TOF.GraphPane.YAxis.Title.Text = "Mobility - Time (msec)";
+
             this.plot_axisTOF(this.chromatogram_tofTIC);
             this.plot_axisMobility(this.chromatogram_driftTIC);
 
@@ -1907,11 +1912,6 @@ namespace UIMF_File
 
             this.hsb_2DMap.Width = this.pnl_2DMap.Width;
             this.vsb_2DMap.Left = this.pnl_2DMap.Left + this.pnl_2DMap.Width;
-
-            if (this.flag_viewMobility)
-                this.plot_TOF.GraphPane.YAxis.Title.Text = "Mobility - Scans";
-            else
-                this.plot_TOF.GraphPane.YAxis.Title.Text = "Mobility - Time (msec)";
             this.ResizeThis();
 
             this.flag_collecting_data = false;
