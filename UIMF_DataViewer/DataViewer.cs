@@ -9,6 +9,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using UIMFLibrary;
 using System.Linq;
+using UIMF_DataViewer.PostProcessing;
 using ZedGraph;
 
 // ******************************************************************************************************
@@ -119,7 +120,6 @@ namespace UIMF_File
 
         //private System.Windows.Forms.Timer timer_GraphFrame;
         private System.Threading.Thread thread_GraphFrame;
-        private System.Threading.Thread thread_Calibrate;
 
         // Smoothing and slicing
         private bool _useDriftTime = true;
@@ -192,7 +192,8 @@ namespace UIMF_File
 
         private int current_frame_compression;
 
-        private UIMF_File.PostProcessing pnl_postProcessing = null;
+        // TODO: Old: private UIMF_File.PostProcessing pnl_postProcessing = null;
+        private PostProcessingViewModel pnl_postProcessing = null;
 
         private bool flag_Closing = false;
         private bool flag_FrameTypeChanged = false;
@@ -326,18 +327,6 @@ namespace UIMF_File
             }
 
             this.pnl_postProcessing.InitializeCalibrants(1, this.uimfReader.UimfFrameParams.CalibrationSlope, this.uimfReader.UimfFrameParams.CalibrationIntercept);
-
-            this.pnl_postProcessing.tb_SaveDecodeFilename.Text = Path.GetFileNameWithoutExtension(this.uimfReader.UimfDataFile);
-            this.pnl_postProcessing.tb_SaveDecodeDirectory.Text = Path.GetDirectoryName(this.uimfReader.UimfDataFile);
-
-            if (this.uimfReader.UimfGlobalParams.BinWidth != .25)
-                this.pnl_postProcessing.gb_Compress4GHz.Hide();
-            else
-            {
-                this.pnl_postProcessing.btn_Compress1GHz.Click += this.btn_Compress1GHz_Click;
-                this.pnl_postProcessing.tb_SaveCompressFilename.Text = Path.GetFileNameWithoutExtension(this.uimfReader.UimfDataFile);
-                this.pnl_postProcessing.tb_SaveCompressDirectory.Text = Path.GetDirectoryName(this.uimfReader.UimfDataFile);
-            }
         }
 
         /// <summary>
@@ -412,11 +401,10 @@ namespace UIMF_File
             this.pb_PlayUpOut.Visible = false;
             this.pb_PlayUpIn.Visible = false;
 
-            this.pnl_postProcessing = new PostProcessing(MainKey);
-            this.pnl_postProcessing.Left = 0;
-            this.pnl_postProcessing.Top = 0;
+            this.pnl_postProcessing = new PostProcessingViewModel(MainKey, uimfReader);
+            this.pnl_postProcessing.CalibrationChanged += pnl_postProcessing_CalibrationChanged;
 
-            this.tab_PostProcessing.Controls.Add(this.pnl_postProcessing);
+            this.postProcessingView.DataContext = this.pnl_postProcessing;
 
             this.slider_ColorMap = new UIMF_File.Utilities.Intensity_ColorMap();
             this.tab_DataViewer.Controls.Add(this.slider_ColorMap);
@@ -539,10 +527,6 @@ namespace UIMF_File
                 this.btn_Reset.Click += this.btn_Reset_Clicked;
                 this.slide_Threshold.ValueChanged += this.slide_Threshold_ValueChanged;
                 this.btn_revertCalDefaults.Click += this.btn_revertCalDefaults_Click;
-
-                this.pnl_postProcessing.btn_AttemptCalibration.Click += this.btn_CalibrateFrames_Click;
-                this.pnl_postProcessing.btn_ManualCalibration.Click += this.btn_ApplyCalculatedCalibration_Click;
-                this.pnl_postProcessing.btn_ExperimentCalibration.Click += this.btn_ApplyCalibration_Experiment_Click;
 
                 this.tabpages_Main.DrawItem += this.tabpages_Main_DrawItem;
                 this.tabpages_Main.SelectedIndexChanged += this.tabpages_Main_SelectedIndexChanged;
@@ -808,9 +792,6 @@ namespace UIMF_File
 
                 return;
             }
-
-            this.pnl_postProcessing.Width = this.tab_PostProcessing.Width + 50;
-            this.pnl_postProcessing.Height = this.tab_PostProcessing.Height + 50;
 
             // Start at the top!
             //
@@ -1281,6 +1262,7 @@ namespace UIMF_File
                     this.current_minMobility = 0;
                     this.current_maxMobility = (this.max_plot_width * this.current_valuesPerPixelY);
                 }
+
                 if (this.current_maxMobility > this.maximum_Mobility)
                     this.current_maxMobility = this.maximum_Mobility;
             }

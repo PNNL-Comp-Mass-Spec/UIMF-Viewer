@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
+using UIMF_DataViewer.PostProcessing;
 using UIMF_DataViewer.WpfControls;
 
 namespace UIMF_File
@@ -105,7 +106,6 @@ namespace UIMF_File
         private Label lbl_FrameRange;
         private NumericUpDown num_FrameRange;
         private Label lbl_FramesShown;
-        public UIMF_File.Utilities.progress_Processing frame_progress;
 
         private ProgressBar progress_ReadingFile;
 
@@ -129,6 +129,8 @@ namespace UIMF_File
         protected TabControl tabpages_Main;
         protected TabPage tab_DataViewer;
         protected TabPage tab_PostProcessing;
+        private ElementHost elementHost_PostProcessing;
+        private PostProcessingView postProcessingView;
         protected NumericUpDown num_FrameIndex;
         protected GroupBox gb_MZRange;
         private Label lbl_PPM;
@@ -261,6 +263,8 @@ namespace UIMF_File
             this.cb_EnableMZRange = new System.Windows.Forms.CheckBox();
             this.pnl_2DMap = new System.Windows.Forms.Panel();
             this.tab_PostProcessing = new System.Windows.Forms.TabPage();
+            this.elementHost_PostProcessing = new ElementHost();
+            this.postProcessingView = new PostProcessingView();
             this.pb_Shrink = new System.Windows.Forms.PictureBox();
             this.pb_Expand = new System.Windows.Forms.PictureBox();
             this.pb_PlayLeftIn = new System.Windows.Forms.PictureBox();
@@ -1357,6 +1361,15 @@ namespace UIMF_File
             this.tab_PostProcessing.TabIndex = 2;
             this.tab_PostProcessing.Text = "   Post Processing    ";
             this.tab_PostProcessing.UseVisualStyleBackColor = true;
+            //
+            // elementHost_PostProcessing
+            //
+            this.elementHost_PostProcessing.Name = "elementHost_PostProcessing";
+            this.elementHost_PostProcessing.Size = new System.Drawing.Size(1072, 847);
+            this.elementHost_PostProcessing.Dock = DockStyle.Fill;
+            this.elementHost_PostProcessing.AutoSize = true;
+            this.elementHost_PostProcessing.Child = this.postProcessingView;
+            this.tab_PostProcessing.Controls.Add(this.elementHost_PostProcessing);
             //
             // pb_Shrink
             //

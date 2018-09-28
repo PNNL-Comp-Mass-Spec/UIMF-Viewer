@@ -81,7 +81,7 @@ namespace UIMF_File
         /// <param name="slope"></param>
         /// <param name="intercept"></param>
         /// <param name="autoCalibrating"></param>
-        public void UpdateCalibrationCoefficients(int frameIndex, float slope, float intercept, bool autoCalibrating = false)
+        public new void UpdateCalibrationCoefficients(int frameIndex, double slope, double intercept, bool autoCalibrating = false)
         {
             if (frameIndex > this.ArrayFrameNum.Length)
                 return;
@@ -105,7 +105,7 @@ namespace UIMF_File
         /// <param name="slope"></param>
         /// <param name="intercept"></param>
         /// <param name="autoCalibrating"></param>
-        public void UpdateAllCalibrationCoefficients(float slope, float intercept, bool autoCalibrating = false)
+        public new void UpdateAllCalibrationCoefficients(double slope, double intercept, bool autoCalibrating = false)
         {
             using (var writer = new DataWriter(this.UimfDataFile))
             {
