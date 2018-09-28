@@ -1070,9 +1070,11 @@ namespace UIMF_File
                 {
                     double increment_MobilityValue = mean_TOFScanTime / 1000000.0;
                     double min_MobilityValue = this.current_minMobility * this.mean_TOFScanTime / 1000000.0;
+                    int xCompressionMultiplier = current_valuesPerPixelX > 1 ? current_valuesPerPixelX : 1;
+                    // TODO: Maybe just use waveform_mobilityPlot points for output?
                     for (int i = 0; i < tic_Mobility.Length; i++)
                     {
-                        w.WriteLine("{0},{1}", (i * increment_MobilityValue) + min_MobilityValue, tic_Mobility[i]);
+                        w.WriteLine("{0},{1}", (i * increment_MobilityValue * xCompressionMultiplier) + min_MobilityValue, tic_Mobility[i]);
                     }
                 }
                 w.Close();
@@ -1177,9 +1179,10 @@ namespace UIMF_File
 
             //increment = (((double)(this.current_maxMobility - this.current_minMobility)) * this.mean_TOFScanTime) / mob_width / 1000000.0;
             //drift_axis[0] = this.current_minMobility * this.mean_TOFScanTime / mob_width / 1000000.0;
+            int xCompressionMultiplier = current_valuesPerPixelX > 1 ? current_valuesPerPixelX : 1;
             drift_axis[0] = this.current_minMobility * this.mean_TOFScanTime / 1000000.0;
             for (i = 1; i < mob_width; i++)
-                drift_axis[i] = (drift_axis[i - 1] + (double)increment);
+                drift_axis[i] = (drift_axis[i - 1] + (double)increment * xCompressionMultiplier);
 
             if (flag_display_as_TOF)
             {
