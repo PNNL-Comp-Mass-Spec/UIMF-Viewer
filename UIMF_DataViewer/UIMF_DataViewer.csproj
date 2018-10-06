@@ -107,6 +107,12 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Utilities\TextExport.cs" />
+    <Compile Include="WpfControls\ColorMapSlider\ColorData.cs" />
+    <Compile Include="WpfControls\ColorMapSlider\ColorMapSlider.cs" />
+    <Compile Include="WpfControls\ColorMapSlider\ColorThumb.cs" />
+    <Compile Include="WpfControls\ColorMapSlider\ColorThumbSlider.cs" />
+    <Compile Include="WpfControls\GrayScaleSlider\GrayScaleSlider.cs" />
+    <Compile Include="WpfControls\GrayScaleSlider\ValueThumb.cs" />
     <Compile Include="WpfControls\LabeledSlider\SliderLabeled.cs" />
     <Compile Include="WpfControls\LabeledSlider\TickBarLabeled.cs" />
     <Compile Include="WpfControls\WpfConversions.cs" />
@@ -200,6 +206,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Themes\Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="WpfControls\ColorMapSlider\ColorMapSliderStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="WpfControls\GrayScaleSlider\GrayScaleSliderStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
