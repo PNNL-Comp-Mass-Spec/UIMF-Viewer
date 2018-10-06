@@ -5,7 +5,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Media;
 
-namespace UIMF_DataViewer.WpfControls
+namespace UIMF_DataViewer.WpfControls.LabeledSlider
 {
     public class TickBarLabeled : TickBar
     {

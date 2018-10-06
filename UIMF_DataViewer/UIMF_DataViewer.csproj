@@ -107,8 +107,8 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Utilities\TextExport.cs" />
-    <Compile Include="WpfControls\SliderLabeled.cs" />
-    <Compile Include="WpfControls\TickBarLabeled.cs" />
+    <Compile Include="WpfControls\LabeledSlider\SliderLabeled.cs" />
+    <Compile Include="WpfControls\LabeledSlider\TickBarLabeled.cs" />
     <Compile Include="WpfControls\WpfConversions.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -203,7 +203,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="WpfControls\SliderLabeledStyle.xaml">
+    <Page Include="WpfControls\LabeledSlider\SliderLabeledStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

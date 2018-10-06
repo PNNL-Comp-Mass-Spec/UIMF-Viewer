@@ -6,7 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace UIMF_DataViewer.WpfControls
+namespace UIMF_DataViewer.WpfControls.LabeledSlider
 {
     public class SliderLabeled : Slider
     {

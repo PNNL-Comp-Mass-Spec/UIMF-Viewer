@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Windows.Forms.Integration;
 using UIMF_DataViewer.PostProcessing;
 using UIMF_DataViewer.WpfControls;
+using UIMF_DataViewer.WpfControls.LabeledSlider;
 
 namespace UIMF_File
 {
@@ -721,7 +722,7 @@ namespace UIMF_File
             this.slide_Threshold.Value = 1;
             this.slide_Threshold.TickPlacement = TickPlacement.BottomRight;
             this.slide_Threshold.IsMoveToPointEnabled = true;
-            this.slide_Threshold.Resources = new ResourceDictionary() { Source = new System.Uri("/UIMF_DataViewer;component/WpfControls/SliderLabeledStyle.xaml", System.UriKind.Relative) };
+            this.slide_Threshold.Resources = new ResourceDictionary() { Source = new System.Uri("/UIMF_DataViewer;component/WpfControls/LabeledSlider/SliderLabeledStyle.xaml", System.UriKind.Relative) };
             this.elementHost_Threshold.Location = new System.Drawing.Point(834, 128);
             this.elementHost_Threshold.Size = new System.Drawing.Size(64, 280);
             this.elementHost_Threshold.Child = this.slide_Threshold;
@@ -926,7 +927,7 @@ namespace UIMF_File
             this.slide_FrameSelect.IsMoveToPointEnabled = true;
             this.slide_FrameSelect.AutoToolTipPlacement = AutoToolTipPlacement.TopLeft;
             this.slide_FrameSelect.AutoToolTipPrecision = 0;
-            this.slide_FrameSelect.Resources = new ResourceDictionary() {Source = new System.Uri("/UIMF_DataViewer;component/WpfControls/SliderLabeledStyle.xaml", System.UriKind.Relative)};
+            this.slide_FrameSelect.Resources = new ResourceDictionary() {Source = new System.Uri("/UIMF_DataViewer;component/WpfControls/LabeledSlider/SliderLabeledStyle.xaml", System.UriKind.Relative)};
             this.elementHost_FrameSelect.Location = new System.Drawing.Point(272, 36);
             this.elementHost_FrameSelect.Size = new System.Drawing.Size(276, 47);
             this.elementHost_FrameSelect.Child = slide_FrameSelect;
