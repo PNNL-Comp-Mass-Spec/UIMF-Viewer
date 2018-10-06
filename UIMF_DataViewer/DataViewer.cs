@@ -1,7 +1,6 @@
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Collections;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Threading;
@@ -147,8 +146,6 @@ namespace UIMF_File
         private int maxMobility_Chromatogram = 599;
         private int minFrame_Chromatogram = 0;
         private int maxFrame_Chromatogram = 499;
-
-        private UIMF_File.Utilities.Intensity_ColorMap slider_ColorMap;
 
         private int posX_MaxIntensity = 0;
         private int posY_MaxIntensity = 0;
@@ -406,11 +403,6 @@ namespace UIMF_File
 
             this.postProcessingView.DataContext = this.pnl_postProcessing;
 
-            this.slider_ColorMap = new UIMF_File.Utilities.Intensity_ColorMap();
-            this.tab_DataViewer.Controls.Add(this.slider_ColorMap);
-            this.slider_PlotBackground = new UIMF_File.Utilities.GrayScaleSlider(this.pb_SliderBackground);
-            this.tab_DataViewer.Controls.Add(this.slider_PlotBackground);
-
             menuItem_UseDriftTime.Checked = !_useDriftTime;
             menuItem_UseScans.Checked = _useDriftTime;
 
@@ -421,8 +413,7 @@ namespace UIMF_File
             this.plot_TOF.Left = 0;
             this.plot_TOF.Top = 0;
 
-            //this.slider_PlotBackground.btn_GreyValue.MouseUp += new MouseEventHandler( this.slider_Background_MouseUp );
-            this.slider_PlotBackground.btn_GreyValue.Move += this.slider_Background_Move;
+            this.plotAreaFormattingVm.PropertyChanged += PlotAreaFormattingVmOnPropertyChanged;
 
             // starts with the mobility view
             this.flag_viewMobility = true;
@@ -524,16 +515,14 @@ namespace UIMF_File
                 this.tb_CalA.Click += this.CalibratorA_Changed;
                 this.tb_CalA.Leave += this.CalibratorA_Changed;
 
-                this.btn_Reset.Click += this.btn_Reset_Clicked;
-                this.slide_Threshold.ValueChanged += this.slide_Threshold_ValueChanged;
+                this.plotAreaFormattingVm.ValuesReset += this.PlotAreaFormattingReset;
                 this.btn_revertCalDefaults.Click += this.btn_revertCalDefaults_Click;
 
                 this.tabpages_Main.DrawItem += this.tabpages_Main_DrawItem;
                 this.tabpages_Main.SelectedIndexChanged += this.tabpages_Main_SelectedIndexChanged;
 
-                for (int i = 0; i < this.slider_ColorMap.btn_Slider.Length; i++)
-                    this.slider_ColorMap.btn_Slider[i].MouseUp += this.ColorSelector_Change;
-                this.slider_ColorMap.lbl_MaxIntensity.MouseEnter += this.show_MaxIntensity;
+                this.plotAreaFormattingVm.ColorMap.ColorPositionChanged += this.ColorSelector_Change;
+                this.plotAreaFormattingVm.ColorMap.PropertyChanged += ColorMapOnPropertyChanged;
 
                 this.Resize += this.IonMobilityDataView_Resize;
               //  this.tabpages_Main.Resize += new EventHandler(this.tabpages_Main_Resize);
@@ -855,21 +844,9 @@ namespace UIMF_File
 
             // --------------------------------------------------------------------------------------------------
             // Right
-            this.slider_PlotBackground.Height = (this.max_plot_height / 3) + 5;
-            this.slider_PlotBackground.Top = this.pnl_FrameControl.Top + this.pnl_FrameControl.Height + 10;
-
-            this.elementHost_Threshold.Height = this.max_plot_height - this.btn_Reset.Height - this.slider_PlotBackground.Height;
-            this.elementHost_Threshold.Top = this.slider_PlotBackground.Top + this.slider_PlotBackground.Height;
-
-            this.btn_Reset.Top = this.elementHost_Threshold.Top + this.elementHost_Threshold.Height;
-
-            this.slider_ColorMap.Height = (this.elementHost_Threshold.Top + this.elementHost_Threshold.Height) - this.slider_PlotBackground.Top;
-            this.slider_ColorMap.Top = this.slider_PlotBackground.Top;
-
-            this.elementHost_Threshold.Left = this.tab_DataViewer.Width - (this.elementHost_Threshold.Width + 25) - 10;
-            this.slider_PlotBackground.Left = this.elementHost_Threshold.Left;
-            this.slider_ColorMap.Left = this.elementHost_Threshold.Left - this.slider_ColorMap.Width - 10;
-            this.btn_Reset.Left = this.slider_ColorMap.Left + 12;
+            this.elementHost_PlotAreaFormatting.Height = this.max_plot_height;
+            this.elementHost_PlotAreaFormatting.Top = this.pnl_FrameControl.Top + this.pnl_FrameControl.Height + 10;
+            this.elementHost_PlotAreaFormatting.Left = this.tab_DataViewer.Width - this.elementHost_PlotAreaFormatting.Width - 10;
 
             // Middle Bottom
             this.num_minMobility.Top = this.plot_Mobility.Top + plot_Mobility_HEIGHT + 5;
@@ -878,7 +855,7 @@ namespace UIMF_File
 
             // pb_2DMap Size
             // max_plot_width *********************************************
-            this.max_plot_width = this.slider_ColorMap.Left - this.pnl_2DMap.Left - 20;
+            this.max_plot_width = this.elementHost_PlotAreaFormatting.Left - this.pnl_2DMap.Left - 20;
 
             // --------------------------------------------------------------------------------------------------
             // selection corners
@@ -1710,11 +1687,11 @@ namespace UIMF_File
             else
                 new_2dmap_width = (data_width * -this.chromatogram_valuesPerPixelX) + 1;
 
-            if (new_2dmap_width > this.slider_ColorMap.Left - this.pnl_2DMap.Left)
+            if (new_2dmap_width > this.elementHost_PlotAreaFormatting.Left - this.pnl_2DMap.Left)
                 this.tab_DataViewer.Width = this.pnl_2DMap.Left + new_2dmap_width + 175;
             else
             {
-                this.chromatogram_valuesPerPixelX = -((((this.slider_ColorMap.Left - this.pnl_2DMap.Left) / new_2dmap_width) * new_2dmap_width) / data_width);
+                this.chromatogram_valuesPerPixelX = -((((this.elementHost_PlotAreaFormatting.Left - this.pnl_2DMap.Left) / new_2dmap_width) * new_2dmap_width) / data_width);
                 new_2dmap_width = (data_width * -this.chromatogram_valuesPerPixelX) + 1;
             }
 
@@ -2229,7 +2206,7 @@ namespace UIMF_File
                     //this.IonMobilityDataView_Resize((object)null, (EventArgs)null);
                 }
 
-                this.slider_ColorMap.Invalidate();
+                this.elementHost_PlotAreaFormatting.Invalidate();
             }
 
             this.calc_TIC();
@@ -2262,15 +2239,7 @@ namespace UIMF_File
 
             LockBitmap();
 
-            double thresholdValue = 0;
-            if (this.elementHost_Threshold.InvokeRequired)
-            {
-                this.elementHost_Threshold.Invoke(new MethodInvoker(delegate { thresholdValue = this.slide_Threshold.Value; }));
-            }
-            else
-            {
-                thresholdValue = this.slide_Threshold.Value;
-            }
+            var thresholdValue = this.plotAreaFormattingVm.ThresholdSliderValue;
 
             int threshold = Convert.ToInt32(thresholdValue) - 1;
             float divisor_range = (float)(new_maxIntensity - threshold);
@@ -2304,7 +2273,10 @@ namespace UIMF_File
                             {
                                 try
                                 {
-                                    slider_ColorMap.getRGB(((float)(new_data2D[x][y] - threshold)) / divisor_range, pPixel);
+                                    var color = plotAreaFormattingVm.ColorMap.GetColorForIntensity(((new_data2D[x][y] - threshold)) / divisor_range);
+                                    pPixel->red = color.R;
+                                    pPixel->green = color.G;
+                                    pPixel->blue = color.B;
                                 }
                                 catch (Exception ex)
                                 {
@@ -2319,7 +2291,7 @@ namespace UIMF_File
                                 try
                                 {
                                     // this will make the background white - doesn't work if the continue; statement is below
-                                    pPixel->red = pPixel->green = pPixel->blue = (byte)this.slider_PlotBackground.get_Value();
+                                    pPixel->red = pPixel->green = pPixel->blue = (byte)this.plotAreaFormattingVm.BackgroundGrayValue;
                                 }
                                 catch (Exception ex)
                                 {
@@ -2407,7 +2379,7 @@ namespace UIMF_File
                 return;
             }
             this.BackColor = Color.Silver;
-            this.slider_ColorMap.set_MaxIntensity(new_maxIntensity);
+            //this.slider_ColorMap.set_MaxIntensity(new_maxIntensity); TODO: Did nothing, but if ColorMapSlider is changed to scale by intensity, that would get set here.
 
             //this.Width = this.pnl_2DMap.Left + this.pnl_2DMap.Width + 170;
 

@@ -54,6 +54,11 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PlotAreaFormatting\ColorMapSliderViewModel.cs" />
+    <Compile Include="PlotAreaFormatting\PlotAreaFormattingView.xaml.cs">
+      <DependentUpon>PlotAreaFormattingView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PlotAreaFormatting\PlotAreaFormattingViewModel.cs" />
     <Compile Include="PostProcessing\CalibrantInfo.cs" />
     <Compile Include="PostProcessing\PostProcessingView.xaml.cs">
       <DependentUpon>PostProcessingView.xaml</DependentUpon>
@@ -96,16 +101,10 @@
     <Compile Include="Utilities\ExportExperiment.designer.cs">
       <DependentUpon>ExportExperiment.cs</DependentUpon>
     </Compile>
-    <Compile Include="Utilities\Intensity_ColorMap.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Utilities\PointAnnotationGraph.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Utilities\Savior.cs" />
-    <Compile Include="Utilities\Slider.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Utilities\TextExport.cs" />
     <Compile Include="WpfControls\ColorMapSlider\ColorData.cs" />
     <Compile Include="WpfControls\ColorMapSlider\ColorMapSlider.cs" />
@@ -129,10 +128,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Utilities\ExportExperiment.resx">
       <DependentUpon>ExportExperiment.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Utilities\Intensity_ColorMap.resx">
-      <DependentUpon>Intensity_ColorMap.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Utilities\PointAnnotationGraph.resx">
@@ -193,6 +188,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="PlotAreaFormatting\PlotAreaFormattingView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="PostProcessing\PostProcessingView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

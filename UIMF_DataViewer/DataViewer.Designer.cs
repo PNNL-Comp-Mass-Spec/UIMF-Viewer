@@ -4,6 +4,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
 using UIMF_DataViewer.PostProcessing;
+using UIMF_DataViewer.PlotAreaFormatting;
 using UIMF_DataViewer.WpfControls;
 using UIMF_DataViewer.WpfControls.LabeledSlider;
 
@@ -16,7 +17,6 @@ namespace UIMF_File
         /// </summary>
         private System.ComponentModel.IContainer components = null;
         #region HIDE
-        protected System.Windows.Forms.Button btn_Reset;
         private System.Windows.Forms.ContextMenu contextMenu_pb_2DMap;
         private System.Windows.Forms.MenuItem menuItem_SelectionCorners;
         protected System.Windows.Forms.MenuItem menuItemZoomFull;
@@ -56,7 +56,6 @@ namespace UIMF_File
         private System.Windows.Forms.ContextMenu contextMenu_TOF;
         private System.Windows.Forms.MenuItem menuItem_TOFExport;
         private System.Windows.Forms.MenuItem menuItem_TOFMaximum;
-        private System.Windows.Forms.PictureBox pb_SliderBackground;
         protected System.Windows.Forms.Label lbl_TimeOffset;
         protected System.Windows.Forms.NumericUpDown num_minMobility;
         protected System.Windows.Forms.NumericUpDown num_maxMobility;
@@ -69,16 +68,15 @@ namespace UIMF_File
         protected System.Windows.Forms.Label lbl_CursorMZ;
         protected ZedGraph.LineItem waveform_TOFPlot;
         protected ZedGraph.LineItem waveform_MobilityPlot;
-
-        protected UIMF_File.Utilities.GrayScaleSlider slider_PlotBackground;
         #endregion
 
 
         protected System.Windows.Forms.Label label5;
         protected System.Windows.Forms.Label label3;
         protected System.Windows.Forms.Label lbl_CursorScanTime;
-        public SliderLabeled slide_Threshold;
-        public ElementHost elementHost_Threshold;
+        public ElementHost elementHost_PlotAreaFormatting;
+        private PlotAreaFormattingViewModel plotAreaFormattingVm;
+        private PlotAreaFormattingView plotAreaFormattingView;
         private System.Windows.Forms.MenuItem menuItem1;
         private System.Windows.Forms.MenuItem menuItem_CaptureExperimentFrame;
 
@@ -215,9 +213,9 @@ namespace UIMF_File
             this.lbl_TIC = new System.Windows.Forms.Label();
             this.num_maxBin = new System.Windows.Forms.NumericUpDown();
             this.num_minBin = new System.Windows.Forms.NumericUpDown();
-            this.slide_Threshold = new SliderLabeled();
-            this.elementHost_Threshold = new ElementHost();
-            this.btn_Reset = new System.Windows.Forms.Button();
+            this.elementHost_PlotAreaFormatting = new ElementHost();
+            this.plotAreaFormattingVm = new PlotAreaFormattingViewModel();
+            this.plotAreaFormattingView = new PlotAreaFormattingView();
             this.lbl_ExperimentDate = new System.Windows.Forms.Label();
             this.tabpages_FrameInfo = new System.Windows.Forms.TabControl();
             this.tabPage_Cursor = new System.Windows.Forms.TabPage();
@@ -276,7 +274,6 @@ namespace UIMF_File
             this.pb_PlayDownOut = new System.Windows.Forms.PictureBox();
             this.pb_PlayUpIn = new System.Windows.Forms.PictureBox();
             this.pb_PlayUpOut = new System.Windows.Forms.PictureBox();
-            this.pb_SliderBackground = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.num_minMobility)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_maxMobility)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_maxBin)).BeginInit();
@@ -305,7 +302,6 @@ namespace UIMF_File
             ((System.ComponentModel.ISupportInitialize)(this.pb_PlayDownOut)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_PlayUpIn)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_PlayUpOut)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_SliderBackground)).BeginInit();
             this.SuspendLayout();
             //
             // contextMenu_pb_2DMap
@@ -702,41 +698,12 @@ namespace UIMF_File
             this.num_minBin.TabIndex = 29;
             this.num_minBin.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             //
-            // slide_Threshold
+            // plotAreaFormatting
             //
-            //TODO: //this.slide_Threshold.FillBackColor = System.Drawing.Color.DimGray;
-            //TODO: //this.slide_Threshold.FillColor = System.Drawing.Color.RoyalBlue;
-            //TODO: //this.slide_Threshold.FillStyle = NationalInstruments.UI.FillStyle.VerticalGradient;
-            //this.slide_Threshold.BackColor = System.Drawing.Color.DimGray;
-            //this.slide_Threshold.ForeColor = System.Drawing.Color.RoyalBlue;
-            this.slide_Threshold.Foreground = System.Windows.Media.Brushes.Black;
-            this.slide_Threshold.FontFamily = new System.Windows.Media.FontFamily("Arial");
-            this.slide_Threshold.FontWeight = FontWeights.Bold;
-            this.slide_Threshold.FontSize = WpfConversions.GetWpfLength("8.25pt");
-            this.slide_Threshold.Name = "slide_Threshold";
-            this.slide_Threshold.Minimum = 1;
-            this.slide_Threshold.Maximum = 10000000;
-            this.slide_Threshold.Orientation = System.Windows.Controls.Orientation.Vertical;
-            this.slide_Threshold.IsLogarithmicScale = true;
-            this.slide_Threshold.TabIndex = 36;
-            this.slide_Threshold.Value = 1;
-            this.slide_Threshold.TickPlacement = TickPlacement.BottomRight;
-            this.slide_Threshold.IsMoveToPointEnabled = true;
-            this.slide_Threshold.Resources = new ResourceDictionary() { Source = new System.Uri("/UIMF_DataViewer;component/WpfControls/LabeledSlider/SliderLabeledStyle.xaml", System.UriKind.Relative) };
-            this.elementHost_Threshold.Location = new System.Drawing.Point(834, 128);
-            this.elementHost_Threshold.Size = new System.Drawing.Size(64, 280);
-            this.elementHost_Threshold.Child = this.slide_Threshold;
-            //
-            // btn_Reset
-            //
-            this.btn_Reset.BackColor = System.Drawing.Color.Gainsboro;
-            this.btn_Reset.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_Reset.Location = new System.Drawing.Point(860, 416);
-            this.btn_Reset.Name = "btn_Reset";
-            this.btn_Reset.Size = new System.Drawing.Size(44, 20);
-            this.btn_Reset.TabIndex = 37;
-            this.btn_Reset.Text = "Reset";
-            this.btn_Reset.UseVisualStyleBackColor = false;
+            this.plotAreaFormattingView.DataContext = this.plotAreaFormattingVm;
+            this.elementHost_PlotAreaFormatting.Location = new System.Drawing.Point(834, 4);
+            this.elementHost_PlotAreaFormatting.Size = new System.Drawing.Size(90, 300);
+            this.elementHost_PlotAreaFormatting.Child = this.plotAreaFormattingView;
             //
             // lbl_ExperimentDate
             //
@@ -1119,14 +1086,12 @@ namespace UIMF_File
             this.tab_DataViewer.Controls.Add(this.btn_Refresh);
             this.tab_DataViewer.Controls.Add(this.pnl_Chromatogram);
             this.tab_DataViewer.Controls.Add(this.pnl_2DMap);
-            this.tab_DataViewer.Controls.Add(this.pb_SliderBackground);
             this.tab_DataViewer.Controls.Add(this.num_minMobility);
             this.tab_DataViewer.Controls.Add(this.lbl_TIC);
             this.tab_DataViewer.Controls.Add(this.num_maxMobility);
             this.tab_DataViewer.Controls.Add(this.num_maxBin);
             this.tab_DataViewer.Controls.Add(this.num_minBin);
-            this.tab_DataViewer.Controls.Add(this.elementHost_Threshold);
-            this.tab_DataViewer.Controls.Add(this.btn_Reset);
+            this.tab_DataViewer.Controls.Add(this.elementHost_PlotAreaFormatting);
             this.tab_DataViewer.Controls.Add(this.lbl_ExperimentDate);
             this.tab_DataViewer.Controls.Add(this.tabpages_FrameInfo);
             this.tab_DataViewer.Controls.Add(this.vsb_2DMap);
@@ -1476,16 +1441,6 @@ namespace UIMF_File
             this.pb_PlayUpOut.TabIndex = 91;
             this.pb_PlayUpOut.TabStop = false;
             //
-            // pb_SliderBackground
-            //
-            this.pb_SliderBackground.Image = ((System.Drawing.Image)(resources.GetObject("pb_SliderBackground.Image")));
-            this.pb_SliderBackground.Location = new System.Drawing.Point(786, 68);
-            this.pb_SliderBackground.Name = "pb_SliderBackground";
-            this.pb_SliderBackground.Size = new System.Drawing.Size(11, 694);
-            this.pb_SliderBackground.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pb_SliderBackground.TabIndex = 22;
-            this.pb_SliderBackground.TabStop = false;
-            //
             // DataViewer
             //
             this.BackColor = System.Drawing.Color.Silver;
@@ -1532,7 +1487,6 @@ namespace UIMF_File
             ((System.ComponentModel.ISupportInitialize)(this.pb_PlayDownOut)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_PlayUpIn)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_PlayUpOut)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_SliderBackground)).EndInit();
             this.ResumeLayout(false);
 
         }

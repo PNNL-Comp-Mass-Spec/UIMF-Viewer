@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -162,34 +163,6 @@ namespace UIMF_File
 
             _zoom.Add(newZoom);
         }
-
-        #region Background Slider Events
-
-        // ////////////////////////////////////////////////////////////////////////////
-        // change the background color
-        //
-        // private void slider_Background_MouseUp(object obj, System.Windows.Forms.MouseEventArgs e)
-        private void slider_Background_Move(object obj, System.EventArgs e)
-        {
-            if (this.pnl_2DMap != null)
-            {
-                this.slider_PlotBackground.Update();
-                this.flag_update2DGraph = true;
-
-                if (this.slider_PlotBackground.get_Value() >= 250)
-                {
-                    this.Opacity = .75;
-                    this.TopMost = true;
-                }
-                else if (this.Opacity != 1.0)
-                {
-                    this.Opacity = 1.0;
-                    this.TopMost = false;
-                }
-            }
-        }
-
-        #endregion
 
         #region 2DMap Events
 
@@ -2191,20 +2164,74 @@ namespace UIMF_File
 
         #endregion
 
+        #region Plot Area Formatting Events
+
+        // ////////////////////////////////////////////////////////////////////////////
+        // change the background color
+        //
+        private void BackgroundSliderValueChanged()
+        {
+            if (this.pnl_2DMap != null)
+            {
+                //this.elementHost_PlotAreaFormatting.Update(); // TODO: This shouldn't be needed.
+                this.flag_update2DGraph = true;
+
+                if (this.plotAreaFormattingVm.BackgroundGrayValue >= 250)
+                {
+                    this.Opacity = .75;
+                    this.TopMost = true;
+                }
+                else if (this.Opacity != 1.0)
+                {
+                    this.Opacity = 1.0;
+                    this.TopMost = false;
+                }
+            }
+        }
+
+
+
+        private void PlotAreaFormattingVmOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName.Equals(nameof(this.plotAreaFormattingVm.ThresholdSliderValue)))
+            {
+                this.flag_update2DGraph = true;
+            }
+            else if (e.PropertyName.Equals(nameof(this.plotAreaFormattingVm.BackgroundGrayValue)))
+            {
+                BackgroundSliderValueChanged();
+            }
+        }
+
+        private void ColorMapOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName.Equals(nameof(this.plotAreaFormattingVm.ColorMap.ShowMaxIntensity)))
+            {
+                ShowMaxIntensity(this.plotAreaFormattingVm.ColorMap.ShowMaxIntensity);
+            }
+        }
+
         // //////////////////////////////////////////////////////////////////////////
         // Display Settings
         //
-        private void slide_Threshold_ValueChanged(object sender, System.Windows.RoutedPropertyChangedEventArgs<double> e)
+        private void ColorSelector_Change(object sender, EventArgs e)
         {
             this.flag_update2DGraph = true;
         }
 
-        private void ColorSelector_Change(object sender, System.Windows.Forms.MouseEventArgs e)
+        protected virtual void ShowMaxIntensity(bool show)
         {
-            this.flag_update2DGraph = true;
+            if (show)
+            {
+                ShowMaxIntensity();
+            }
+            else
+            {
+                this.flag_update2DGraph = true;
+            }
         }
 
-        protected virtual void show_MaxIntensity(object sender, System.EventArgs e)
+        protected virtual void ShowMaxIntensity()
         {
             int topX;
             int topY;
@@ -2240,15 +2267,13 @@ namespace UIMF_File
             g.DrawEllipse(p2, topX, topY, widthX, widthY);
         }
 
-        private void btn_Reset_Clicked(object sender, System.EventArgs e)
+        private void PlotAreaFormattingReset(object sender, System.EventArgs e)
         {
-            this.slide_Threshold.Value = 1;
-            this.slider_PlotBackground.set_Value(30);
-            this.slider_ColorMap.reset_Settings();
-
             // redraw everything.
             this.flag_update2DGraph = true;
         }
+
+        #endregion
 
         // /////////////////////////////////////////////////////////////////////
         // UpdateCursorReading()
@@ -2640,7 +2665,7 @@ namespace UIMF_File
                 this.Chromatogram_GUI_Settings();
             }
 
-            this.btn_Reset.PerformClick();
+            this.plotAreaFormattingVm.SafeReset();
 
             GC.Collect();
             if (this.flag_chromatograph_collected_COMPLETE)
@@ -2882,7 +2907,7 @@ namespace UIMF_File
                 this.num_maxMobility.Increment = 20;
             }
 
-            this.btn_Reset.PerformClick();
+            this.plotAreaFormattingVm.SafeReset();
             GC.Collect();
 
             this.flag_update2DGraph = true;
