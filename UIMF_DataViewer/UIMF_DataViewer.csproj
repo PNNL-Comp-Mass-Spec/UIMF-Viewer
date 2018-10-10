@@ -54,6 +54,11 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FrameControl\EnumDescriptionConverter.cs" />
+    <Compile Include="FrameControl\FrameControlView.xaml.cs">
+      <DependentUpon>FrameControlView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FrameControl\FrameControlViewModel.cs" />
     <Compile Include="PlotAreaFormatting\ColorMapSliderViewModel.cs" />
     <Compile Include="PlotAreaFormatting\PlotAreaFormattingView.xaml.cs">
       <DependentUpon>PlotAreaFormattingView.xaml</DependentUpon>
@@ -157,15 +162,15 @@
   <ItemGroup>
     <Content Include="Resources\expand_button.gif" />
     <Content Include="Resources\shrink_button.jpg" />
-    <None Include="Images\triangle_up_in.GIF" />
-    <None Include="Images\triangle_up_out.GIF" />
+    <Resource Include="Images\triangle_up_in.GIF" />
+    <Resource Include="Images\triangle_up_out.GIF" />
     <Resource Include="Images\ripple21.gif" />
-    <None Include="Images\triangle_down_out.GIF" />
-    <None Include="Images\triangle_down_in.GIF" />
-    <Content Include="Images\triangle_left_in.png" />
-    <Content Include="Images\triangle_left_out.png" />
-    <Content Include="Images\triangle_right_in.png" />
-    <Content Include="Images\triangle_right_out.png" />
+    <Resource Include="Images\triangle_down_out.GIF" />
+    <Resource Include="Images\triangle_down_in.GIF" />
+    <Resource Include="Images\triangle_left_in.png" />
+    <Resource Include="Images\triangle_left_out.png" />
+    <Resource Include="Images\triangle_right_in.png" />
+    <Resource Include="Images\triangle_right_out.png" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Extended.Wpf.Toolkit">
@@ -188,6 +193,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="FrameControl\FrameControlView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="PlotAreaFormatting\PlotAreaFormattingView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

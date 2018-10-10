@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
+using UIMF_DataViewer.FrameControl;
 using UIMF_DataViewer.PostProcessing;
 using UIMF_DataViewer.PlotAreaFormatting;
 using UIMF_DataViewer.WpfControls;
@@ -70,7 +71,6 @@ namespace UIMF_File
         protected ZedGraph.LineItem waveform_MobilityPlot;
         #endregion
 
-
         protected System.Windows.Forms.Label label5;
         protected System.Windows.Forms.Label label3;
         protected System.Windows.Forms.Label lbl_CursorScanTime;
@@ -92,26 +92,14 @@ namespace UIMF_File
         private System.Windows.Forms.Label lbl_CalibratorType;
         private System.Windows.Forms.Button btn_revertCalDefaults;
 
-        private PictureBox pb_PlayRightOut;
-        private PictureBox pb_PlayRightIn;
-        private PictureBox pb_PlayLeftIn;
-        private PictureBox pb_PlayLeftOut;
         protected HScrollBar hsb_2DMap;
         protected VScrollBar vsb_2DMap;
         private TextBox tb_CalT0;
         private TextBox tb_CalA;
-        private SliderLabeled slide_FrameSelect;
-        private ElementHost elementHost_FrameSelect;
-        private Label lbl_FrameRange;
-        private NumericUpDown num_FrameRange;
-        private Label lbl_FramesShown;
 
         private ProgressBar progress_ReadingFile;
 
         protected Button btn_Refresh;  // while plotting, prevent zooming!
-
-        public NumericUpDown num_TICThreshold;
-        private Button btn_TIC;
 
         private System.Drawing.Graphics pnl_2DMap_Extensions;
         private Pen thick_pen = new Pen(new SolidBrush(Color.Fuchsia), 1);
@@ -130,7 +118,6 @@ namespace UIMF_File
         protected TabPage tab_PostProcessing;
         private ElementHost elementHost_PostProcessing;
         private PostProcessingView postProcessingView;
-        protected NumericUpDown num_FrameIndex;
         protected GroupBox gb_MZRange;
         private Label lbl_PPM;
         private Label lbl_MZ;
@@ -138,8 +125,6 @@ namespace UIMF_File
         private Label label1;
         protected NumericUpDown num_MZ;
         protected CheckBox cb_EnableMZRange;
-        protected Label lbl_Chromatogram;
-        protected ComboBox cb_FrameType;
         protected ListBox lb_DragDropFiles;
         private PictureBox pb_PlayDownIn;
         private PictureBox pb_PlayDownOut;
@@ -147,8 +132,9 @@ namespace UIMF_File
         private PictureBox pb_PlayUpOut;
         protected CheckBox cb_Exclusive;
 
-        protected ComboBox cb_ExperimentControlled;
-        protected Panel pnl_FrameControl;
+        private ElementHost elementHost_FrameControl;
+        private FrameControlView frameControlView;
+        public FrameControlViewModel frameControlVm;
         private PictureBox pb_Expand;
         private PictureBox pb_Shrink;
 
@@ -231,14 +217,7 @@ namespace UIMF_File
             this.btn_revertCalDefaults = new System.Windows.Forms.Button();
             this.hsb_2DMap = new System.Windows.Forms.HScrollBar();
             this.vsb_2DMap = new System.Windows.Forms.VScrollBar();
-            this.slide_FrameSelect = new SliderLabeled();
-            this.elementHost_FrameSelect = new ElementHost();
-            this.lbl_FrameRange = new System.Windows.Forms.Label();
-            this.num_FrameRange = new System.Windows.Forms.NumericUpDown();
-            this.lbl_FramesShown = new System.Windows.Forms.Label();
             this.btn_Refresh = new System.Windows.Forms.Button();
-            this.num_TICThreshold = new System.Windows.Forms.NumericUpDown();
-            this.btn_TIC = new System.Windows.Forms.Button();
             this.num_FrameCompression = new System.Windows.Forms.NumericUpDown();
             this.lbl_FrameCompression = new System.Windows.Forms.Label();
             this.rb_CompleteChromatogram = new System.Windows.Forms.RadioButton();
@@ -246,11 +225,9 @@ namespace UIMF_File
             this.pnl_Chromatogram = new System.Windows.Forms.Panel();
             this.tabpages_Main = new System.Windows.Forms.TabControl();
             this.tab_DataViewer = new System.Windows.Forms.TabPage();
-            this.pnl_FrameControl = new System.Windows.Forms.Panel();
-            this.cb_ExperimentControlled = new System.Windows.Forms.ComboBox();
-            this.cb_FrameType = new System.Windows.Forms.ComboBox();
-            this.num_FrameIndex = new System.Windows.Forms.NumericUpDown();
-            this.lbl_Chromatogram = new System.Windows.Forms.Label();
+            this.elementHost_FrameControl = new ElementHost();
+            this.frameControlView = new FrameControlView();
+            this.frameControlVm = new FrameControlViewModel();
             this.cb_Exclusive = new System.Windows.Forms.CheckBox();
             this.lb_DragDropFiles = new System.Windows.Forms.ListBox();
             this.gb_MZRange = new System.Windows.Forms.GroupBox();
@@ -266,10 +243,6 @@ namespace UIMF_File
             this.postProcessingView = new PostProcessingView();
             this.pb_Shrink = new System.Windows.Forms.PictureBox();
             this.pb_Expand = new System.Windows.Forms.PictureBox();
-            this.pb_PlayLeftIn = new System.Windows.Forms.PictureBox();
-            this.pb_PlayRightIn = new System.Windows.Forms.PictureBox();
-            this.pb_PlayLeftOut = new System.Windows.Forms.PictureBox();
-            this.pb_PlayRightOut = new System.Windows.Forms.PictureBox();
             this.pb_PlayDownIn = new System.Windows.Forms.PictureBox();
             this.pb_PlayDownOut = new System.Windows.Forms.PictureBox();
             this.pb_PlayUpIn = new System.Windows.Forms.PictureBox();
@@ -281,23 +254,15 @@ namespace UIMF_File
             this.tabpages_FrameInfo.SuspendLayout();
             this.tabPage_Cursor.SuspendLayout();
             this.tabPage_Calibration.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.num_FrameRange)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.num_TICThreshold)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_FrameCompression)).BeginInit();
             this.pnl_Chromatogram.SuspendLayout();
             this.tabpages_Main.SuspendLayout();
             this.tab_DataViewer.SuspendLayout();
-            this.pnl_FrameControl.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.num_FrameIndex)).BeginInit();
             this.gb_MZRange.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.num_PPM)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_MZ)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Shrink)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Expand)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_PlayLeftIn)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_PlayRightIn)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_PlayLeftOut)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_PlayRightOut)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_PlayDownIn)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_PlayDownOut)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_PlayUpIn)).BeginInit();
@@ -869,82 +834,6 @@ namespace UIMF_File
             this.vsb_2DMap.Size = new System.Drawing.Size(12, 492);
             this.vsb_2DMap.TabIndex = 49;
             //
-            // slide_FrameSelect
-            //
-            //TODO: //this.slide_FrameSelect.FillBackColor = System.Drawing.Color.DarkSlateGray;
-            //TODO: //this.slide_FrameSelect.FillBaseValue = 3D;
-            //TODO: //this.slide_FrameSelect.FillColor = System.Drawing.Color.GhostWhite;
-            //TODO: //this.slide_FrameSelect.FillMode = NationalInstruments.UI.NumericFillMode.ToBaseValue;
-            //this.slide_FrameSelect.BackColor = System.Drawing.Color.GhostWhite;
-            //this.slide_FrameSelect.ForeColor = System.Drawing.Color.DarkSlateGray;
-            this.slide_FrameSelect.Foreground = System.Windows.Media.Brushes.Black;
-            this.slide_FrameSelect.FontFamily = new System.Windows.Media.FontFamily("Arial");
-            this.slide_FrameSelect.FontWeight = FontWeights.Bold;
-            this.slide_FrameSelect.FontSize = WpfConversions.GetWpfLength("9pt");
-            this.slide_FrameSelect.TickFrequency = 1;
-            this.slide_FrameSelect.Name = "slide_FrameSelect";
-            this.slide_FrameSelect.Minimum = 0;
-            this.slide_FrameSelect.Maximum = 5;
-            this.slide_FrameSelect.Orientation = System.Windows.Controls.Orientation.Horizontal;
-            this.slide_FrameSelect.TabIndex = 50;
-            this.slide_FrameSelect.Value = 4;
-            this.slide_FrameSelect.TickPlacement = TickPlacement.TopLeft;
-            this.slide_FrameSelect.IsSnapToTickEnabled = true;
-            this.slide_FrameSelect.IsSelectionRangeEnabled = true;
-            this.slide_FrameSelect.IsMoveToPointEnabled = true;
-            this.slide_FrameSelect.AutoToolTipPlacement = AutoToolTipPlacement.TopLeft;
-            this.slide_FrameSelect.AutoToolTipPrecision = 0;
-            this.slide_FrameSelect.Resources = new ResourceDictionary() {Source = new System.Uri("/UIMF_DataViewer;component/WpfControls/LabeledSlider/SliderLabeledStyle.xaml", System.UriKind.Relative)};
-            this.elementHost_FrameSelect.Location = new System.Drawing.Point(272, 36);
-            this.elementHost_FrameSelect.Size = new System.Drawing.Size(276, 47);
-            this.elementHost_FrameSelect.Child = slide_FrameSelect;
-            //
-            // lbl_FrameRange
-            //
-            this.lbl_FrameRange.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_FrameRange.Location = new System.Drawing.Point(380, 76);
-            this.lbl_FrameRange.Name = "lbl_FrameRange";
-            this.lbl_FrameRange.Size = new System.Drawing.Size(97, 20);
-            this.lbl_FrameRange.TabIndex = 52;
-            this.lbl_FrameRange.Text = "Frame Range:";
-            this.lbl_FrameRange.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            //
-            // num_FrameRange
-            //
-            this.num_FrameRange.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.num_FrameRange.Location = new System.Drawing.Point(480, 72);
-            this.num_FrameRange.Maximum = new decimal(new int[] {
-            10000,
-            0,
-            0,
-            0});
-            this.num_FrameRange.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.num_FrameRange.Name = "num_FrameRange";
-            this.num_FrameRange.Size = new System.Drawing.Size(64, 21);
-            this.num_FrameRange.TabIndex = 51;
-            this.num_FrameRange.TabStop = false;
-            this.num_FrameRange.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.num_FrameRange.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            //
-            // lbl_FramesShown
-            //
-            this.lbl_FramesShown.AutoSize = true;
-            this.lbl_FramesShown.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.lbl_FramesShown.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_FramesShown.Location = new System.Drawing.Point(24, 80);
-            this.lbl_FramesShown.Name = "lbl_FramesShown";
-            this.lbl_FramesShown.Size = new System.Drawing.Size(86, 14);
-            this.lbl_FramesShown.TabIndex = 53;
-            this.lbl_FramesShown.Text = "showing frames";
-            //
             // btn_Refresh
             //
             this.btn_Refresh.BackColor = System.Drawing.Color.WhiteSmoke;
@@ -956,40 +845,6 @@ namespace UIMF_File
             this.btn_Refresh.Text = "Refresh";
             this.btn_Refresh.UseVisualStyleBackColor = false;
             this.btn_Refresh.Click += new System.EventHandler(this.btn_Refresh_Click);
-            //
-            // num_TICThreshold
-            //
-            this.num_TICThreshold.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.num_TICThreshold.Increment = new decimal(new int[] {
-            50,
-            0,
-            0,
-            0});
-            this.num_TICThreshold.Location = new System.Drawing.Point(152, 80);
-            this.num_TICThreshold.Maximum = new decimal(new int[] {
-            1000000,
-            0,
-            0,
-            0});
-            this.num_TICThreshold.Name = "num_TICThreshold";
-            this.num_TICThreshold.Size = new System.Drawing.Size(68, 20);
-            this.num_TICThreshold.TabIndex = 65;
-            this.num_TICThreshold.Value = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-            //
-            // btn_TIC
-            //
-            this.btn_TIC.BackColor = System.Drawing.Color.Salmon;
-            this.btn_TIC.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_TIC.Location = new System.Drawing.Point(224, 80);
-            this.btn_TIC.Name = "btn_TIC";
-            this.btn_TIC.Size = new System.Drawing.Size(32, 20);
-            this.btn_TIC.TabIndex = 66;
-            this.btn_TIC.Text = "OK";
-            this.btn_TIC.UseVisualStyleBackColor = false;
             //
             // num_FrameCompression
             //
@@ -1074,7 +929,7 @@ namespace UIMF_File
             this.tab_DataViewer.BackColor = System.Drawing.Color.Silver;
             this.tab_DataViewer.Controls.Add(this.pb_Shrink);
             this.tab_DataViewer.Controls.Add(this.pb_Expand);
-            this.tab_DataViewer.Controls.Add(this.pnl_FrameControl);
+            this.tab_DataViewer.Controls.Add(this.elementHost_FrameControl);
             this.tab_DataViewer.Controls.Add(this.cb_Exclusive);
             this.tab_DataViewer.Controls.Add(this.pb_PlayDownIn);
             this.tab_DataViewer.Controls.Add(this.pb_PlayDownOut);
@@ -1104,72 +959,12 @@ namespace UIMF_File
             this.tab_DataViewer.TabIndex = 0;
             this.tab_DataViewer.Text = "   Data Viewer    ";
             //
-            // pnl_FrameControl
+            // elementHost_FrameControl
             //
-            this.pnl_FrameControl.BackColor = System.Drawing.Color.LightGray;
-            this.pnl_FrameControl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pnl_FrameControl.Controls.Add(this.pb_PlayLeftIn);
-            this.pnl_FrameControl.Controls.Add(this.cb_ExperimentControlled);
-            this.pnl_FrameControl.Controls.Add(this.pb_PlayRightIn);
-            this.pnl_FrameControl.Controls.Add(this.pb_PlayLeftOut);
-            this.pnl_FrameControl.Controls.Add(this.pb_PlayRightOut);
-            this.pnl_FrameControl.Controls.Add(this.cb_FrameType);
-            this.pnl_FrameControl.Controls.Add(this.elementHost_FrameSelect);
-            this.pnl_FrameControl.Controls.Add(this.num_FrameRange);
-            this.pnl_FrameControl.Controls.Add(this.lbl_FrameRange);
-            this.pnl_FrameControl.Controls.Add(this.lbl_FramesShown);
-            this.pnl_FrameControl.Controls.Add(this.num_FrameIndex);
-            this.pnl_FrameControl.Controls.Add(this.lbl_Chromatogram);
-            this.pnl_FrameControl.Controls.Add(this.num_TICThreshold);
-            this.pnl_FrameControl.Controls.Add(this.btn_TIC);
-            this.pnl_FrameControl.Location = new System.Drawing.Point(240, 8);
-            this.pnl_FrameControl.Name = "pnl_FrameControl";
-            this.pnl_FrameControl.Size = new System.Drawing.Size(700, 108);
-            this.pnl_FrameControl.TabIndex = 97;
-            //
-            // cb_ExperimentControlled
-            //
-            this.cb_ExperimentControlled.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cb_ExperimentControlled.FormattingEnabled = true;
-            this.cb_ExperimentControlled.Location = new System.Drawing.Point(8, 8);
-            this.cb_ExperimentControlled.Name = "cb_ExperimentControlled";
-            this.cb_ExperimentControlled.Size = new System.Drawing.Size(676, 22);
-            this.cb_ExperimentControlled.TabIndex = 96;
-            this.cb_ExperimentControlled.Text = "Sarc_P09_C04_0796_089_22Jul11_Cheetah_11-05-32_inversed.UIMF";
-            this.cb_ExperimentControlled.SelectedIndexChanged += new System.EventHandler(this.cb_ExperimentControlled_SelectedIndexChanged);
-            //
-            // cb_FrameType
-            //
-            this.cb_FrameType.BackColor = System.Drawing.Color.Gainsboro;
-            this.cb_FrameType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cb_FrameType.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cb_FrameType.FormattingEnabled = true;
-            this.cb_FrameType.Location = new System.Drawing.Point(64, 52);
-            this.cb_FrameType.Name = "cb_FrameType";
-            this.cb_FrameType.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.cb_FrameType.Size = new System.Drawing.Size(128, 27);
-            this.cb_FrameType.TabIndex = 89;
-            this.cb_FrameType.TabStop = false;
-            //
-            // num_FrameIndex
-            //
-            this.num_FrameIndex.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.num_FrameIndex.Location = new System.Drawing.Point(196, 52);
-            this.num_FrameIndex.Name = "num_FrameIndex";
-            this.num_FrameIndex.Size = new System.Drawing.Size(68, 26);
-            this.num_FrameIndex.TabIndex = 82;
-            this.num_FrameIndex.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            //
-            // lbl_Chromatogram
-            //
-            this.lbl_Chromatogram.AutoSize = true;
-            this.lbl_Chromatogram.Font = new System.Drawing.Font("Verdana", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_Chromatogram.Location = new System.Drawing.Point(108, 52);
-            this.lbl_Chromatogram.Name = "lbl_Chromatogram";
-            this.lbl_Chromatogram.Size = new System.Drawing.Size(85, 23);
-            this.lbl_Chromatogram.TabIndex = 33;
-            this.lbl_Chromatogram.Text = "Frame:";
-            this.lbl_Chromatogram.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.elementHost_FrameControl.Location = new System.Drawing.Point(240, 8);
+            this.elementHost_FrameControl.Size = new System.Drawing.Size(700, 100);
+            this.frameControlView.DataContext = this.frameControlVm;
+            this.elementHost_FrameControl.Child = this.frameControlView;
             //
             // cb_Exclusive
             //
@@ -1357,46 +1152,6 @@ namespace UIMF_File
             this.pb_Expand.TabIndex = 98;
             this.pb_Expand.TabStop = false;
             //
-            // pb_PlayLeftIn
-            //
-            this.pb_PlayLeftIn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pb_PlayLeftIn.BackgroundImage")));
-            this.pb_PlayLeftIn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pb_PlayLeftIn.Location = new System.Drawing.Point(572, 40);
-            this.pb_PlayLeftIn.Name = "pb_PlayLeftIn";
-            this.pb_PlayLeftIn.Size = new System.Drawing.Size(24, 16);
-            this.pb_PlayLeftIn.TabIndex = 46;
-            this.pb_PlayLeftIn.TabStop = false;
-            //
-            // pb_PlayRightIn
-            //
-            this.pb_PlayRightIn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pb_PlayRightIn.BackgroundImage")));
-            this.pb_PlayRightIn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pb_PlayRightIn.Location = new System.Drawing.Point(652, 40);
-            this.pb_PlayRightIn.Name = "pb_PlayRightIn";
-            this.pb_PlayRightIn.Size = new System.Drawing.Size(24, 16);
-            this.pb_PlayRightIn.TabIndex = 45;
-            this.pb_PlayRightIn.TabStop = false;
-            //
-            // pb_PlayLeftOut
-            //
-            this.pb_PlayLeftOut.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pb_PlayLeftOut.BackgroundImage")));
-            this.pb_PlayLeftOut.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pb_PlayLeftOut.Location = new System.Drawing.Point(600, 40);
-            this.pb_PlayLeftOut.Name = "pb_PlayLeftOut";
-            this.pb_PlayLeftOut.Size = new System.Drawing.Size(24, 16);
-            this.pb_PlayLeftOut.TabIndex = 47;
-            this.pb_PlayLeftOut.TabStop = false;
-            //
-            // pb_PlayRightOut
-            //
-            this.pb_PlayRightOut.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pb_PlayRightOut.BackgroundImage")));
-            this.pb_PlayRightOut.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pb_PlayRightOut.Location = new System.Drawing.Point(624, 40);
-            this.pb_PlayRightOut.Name = "pb_PlayRightOut";
-            this.pb_PlayRightOut.Size = new System.Drawing.Size(24, 16);
-            this.pb_PlayRightOut.TabIndex = 44;
-            this.pb_PlayRightOut.TabStop = false;
-            //
             // pb_PlayDownIn
             //
             this.pb_PlayDownIn.BackColor = System.Drawing.Color.Transparent;
@@ -1463,26 +1218,17 @@ namespace UIMF_File
             this.tabPage_Cursor.ResumeLayout(false);
             this.tabPage_Calibration.ResumeLayout(false);
             this.tabPage_Calibration.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.num_FrameRange)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.num_TICThreshold)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_FrameCompression)).EndInit();
             this.pnl_Chromatogram.ResumeLayout(false);
             this.pnl_Chromatogram.PerformLayout();
             this.tabpages_Main.ResumeLayout(false);
             this.tab_DataViewer.ResumeLayout(false);
             this.tab_DataViewer.PerformLayout();
-            this.pnl_FrameControl.ResumeLayout(false);
-            this.pnl_FrameControl.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.num_FrameIndex)).EndInit();
             this.gb_MZRange.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.num_PPM)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_MZ)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Shrink)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Expand)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_PlayLeftIn)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_PlayRightIn)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_PlayLeftOut)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_PlayRightOut)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_PlayDownIn)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_PlayDownOut)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_PlayUpIn)).EndInit();

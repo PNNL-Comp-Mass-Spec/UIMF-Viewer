@@ -4,9 +4,11 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using UIMFLibrary;
+using UIMF_DataViewer.FrameControl;
 using ZedGraph;
 
 namespace UIMF_File
@@ -381,10 +383,10 @@ namespace UIMF_File
                         minframe_Data_number = 1;
                     if (maxframe_Data_number > this.uimfReader.UimfGlobalParams.NumFrames)
                         maxframe_Data_number = this.uimfReader.UimfGlobalParams.NumFrames;
-                    this.slide_FrameSelect.Value = maxframe_Data_number;
 
-                    //  MessageBox.Show("wfd: "+maxframe_Data_number.ToString()+" - "+minframe_Data_number.ToString()+" + 1");
-                    this.num_FrameRange.Value = maxframe_Data_number - minframe_Data_number + 1;
+                    this.frameControlView.Dispatcher.Invoke(() => {
+                        this.frameControlVm.CurrentFrameNumber = maxframe_Data_number;
+                    });
 
                     this.plot_Mobility.StopAnnotating(false);
 
@@ -443,7 +445,7 @@ namespace UIMF_File
 
                     this.AutoScrollPosition = new Point(0, 0);
                     this.hsb_2DMap.Value = 0;
-                    this.uimfReader.CurrentFrameIndex = (int)this.slide_FrameSelect.Value;
+                    this.uimfReader.CurrentFrameIndex = (int) this.frameControlVm.CurrentFrameNumber;
 
                     this.Chromatogram_CheckedChanged();
                 }
@@ -619,11 +621,10 @@ namespace UIMF_File
                 if (frame_number > this.uimfReader.GetNumberOfFrames(this.current_frame_type))
                     frame_number = this.uimfReader.GetNumberOfFrames(this.current_frame_type) - 1;
 
-                this.slide_FrameSelect.Value = frame_number;
+                this.frameControlView.Dispatcher.Invoke(() => this.frameControlVm.CurrentFrameNumber = frame_number);
 
-                this.uimfReader.CurrentFrameIndex = (int)this.slide_FrameSelect.Value;
+                this.uimfReader.CurrentFrameIndex = (int)this.frameControlVm.CurrentFrameNumber;
                 this.plot_Mobility.ClearRange();
-                this.num_FrameRange.Value = 1;
 
                 this.vsb_2DMap.Show();  // gets hidden with Chromatogram
                 this.hsb_2DMap.Show();
@@ -1627,8 +1628,7 @@ namespace UIMF_File
             }
 
             Directory.CreateDirectory(directory);
-            this.slide_FrameSelect.Value = merge;
-            this.num_FrameRange.Value = merge;
+            this.frameControlVm.CurrentFrameNumber = merge;
 
             this.Enabled = false;
             //this.flag_Halt = true;
@@ -1638,7 +1638,7 @@ namespace UIMF_File
                 {
                     //  MessageBox.Show((i * step).ToString());
                     //  continue;
-                    this.slide_FrameSelect.Value = ((i - 1) * step) + merge;
+                    this.frameControlVm.CurrentFrameNumber = ((i - 1) * step) + merge;
 
                     this.Graph_2DPlot();
                     this.Update();
@@ -2026,72 +2026,76 @@ namespace UIMF_File
 
         #region Frame Selection and Controls
 
+        private void FrameControlVmOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName.Equals(nameof(FrameControlViewModel.CurrentFrameNumber)))
+            {
+                slide_FrameSelect_ValueChanged();
+            }
+            else if (e.PropertyName.Equals(nameof(FrameControlViewModel.SummedFrames)))
+            {
+                num_FrameRange_ValueChanged();
+            }
+            else if (e.PropertyName.Equals(nameof(FrameControlViewModel.SelectedFrameType)))
+            {
+                cb_FrameType_SelectedIndexChanged();
+            }
+            else if (e.PropertyName.Equals(nameof(FrameControlViewModel.SelectedUimfFile)))
+            {
+                cb_ExperimentControlled_SelectedIndexChanged();
+            }
+        }
+
         // //////////////////////////////////////////////////////////////////////////////
         // Frame Selection
         //
         private void slide_FrameSelect_MouseDown(object obj, MouseEventArgs e)
         {
+            // TODO: Wire this up somehow, or at least an alternative. Use "repeaterButtons" to only play while the mouse is held down?
             this.StopCinema();
         }
 
         // ////////////////////////////////////////////////////////////////////
         // Select Frame Range
         //
-        private void num_FrameRange_ValueChanged(object sender, EventArgs e)
+        private void num_FrameRange_ValueChanged()
         {
-            if ((double)this.num_FrameRange.Value > this.slide_FrameSelect.Maximum + 1)
+            if ((double)this.frameControlVm.SummedFrames > this.frameControlVm.MaximumFrameNumber + 1)
             {
-                this.num_FrameRange.Value = Convert.ToDecimal(this.slide_FrameSelect.Maximum + 1);
+                this.frameControlVm.SummedFrames = (int)Convert.ToDecimal(this.frameControlVm.MaximumFrameNumber + 1);
                 return;
             }
-            this.uimfReader.FrameWidth = Convert.ToInt32(this.num_FrameRange.Value);
+            this.uimfReader.FrameWidth = Convert.ToInt32(this.frameControlVm.SummedFrames);
 
-            if (this.slide_FrameSelect.Value < Convert.ToDouble(this.num_FrameRange.Value))
+            if (this.frameControlVm.CurrentFrameNumber < Convert.ToDouble(this.frameControlVm.SummedFrames))
             {
-                this.slide_FrameSelect.Value = (int)(Convert.ToDouble(this.num_FrameRange.Value) - 1);
+                this.frameControlVm.CurrentFrameNumber = (int)(Convert.ToDouble(this.frameControlVm.SummedFrames) - 1);
             }
 
-            if (this.num_FrameRange.Value > 1)
+            if (this.frameControlVm.SummedFrames > 1)
             {
-                this.lbl_FramesShown.Show();
-
                 if (this.Cinemaframe_DataChange > 0)
-                    this.Cinemaframe_DataChange = Convert.ToInt32(this.num_FrameRange.Value / 3) + 1;
+                    this.Cinemaframe_DataChange = Convert.ToInt32(this.frameControlVm.SummedFrames / 3) + 1;
                 else
-                    this.Cinemaframe_DataChange = -(Convert.ToInt32(this.num_FrameRange.Value / 3) + 1);
+                    this.Cinemaframe_DataChange = -(Convert.ToInt32(this.frameControlVm.SummedFrames / 3) + 1);
             }
-            else
-                this.lbl_FramesShown.Hide();
 
             this.flag_update2DGraph = true;
         }
 
-        private void num_FrameIndex_ValueChanged(object sender, EventArgs e)
+        private void slide_FrameSelect_ValueChanged()
         {
-            this.slide_FrameSelect.Value = Convert.ToDouble(this.num_FrameIndex.Value);
-        }
-
-        private void slide_FrameSelect_ValueChanged(object sender, System.Windows.RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (this.slide_FrameSelect.Value - Convert.ToDouble(this.num_FrameRange.Value) < 0)
-                this.slide_FrameSelect.Value = Convert.ToDouble(this.num_FrameRange.Value) - 1.0;
-
-            if ((double)this.slide_FrameSelect.Value != (double)((int)this.slide_FrameSelect.Value))
-            {
-                this.slide_FrameSelect.Value = (int)((double)this.slide_FrameSelect.Value + .5);
-            }
-
             this.flag_update2DGraph = true;
         }
 
         // ///////////////////////////////////////////////////////////////
         // Select FrameType
         //
-        private void cb_FrameType_SelectedIndexChanged(object sender, EventArgs e)
+        private void cb_FrameType_SelectedIndexChanged()
         {
             this.flag_CinemaPlot = false;
 
-            var frameTypeEnum = (UIMFDataWrapper.ReadFrameType)this.cb_FrameType.SelectedIndex;
+            var frameTypeEnum = this.frameControlVm.SelectedFrameType;
             this.Filter_FrameType(frameTypeEnum);
 
             this.flag_FrameTypeChanged = true;
@@ -2137,10 +2141,9 @@ namespace UIMF_File
             this.flag_selection_drift = false;
             this.plot_Mobility.ClearRange();
 
-            this.num_FrameRange.Value = 1;
-            this.num_FrameIndex.Maximum = frame_count - 1;
-            this.num_FrameIndex.Value = 0;
-            this.slide_FrameSelect.Value = 0;
+            this.frameControlVm.SummedFrames = 1;
+            this.frameControlVm.MaximumFrameNumber = frame_count - 1;
+            this.frameControlVm.CurrentFrameNumber = 0;
 
             // MessageBox.Show(this.array_FrameNum.Length.ToString());
 
@@ -2366,55 +2369,48 @@ namespace UIMF_File
 
         private bool flag_CinemaPlot = false;
         private int Cinemaframe_DataChange = 0;
-        private void pb_PlayLeftIn_Click(object sender, EventArgs e)
-        {
-            this.StopCinema();
-        }
 
-        private void pb_PlayRightIn_Click(object sender, EventArgs e)
+        private void pb_StopPlaying_Click(object sender, EventArgs e)
         {
             this.StopCinema();
         }
 
         private void pb_PlayLeftOut_Click(object sender, EventArgs e)
         {
-            if (this.slide_FrameSelect.Value <= this.slide_FrameSelect.Minimum) // frame index starts at 0
+            if (this.frameControlVm.CurrentFrameNumber <= this.frameControlVm.MinimumFrameNumber) // frame index starts at 0
                 return;
 
-            this.pb_PlayLeftOut.Hide();
-            this.pb_PlayRightOut.Show();
-
             this.flag_CinemaPlot = true;
-            this.Cinemaframe_DataChange = -(Convert.ToInt32(this.num_FrameRange.Value) / 3) - 1;
-            this.slide_FrameSelect.Value += this.Cinemaframe_DataChange;
+            this.Cinemaframe_DataChange = -(Convert.ToInt32(this.frameControlVm.SummedFrames) / 3) - 1;
+            this.frameControlVm.CurrentFrameNumber += this.Cinemaframe_DataChange;
         }
 
         private void pb_PlayRightOut_Click(object sender, EventArgs e)
         {
-            if (this.slide_FrameSelect.Value >= this.slide_FrameSelect.Maximum)
+            if (this.frameControlVm.CurrentFrameNumber >= this.frameControlVm.MaximumFrameNumber)
                 return;
 
-            this.pb_PlayRightOut.Hide();
-            this.pb_PlayLeftOut.Show();
-
             this.flag_CinemaPlot = true;
-            this.Cinemaframe_DataChange = (Convert.ToInt32(this.num_FrameRange.Value) / 3) + 1;
-            if (this.slide_FrameSelect.Value + this.Cinemaframe_DataChange > Convert.ToInt32(this.slide_FrameSelect.Maximum))
-                this.slide_FrameSelect.Value = this.slide_FrameSelect.Maximum - Convert.ToInt32(this.num_FrameRange.Value);
+            this.Cinemaframe_DataChange = (Convert.ToInt32(this.frameControlVm.SummedFrames) / 3) + 1;
+            if (this.frameControlVm.CurrentFrameNumber + this.Cinemaframe_DataChange > Convert.ToInt32(this.frameControlVm.MaximumFrameNumber))
+                this.frameControlVm.CurrentFrameNumber = this.frameControlVm.MaximumFrameNumber - Convert.ToInt32(this.frameControlVm.SummedFrames);
             else
             {
-                if (this.slide_FrameSelect.Value + this.Cinemaframe_DataChange > this.slide_FrameSelect.Maximum)
-                    this.slide_FrameSelect.Value = this.slide_FrameSelect.Maximum - this.Cinemaframe_DataChange;
+                if (this.frameControlVm.CurrentFrameNumber + this.Cinemaframe_DataChange > this.frameControlVm.MaximumFrameNumber)
+                    this.frameControlVm.CurrentFrameNumber = this.frameControlVm.MaximumFrameNumber - this.Cinemaframe_DataChange;
                 else
-                    this.slide_FrameSelect.Value += this.Cinemaframe_DataChange;
+                    this.frameControlVm.CurrentFrameNumber += this.Cinemaframe_DataChange;
 
             }
         }
 
         private void StopCinema()
         {
-            this.pb_PlayRightOut.Show();
-            this.pb_PlayLeftOut.Show();
+            this.frameControlView.Dispatcher.Invoke(() =>
+            {
+                this.frameControlVm.PlayingFramesBackward = false;
+                this.frameControlVm.PlayingFramesForward = false;
+            });
 
             this.flag_CinemaPlot = false;
             this.Cinemaframe_DataChange = 0;
@@ -2487,7 +2483,7 @@ namespace UIMF_File
         // /////////////////////////////////////////////////////////////
         // Drag-Drop IMF file onto the graph
         //
-        private void cb_ExperimentControlled_SelectedIndexChanged(object sender, EventArgs e)
+        private void cb_ExperimentControlled_SelectedIndexChanged()
         {
             if (this.flag_CinemaPlot)
             {
@@ -2497,7 +2493,7 @@ namespace UIMF_File
                 this.flag_Closing = false; // we are not closing
             }
 
-            this.index_CurrentExperiment = this.cb_ExperimentControlled.SelectedIndex;
+            this.index_CurrentExperiment = this.frameControlVm.UimfFiles.IndexOf(this.frameControlVm.SelectedUimfFile);
             this.lb_DragDropFiles.ClearSelected();
             this.lb_DragDropFiles.SetSelected(this.index_CurrentExperiment, true);
 
@@ -2512,9 +2508,9 @@ namespace UIMF_File
 
                 this.Chromatogram_CheckedChanged();
 
-                this.uimfReader.CurrentFrameIndex = (int)this.slide_FrameSelect.Value;
+                this.uimfReader.CurrentFrameIndex = (int)this.frameControlVm.CurrentFrameNumber;
                 this.plot_Mobility.ClearRange();
-                this.num_FrameRange.Value = 1;
+                this.frameControlVm.SummedFrames = 1;
 
                 this.vsb_2DMap.Show();  // gets hidden with Chromatogram
                 this.hsb_2DMap.Show();
@@ -2525,19 +2521,16 @@ namespace UIMF_File
             this.vsb_2DMap.Value = 0;
 
             if (this.uimfReader.CurrentFrameIndex < this.uimfReader.UimfGlobalParams.NumFrames - 1)
-                this.num_FrameIndex.Value = 0;
-            this.num_FrameIndex.Maximum = this.uimfReader.UimfGlobalParams.NumFrames - 1;
-            this.num_FrameIndex.Value = this.uimfReader.CurrentFrameIndex;
+                this.frameControlVm.CurrentFrameNumber = 0;
+            this.frameControlVm.MaximumFrameNumber = this.uimfReader.UimfGlobalParams.NumFrames - 1;
+            this.frameControlVm.CurrentFrameNumber = this.uimfReader.CurrentFrameIndex;
 
-            if (this.num_FrameIndex.Maximum > 0)
+            if (this.frameControlVm.MaximumFrameNumber > 0)
             {
-                this.slide_FrameSelect.Minimum = 0;
-                this.slide_FrameSelect.Maximum = this.uimfReader.UimfGlobalParams.NumFrames - 1;
+                this.frameControlVm.MinimumFrameNumber = 0;
             }
-            else
-                this.elementHost_FrameSelect.Hide();  // hidden elsewhere; but if there is only one frame this needs to disappear.
 
-            this.cb_FrameType.SelectedIndex = (int)this.uimfReader.CurrentFrameType;
+            this.frameControlVm.SelectedFrameType = this.uimfReader.CurrentFrameType;
 
             this.flag_update2DGraph = true;
         }
@@ -2581,8 +2574,8 @@ namespace UIMF_File
                         this.lb_DragDropFiles.Items.Add(files[i]);
                         this.lb_DragDropFiles.ClearSelected();
 
-                        this.cb_ExperimentControlled.Items.Add(Path.GetFileNameWithoutExtension(files[i]));
-                        this.cb_ExperimentControlled.SelectedIndex = this.cb_ExperimentControlled.Items.Count - 1;
+                        this.frameControlVm.UimfFiles.Add(Path.GetFileNameWithoutExtension(files[i]));
+                        this.frameControlVm.SelectedUimfFile = this.frameControlVm.UimfFiles.Last();
 
                         this.Filter_FrameType(this.uimfReader.CurrentFrameType);
                         this.uimfReader.CurrentFrameIndex = 0;
@@ -2591,7 +2584,7 @@ namespace UIMF_File
                         Generate2DIntensityArray();
                         this.GraphFrame(this.data_2D, true);
 
-                        this.cb_FrameType.SelectedIndex = (int)this.uimfReader.CurrentFrameType;
+                        this.frameControlVm.SelectedFrameType = this.uimfReader.CurrentFrameType;
                     }
                     else
                         MessageBox.Show(this, "'" + Path.GetFileName(files[i]) + "' is not in correct format.\n\nOnly UIMF files can be added.");
@@ -2638,26 +2631,20 @@ namespace UIMF_File
 
         private void lbl_FramesShown_Click(object sender, EventArgs e)
         {
-            if (this.num_FrameRange.Value > 1)
+            if (this.frameControlVm.SummedFrames > 1)
                 return;
 
-            this.lbl_FramesShown.Text = "Enter TIC Threshold: ";
-
-            this.num_TICThreshold.Visible = true;
-            this.num_TICThreshold.Left = this.lbl_FramesShown.Left + this.lbl_FramesShown.Width;
-            this.num_TICThreshold.Top = this.lbl_FramesShown.Top - 4;
-
-            this.btn_TIC.Visible = true;
+            this.frameControlVm.ShowTICItems = true;
         }
 
         private void btn_TIC_Click(object sender, EventArgs e)
         {
-            this.btn_TIC.Hide();
-            this.num_TICThreshold.Hide();
+            this.frameControlVm.ShowTICItems = false;
 
             this.calc_TIC();
         }
 
+        // TODO: Was not wired up before removal of NI Libraries.
         private void btn_ShowChromatogram_Click(object sender, EventArgs e)
         {
             if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
@@ -2690,16 +2677,11 @@ namespace UIMF_File
 
             // this.flag_update2DGraph = true;
 
-            this.uimfReader.CurrentFrameIndex = (int)this.slide_FrameSelect.Value;
+            this.uimfReader.CurrentFrameIndex = (int)this.frameControlVm.CurrentFrameNumber;
             this.plot_Mobility.StopAnnotating(true);
 
             this.flag_selection_drift = false;
             this.plot_Mobility.ClearRange();
-
-            this.pb_PlayLeftIn.Hide();
-            this.pb_PlayLeftOut.Hide();
-            this.pb_PlayRightIn.Hide();
-            this.pb_PlayRightOut.Hide();
 
             this.vsb_2DMap.Hide();
             this.hsb_2DMap.Hide();
@@ -2825,27 +2807,13 @@ namespace UIMF_File
 
                 this.hsb_2DMap.Value = 0;
 
-                this.uimfReader.CurrentFrameIndex = (int)this.slide_FrameSelect.Value;
+                this.uimfReader.CurrentFrameIndex = (int)this.frameControlVm.CurrentFrameNumber;
                 this.plot_Mobility.StopAnnotating(true);
 
                 this.flag_selection_drift = false;
                 this.plot_Mobility.ClearRange();
 
-                this.pb_PlayLeftIn.Hide();
-                this.pb_PlayLeftOut.Hide();
-                this.pb_PlayRightIn.Hide();
-                this.pb_PlayRightOut.Hide();
-
-                this.elementHost_FrameSelect.Hide();
-                this.lbl_FrameRange.Hide();
-                this.num_FrameRange.Hide();
-                this.lbl_Chromatogram.Text = "Peak Chromatogram";
-                this.num_FrameIndex.Hide();
-
-                this.lbl_FramesShown.Hide();
-
-                this.cb_FrameType.Hide();
-                this.lbl_Chromatogram.Show();
+                this.frameControlVm.ShowChromatogramLabel = true;
 
                 this.vsb_2DMap.Hide();
                 // this.hsb_2DMap.Hide();
@@ -2869,30 +2837,10 @@ namespace UIMF_File
                 else
                     this.flag_display_as_TOF = false;
 
-                this.lbl_Chromatogram.Text = "Frame:  ";
-                this.lbl_Chromatogram.ForeColor = Color.Black;
-                this.num_FrameIndex.Show();
-                if (this.uimfReader.UimfGlobalParams.NumFrames > 1)
-                {
-                    this.elementHost_FrameSelect.Show();
-
-                    this.lbl_FrameRange.Show();
-                    this.num_FrameRange.Show();
-
-                    if (this.num_FrameRange.Value > 1)
-                        this.lbl_FramesShown.Show();
-
-                    this.pb_PlayLeftIn.Show();
-                    this.pb_PlayLeftOut.Show();
-                    this.pb_PlayRightIn.Show();
-                    this.pb_PlayRightOut.Show();
-                }
-
                 this.vsb_2DMap.Show();
                 this.hsb_2DMap.Show();
 
-                this.cb_FrameType.Show();
-                this.lbl_Chromatogram.Hide();
+                this.frameControlVm.ShowChromatogramLabel = false;
 
                 this.Update();
 
@@ -3094,15 +3042,12 @@ namespace UIMF_File
             {
                 this.pnl_2DMap.Visible = false;
                 this.hsb_2DMap.Visible = this.vsb_2DMap.Visible = false;
-                this.pb_PlayLeftIn.Visible = this.pb_PlayLeftOut.Visible = false;
-                this.pb_PlayRightIn.Visible = this.pb_PlayRightOut.Visible = false;
-                this.elementHost_FrameSelect.Visible = false;
 
                 this.waveform_TOFPlot.Points = new BasicArrayPointList(new double[0], new double[0]);
                 this.waveform_MobilityPlot.Points = new BasicArrayPointList(new double[0], new double[0]);
 
-                this.lbl_FrameRange.Visible = false;
-                this.num_FrameRange.Visible = false;
+                this.frameControlVm.MinimumFrameNumber = 0;
+                this.frameControlVm.MaximumFrameNumber = 0;
 
                 return;
             }
@@ -3110,41 +3055,14 @@ namespace UIMF_File
             {
                 this.pnl_2DMap.Visible = true;
                 this.hsb_2DMap.Visible = this.vsb_2DMap.Visible = true;
-                this.pb_PlayLeftIn.Visible = this.pb_PlayLeftOut.Visible = true;
-                this.pb_PlayRightIn.Visible = this.pb_PlayRightOut.Visible = true;
 
                 this.pnl_2DMap.Visible = true;
 
-                if (frame_count == 1)
-                {
-                    this.elementHost_FrameSelect.Hide();
-                    this.pb_PlayLeftIn.Hide();
-                    this.pb_PlayLeftOut.Hide();
-                    this.pb_PlayRightIn.Hide();
-                    this.pb_PlayRightOut.Hide();
-                    this.num_FrameRange.Hide();
-                    this.lbl_FrameRange.Hide();
-                }
-                else
-                {
-                    this.slide_FrameSelect.Value = 0;
-                    if (!this.elementHost_FrameSelect.Visible)
-                        this.elementHost_FrameSelect.Visible = true;
-                    this.slide_FrameSelect.Minimum = 0;
-                    this.slide_FrameSelect.Maximum = frame_count - 1;
+                this.frameControlVm.CurrentFrameNumber = 0;
+                this.frameControlVm.MinimumFrameNumber = 0;
+                this.frameControlVm.MaximumFrameNumber = frame_count - 1;
 
-                    this.lbl_FrameRange.Visible = false;
-                    this.num_FrameRange.Visible = false;
-
-                    this.pb_PlayLeftIn.Show();
-                    this.pb_PlayLeftOut.Show();
-                    this.pb_PlayRightIn.Show();
-                    this.pb_PlayRightOut.Show();
-                    this.num_FrameRange.Show();
-                    this.lbl_FrameRange.Show();
-
-                    this.elementHost_FrameSelect.Refresh();
-                }
+                this.elementHost_FrameControl.Refresh();
             }
         }
 

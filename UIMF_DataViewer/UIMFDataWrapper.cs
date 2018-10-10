@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using UIMFLibrary;
@@ -669,26 +670,31 @@ namespace UIMF_File
             /// <summary>
             /// Any frame type
             /// </summary>
+            [Description("All Frames")]
             AllFrames = 0,
 
             /// <summary>
             /// MS1
             /// </summary>
+            [Description("MS")]
             MS1 = 1,
 
             /// <summary>
             /// MS2
             /// </summary>
+            [Description("MS/MS")]
             MS2 = 2,
 
             /// <summary>
             /// Calibration
             /// </summary>
+            [Description("Calibration")]
             Calibration = 3,
 
             /// <summary>
             /// Prescan
             /// </summary>
+            [Description("Prescan")]
             Prescan = 4
         }
     }

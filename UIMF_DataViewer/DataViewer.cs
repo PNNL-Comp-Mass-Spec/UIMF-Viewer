@@ -189,7 +189,6 @@ namespace UIMF_File
 
         private int current_frame_compression;
 
-        // TODO: Old: private UIMF_File.PostProcessing pnl_postProcessing = null;
         private PostProcessingViewModel pnl_postProcessing = null;
 
         private bool flag_Closing = false;
@@ -219,20 +218,14 @@ namespace UIMF_File
 
                 this.build_Interface(true);
 
-                this.cb_FrameType.SelectedIndex = 0;
+                this.frameControlVm.SelectedFrameType = UIMFDataWrapper.ReadFrameType.AllFrames;
 
                 this.hsb_2DMap.Visible = this.vsb_2DMap.Visible = false;
-                this.pb_PlayLeftIn.Visible = this.pb_PlayLeftOut.Visible = false;
-                this.pb_PlayRightIn.Visible = this.pb_PlayRightOut.Visible = false;
-                this.elementHost_FrameSelect.Visible = false;
-                this.num_TICThreshold.Visible = false;
-                this.btn_TIC.Visible = false;
+                this.frameControlVm.MinimumFrameNumber = 0;
+                this.frameControlVm.MaximumFrameNumber = 0;
 
                 // TODO: //this.plot_TOF.ClearData();
                 // TODO: //this.plot_Mobility.ClearData();
-
-                this.lbl_FrameRange.Visible = false;
-                this.num_FrameRange.Visible = false;
 
                 this.IonMobilityDataView_Resize((object)null, (EventArgs)null);
             }
@@ -268,25 +261,22 @@ namespace UIMF_File
                 MessageBox.Show("failed to build interface()\n\n" + ex.ToString());
             }
 
-            for (int i = 0; i < 5; i++)
-                this.cb_FrameType.Items.Add(this.uimfReader.FrameTypeDescription(i));
-
-            this.slide_FrameSelect.Minimum = 0;
-            this.slide_FrameSelect.Maximum = this.uimfReader.UimfGlobalParams.NumFrames;
+            this.frameControlVm.MinimumFrameNumber = 0;
+            this.frameControlVm.MaximumFrameNumber = this.uimfReader.UimfGlobalParams.NumFrames;
 
             this.current_minBin = 0;
             this.current_maxBin = 10;
 
             this.lb_DragDropFiles.Items.Add(this.uimfReader.UimfDataFile);
-            this.cb_ExperimentControlled.Items.Add(Path.GetFileName(this.uimfReader.UimfDataFile));
-            this.cb_ExperimentControlled.SelectedIndex = 0;
 
-            this.cb_FrameType.SelectedIndex = (int)this.uimfReader.CurrentFrameType;
+            this.frameControlVm.UimfFiles.Add(Path.GetFileName(this.uimfReader.UimfDataFile));
+            this.frameControlVm.SelectedUimfFile = Path.GetFileName(this.uimfReader.UimfDataFile);
+
+            this.frameControlVm.SelectedFrameType = this.uimfReader.CurrentFrameType;
             this.Filter_FrameType(this.uimfReader.CurrentFrameType);
             this.uimfReader.CurrentFrameIndex = 0;
 
             this.uimfReader.SetCurrentFrameType(current_frame_type, true);
-            this.cb_FrameType.SelectedIndexChanged += this.cb_FrameType_SelectedIndexChanged;
 
             Generate2DIntensityArray();
             this.GraphFrame(this.data_2D, flag_enablecontrols);
@@ -301,9 +291,6 @@ namespace UIMF_File
             }
             else
                 this.flag_isTIMS = false;
-
-            this.num_TICThreshold.Visible = false;
-            this.btn_TIC.Visible = false;
 
             if (this.uimfReader.UimfGlobalParams.NumFrames > DESIRED_WIDTH_CHROMATOGRAM)
                 this.num_FrameCompression.Value = this.uimfReader.UimfGlobalParams.NumFrames / DESIRED_WIDTH_CHROMATOGRAM;
@@ -421,19 +408,11 @@ namespace UIMF_File
             this.menuItem_ScanTime.Checked = false;
 
             // start the heartbeat
-            this.slide_FrameSelect.Value = 0;
+            this.frameControlVm.CurrentFrameNumber = 0;
 
             // default values in the calibration require no interface
             this.btn_revertCalDefaults.Hide();
             this.btn_setCalDefaults.Hide();
-
-            this.pb_PlayLeftIn.SendToBack();
-            this.pb_PlayLeftOut.BringToFront();
-            this.pb_PlayRightIn.SendToBack();
-            this.pb_PlayRightOut.BringToFront();
-            this.elementHost_FrameSelect.SendToBack();
-
-            this.lbl_FramesShown.Hide();
 
             //this.AllowDrop = true;
 
@@ -481,15 +460,17 @@ namespace UIMF_File
 
                 this.plot_Mobility.ContextMenu = contextMenu_driftTIC;
                 this.plot_Mobility.RangeChanged += this.OnPlotTICRangeChanged;
-                this.pb_PlayRightIn.Click += this.pb_PlayRightIn_Click;
-                this.pb_PlayLeftOut.Click += this.pb_PlayLeftOut_Click;
-                this.pb_PlayLeftIn.Click += this.pb_PlayLeftIn_Click;
-                this.pb_PlayRightOut.Click += this.pb_PlayRightOut_Click;
-                this.num_FrameIndex.ValueChanged += this.num_FrameIndex_ValueChanged;
+
+                this.frameControlVm.PlayLeft += this.pb_PlayLeftOut_Click;
+                this.frameControlVm.PlayRight += this.pb_PlayRightOut_Click;
+                this.frameControlVm.StopCinema += this.pb_StopPlaying_Click;
+                this.frameControlVm.CalculateTIC += this.btn_TIC_Click;
+
+                this.frameControlVm.PropertyChanged += FrameControlVmOnPropertyChanged;
+
                 this.cb_EnableMZRange.CheckedChanged += this.cb_EnableMZRange_CheckedChanged;
                 this.num_MZ.ValueChanged += this.num_MZ_ValueChanged;
                 this.num_PPM.ValueChanged += this.num_PPM_ValueChanged;
-                this.lbl_FramesShown.Click += this.lbl_FramesShown_Click;
                 this.btn_setCalDefaults.Click += this.btn_setCalDefaults_Click;
 
                 this.num_minMobility.ValueChanged += this.num_Mobility_ValueChanged;
@@ -501,11 +482,6 @@ namespace UIMF_File
                 this.rb_CompleteChromatogram.CheckedChanged += this.rb_CompleteChromatogram_CheckedChanged;
                 this.rb_PartialChromatogram.CheckedChanged += this.rb_PartialChromatogram_CheckedChanged;
                 this.num_FrameCompression.ValueChanged += this.num_FrameCompression_ValueChanged;
-
-                this.btn_TIC.Click += this.btn_TIC_Click;
-
-                this.num_FrameRange.ValueChanged += this.num_FrameRange_ValueChanged;
-                this.slide_FrameSelect.ValueChanged += this.slide_FrameSelect_ValueChanged;
 
                 this.vsb_2DMap.Scroll += this.vsb_2DMap_Scroll;
                 this.hsb_2DMap.Scroll += this.hsb_2DMap_Scroll;
@@ -742,40 +718,9 @@ namespace UIMF_File
 
                 // --------------------------------------------------------------------------------------------------
                 // middle top
-                this.pnl_FrameControl.Left = this.pnl_2DMap.Left + 20;
-                this.pnl_FrameControl.Width = this.pnl_2DMap.Width - 40;
-
-                // pnl_FrameControl
-                this.cb_ExperimentControlled.Top = 4;
-                this.cb_ExperimentControlled.Left = 4;
-                this.cb_ExperimentControlled.Width = this.pnl_FrameControl.Width - 10;
-
-                this.elementHost_FrameSelect.Top = this.cb_ExperimentControlled.Top + this.cb_ExperimentControlled.Height + 4;
-
-                this.cb_FrameType.Top = this.lbl_Chromatogram.Top = this.elementHost_FrameSelect.Top + 16;
-
-                this.num_FrameIndex.Top = this.lbl_Chromatogram.Top;
-                this.lbl_Chromatogram.Left = 30;
-                this.cb_FrameType.Left = 4;
-                this.num_FrameIndex.Left = this.cb_FrameType.Left + this.cb_FrameType.Width + 4;
-
-                this.pb_PlayLeftIn.Top = this.pb_PlayLeftOut.Top = this.pb_PlayRightIn.Top = this.pb_PlayRightOut.Top = this.elementHost_FrameSelect.Top + 21;
-                this.pb_PlayLeftIn.Left = this.pb_PlayLeftOut.Left = this.num_FrameIndex.Left + this.num_FrameIndex.Width + 6;
-                this.pb_PlayRightIn.Left = this.pb_PlayRightOut.Left = this.pnl_FrameControl.Width - 32;
-
-                this.elementHost_FrameSelect.Left = this.pb_PlayLeftIn.Left + this.pb_PlayLeftIn.Width;
-                this.elementHost_FrameSelect.Width = this.pb_PlayRightIn.Left - (this.pb_PlayLeftIn.Left + this.pb_PlayLeftIn.Width);
-
-                this.num_FrameRange.Top = this.elementHost_FrameSelect.Top + this.elementHost_FrameSelect.Height - 4;
-                this.num_FrameRange.Left = this.elementHost_FrameSelect.Left + this.elementHost_FrameSelect.Width - this.num_FrameRange.Width;
-                this.lbl_FrameRange.Top = this.num_FrameRange.Top + 2;
-                this.lbl_FrameRange.Left = this.num_FrameRange.Left - this.lbl_FrameRange.Width - 2;
-
-                this.lbl_FramesShown.Left = this.num_FrameIndex.Left - 30;
-                this.lbl_FramesShown.Top = this.num_FrameRange.Top + 4;
-
-                this.pnl_FrameControl.Height = this.num_FrameRange.Top + this.num_FrameRange.Height + 6;
-                this.pnl_FrameControl.BringToFront();
+                this.elementHost_FrameControl.Left = this.pnl_2DMap.Left + 20;
+                this.elementHost_FrameControl.Width = this.pnl_2DMap.Width - 40;
+                this.elementHost_FrameControl.Height = 100;
 
                 this.flag_Resizing = false;
 
@@ -792,7 +737,7 @@ namespace UIMF_File
             this.lbl_ExperimentDate.Top = 4;
             this.lbl_ExperimentDate.Left = this.btn_Refresh.Left + this.btn_Refresh.Width + 10; // this.pnl_2DMap.Left + this.pnl_2DMap.Width - this.lbl_ExperimentDate.Width;
 
-            this.num_maxBin.Top = this.pnl_FrameControl.Top + this.pnl_FrameControl.Height - this.num_maxBin.Height - 6;
+            this.num_maxBin.Top = this.elementHost_FrameControl.Top + this.elementHost_FrameControl.Height - this.num_maxBin.Height - 6;
 
             this.tabpages_FrameInfo.Top = this.tab_DataViewer.Height - this.tabpages_FrameInfo.Height - 6;
             this.pnl_Chromatogram.Top = this.tabpages_FrameInfo.Top - this.pnl_Chromatogram.Height - 6;
@@ -808,44 +753,13 @@ namespace UIMF_File
 
             // --------------------------------------------------------------------------------------------------
             // middle top
-            this.pnl_FrameControl.Left = this.pnl_2DMap.Left;
-            this.pnl_FrameControl.Width = this.tab_DataViewer.ClientSize.Width - this.pnl_FrameControl.Left - 10;
-
-            // pnl_FrameControl
-            this.cb_ExperimentControlled.Top = 4;
-            this.cb_ExperimentControlled.Left = 4;
-            this.cb_ExperimentControlled.Width = this.pnl_FrameControl.Width - 10;
-
-            this.elementHost_FrameSelect.Top = this.cb_ExperimentControlled.Top + this.cb_ExperimentControlled.Height + 4;
-
-            this.cb_FrameType.Top = this.lbl_Chromatogram.Top = this.elementHost_FrameSelect.Top + 16;
-
-            this.num_FrameIndex.Top = this.lbl_Chromatogram.Top;
-            this.lbl_Chromatogram.Left = 30;
-            this.cb_FrameType.Left = 4;
-            this.num_FrameIndex.Left = this.cb_FrameType.Left + this.cb_FrameType.Width + 4;
-
-            this.pb_PlayLeftIn.Top = this.pb_PlayLeftOut.Top = this.pb_PlayRightIn.Top = this.pb_PlayRightOut.Top = this.elementHost_FrameSelect.Top + 21;
-            this.pb_PlayLeftIn.Left = this.pb_PlayLeftOut.Left = this.num_FrameIndex.Left + this.num_FrameIndex.Width + 6;
-            this.pb_PlayRightIn.Left = this.pb_PlayRightOut.Left = this.pnl_FrameControl.Width - 32;
-
-            this.elementHost_FrameSelect.Left = this.pb_PlayLeftIn.Left + this.pb_PlayLeftIn.Width;
-            this.elementHost_FrameSelect.Width = this.pb_PlayRightIn.Left - (this.pb_PlayLeftIn.Left + this.pb_PlayLeftIn.Width);
-
-            this.num_FrameRange.Top = this.elementHost_FrameSelect.Top + this.elementHost_FrameSelect.Height - 4;
-            this.num_FrameRange.Left = this.elementHost_FrameSelect.Left + this.elementHost_FrameSelect.Width - this.num_FrameRange.Width;
-            this.lbl_FrameRange.Top = this.num_FrameRange.Top + 2;
-            this.lbl_FrameRange.Left = this.num_FrameRange.Left - this.lbl_FrameRange.Width - 2;
-
-            this.lbl_FramesShown.Left = this.num_FrameIndex.Left - 30;
-            this.lbl_FramesShown.Top = this.num_FrameRange.Top + 4;
-
-            this.pnl_FrameControl.Height = this.num_FrameRange.Top + this.num_FrameRange.Height + 6;
+            this.elementHost_FrameControl.Left = this.pnl_2DMap.Left;
+            this.elementHost_FrameControl.Width = this.tab_DataViewer.ClientSize.Width - this.elementHost_FrameControl.Left - 10;
 
             // --------------------------------------------------------------------------------------------------
             // Right
             this.elementHost_PlotAreaFormatting.Height = this.max_plot_height;
-            this.elementHost_PlotAreaFormatting.Top = this.pnl_FrameControl.Top + this.pnl_FrameControl.Height + 10;
+            this.elementHost_PlotAreaFormatting.Top = this.elementHost_FrameControl.Top + this.elementHost_FrameControl.Height + 10;
             this.elementHost_PlotAreaFormatting.Left = this.tab_DataViewer.Width - this.elementHost_PlotAreaFormatting.Width - 10;
 
             // Middle Bottom
@@ -981,24 +895,6 @@ namespace UIMF_File
                 this.current_minMobility = this.new_minMobility;
                 this.current_maxMobility = this.new_maxMobility;
 
-                if (this.uimfReader.UimfGlobalParams.NumFrames < 2)
-                {
-                    this.elementHost_FrameSelect.Hide();
-                    this.num_FrameRange.Hide();
-                    this.lbl_FrameRange.Hide();
-
-                    this.pb_PlayLeftIn.Hide();
-                    this.pb_PlayLeftOut.Hide();
-                    this.pb_PlayRightIn.Hide();
-                    this.pb_PlayRightOut.Hide();
-                }
-                else
-                {
-                    this.elementHost_FrameSelect.Show();
-                    this.num_FrameRange.Show();
-                    this.lbl_FrameRange.Show();
-                }
-
                 // frame is created, allow frame cycling.
                 this.flag_update2DGraph = true;
 
@@ -1045,14 +941,13 @@ namespace UIMF_File
                 return;
             }
 
-            double frameSelectValue = 0;
-            this.slide_FrameSelect.Dispatcher.Invoke(() => frameSelectValue = this.slide_FrameSelect.Value);
+            var frameSelectValue = this.frameControlVm.CurrentFrameNumber;
 
             // Determine the frame size
-            if (this.uimfReader.CurrentFrameIndex != Convert.ToInt32(frameSelectValue))
+            if (this.uimfReader.CurrentFrameIndex != frameSelectValue)
             {
                 flag_newframe = true;
-                this.uimfReader.CurrentFrameIndex = Convert.ToInt32(frameSelectValue);
+                this.uimfReader.CurrentFrameIndex = frameSelectValue;
             }
 
             if (this.flag_viewMobility)
@@ -1303,20 +1198,15 @@ namespace UIMF_File
 #endif
 
             // show frame range
-            var frameSelectValue = 0.0;
-            this.elementHost_FrameSelect.Invoke(new MethodInvoker(delegate
+            var frameSelectValue = this.frameControlVm.CurrentFrameNumber;
+            this.frameControlView.Dispatcher.Invoke(() =>
             {
-                frameSelectValue = this.slide_FrameSelect.Value;
-                if ((this.slide_FrameSelect.Value - Convert.ToInt32(this.num_FrameRange.Value) + 1) < 0)
-                    this.slide_FrameSelect.SelectionStart = 0;
+                if ((frameSelectValue - this.frameControlVm.SummedFrames + 1) < 0)
+                    this.frameControlVm.MinimumSummedFrame = 0;
                 else
-                    this.slide_FrameSelect.SelectionStart =
-                        ((double) (this.slide_FrameSelect.Value - Convert.ToInt32(this.num_FrameRange.Value) + 1)) - .1;
-                this.slide_FrameSelect.SelectionEnd = this.slide_FrameSelect.Value;
-            }));
-
-            if (this.num_FrameIndex.Maximum >= (int)frameSelectValue)
-                this.num_FrameIndex.Invoke(new MethodInvoker(delegate { this.num_FrameIndex.Value = (int)frameSelectValue; }));
+                    this.frameControlVm.MinimumSummedFrame = (((frameSelectValue - this.frameControlVm.SummedFrames + 1)));
+                this.frameControlVm.MaximumSummedFrame = frameSelectValue;
+            });
 
             for (exp_index = 0; exp_index < this.lb_DragDropFiles.Items.Count; exp_index++)
             {
@@ -1326,15 +1216,6 @@ namespace UIMF_File
 
                     start_index = this.uimfReader.CurrentFrameIndex - (this.uimfReader.FrameWidth - 1);
                     end_index = this.uimfReader.CurrentFrameIndex;
-
-                    if (Convert.ToInt32(this.num_FrameRange.Value) > 1)
-                    {
-                        this.lbl_FramesShown.Invoke(new MethodInvoker(delegate
-                        {
-                            this.lbl_FramesShown.Show();
-                            this.lbl_FramesShown.Text = "Showing Frames: " + start_index.ToString() + " to " + end_index.ToString();
-                        }));
-                    }
 
                     // collect the data
 #if OLD // TODO:
@@ -1555,8 +1436,8 @@ namespace UIMF_File
                 }
 
             //
-            this.lbl_FramesShown.Show();
-            this.lbl_FramesShown.Text = "(TIC Count > " + threshold.ToString() + ") = " + TIC_Count.ToString();
+            this.frameControlVm.TICValue = TIC_Count;
+            this.frameControlVm.ShowTICValue = true;
 #endif
         }
 
@@ -1863,9 +1744,6 @@ namespace UIMF_File
             this.lbl_TIC.Top = this.num_minMobility.Top;
             this.lbl_TIC.Left = (this.num_maxMobility.Left - this.num_minMobility.Left) / 2 + this.num_minMobility.Left;
 
-            this.cb_FrameType.Top = this.num_minMobility.Top + 40;
-            this.cb_FrameType.Left = this.num_minMobility.Left + 5;
-
             this.pnl_2DMap.Left = this.plot_TOF.Left + this.plot_TOF.Width + (int)this.plot_Mobility.GraphPane.Chart.Rect.Left;
             this.hsb_2DMap.Left = this.pnl_2DMap.Left;
 
@@ -1890,7 +1768,7 @@ namespace UIMF_File
             int new_frame_number = 0;
             int current_frame_number = 0;
 
-            this.slide_FrameSelect.Dispatcher.Invoke(() => this.slide_FrameSelect.Value = 0);
+            this.frameControlView.Dispatcher.Invoke(() => this.frameControlVm.CurrentFrameNumber = 0);
 
             if (this.flag_GraphingFrame)
                 return;
@@ -2002,27 +1880,27 @@ namespace UIMF_File
 
                             if (this.flag_CinemaPlot)
                             {
-                                this.elementHost_FrameSelect.Invoke(new MethodInvoker(delegate
+                                this.frameControlView.Dispatcher.Invoke(() =>
                                 {
-                                if ((this.slide_FrameSelect.Value + this.Cinemaframe_DataChange >= 0) &&
-                                    (this.slide_FrameSelect.Value + this.Cinemaframe_DataChange <= this.slide_FrameSelect.Maximum))
-                                {
-                                    this.slide_FrameSelect.Value += this.Cinemaframe_DataChange;
-                                }
-                                else
-                                {
-                                    if (this.Cinemaframe_DataChange > 0)
+                                    if ((this.frameControlVm.CurrentFrameNumber + this.Cinemaframe_DataChange >= 0) &&
+                                        (this.frameControlVm.CurrentFrameNumber + this.Cinemaframe_DataChange <= this.frameControlVm.MaximumFrameNumber))
                                     {
-                                        this.pb_PlayRightIn_Click((object) null, (EventArgs) null);
-                                        this.slide_FrameSelect.Value = this.slide_FrameSelect.Maximum;
+                                        this.frameControlVm.CurrentFrameNumber += this.Cinemaframe_DataChange;
                                     }
                                     else
                                     {
-                                        this.pb_PlayLeftIn_Click((object) null, (EventArgs) null);
-                                        this.slide_FrameSelect.Value = Convert.ToDouble(this.num_FrameRange.Value) - 1;
+                                        if (this.Cinemaframe_DataChange > 0)
+                                        {
+                                            this.StopCinema();
+                                            this.frameControlVm.CurrentFrameNumber = this.frameControlVm.MaximumFrameNumber;
+                                        }
+                                        else
+                                        {
+                                            this.StopCinema();
+                                            this.frameControlVm.CurrentFrameNumber = this.frameControlVm.CurrentFrameNumber - 1;
+                                        }
                                     }
-                                }
-                                }));
+                                });
 
                                 this.flag_update2DGraph = true;
                             }
@@ -2581,7 +2459,7 @@ namespace UIMF_File
 
                     this.flag_enterMobilityRange = true;
 #if !NEEDS_WORK
-                    this.maxFrame_Chromatogram = this.uimfReader.LoadFrame((int)this.slide_FrameSelect.Maximum);
+                    this.maxFrame_Chromatogram = this.uimfReader.LoadFrame((int)this.frameControlVm.MaximumFrameNumber);
                     this.num_maxMobility.Value = this.num_maxMobility.Maximum = this.maxFrame_Chromatogram;
 #else // needs work
                     if (this.minFrame_Chromatogram < 0)
