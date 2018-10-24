@@ -15,7 +15,7 @@ namespace UIMF_File
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
-        #region HIDE
+        #region WinForms ContextMenus
         private System.Windows.Forms.ContextMenu contextMenu_pb_2DMap;
         private System.Windows.Forms.MenuItem menuItem_SelectionCorners;
         protected System.Windows.Forms.MenuItem menuItemZoomFull;
@@ -25,7 +25,6 @@ namespace UIMF_File
         private System.Windows.Forms.MenuItem menuItem5;
         private System.Windows.Forms.MenuItem menuItemConvertToMZ;
         private System.Windows.Forms.MenuItem menuItemConvertToTOF;
-        protected System.Windows.Forms.Panel pnl_2DMap;
         private System.Windows.Forms.ContextMenu contextMenu_HorizontalAxis;
         private System.Windows.Forms.MenuItem menuItem_UseScans;
         private System.Windows.Forms.MenuItem menuItem_UseDriftTime;
@@ -37,7 +36,6 @@ namespace UIMF_File
         private System.Windows.Forms.MenuItem menuItem_Time_driftTIC;
         private System.Windows.Forms.MenuItem menuItem9;
         private System.Windows.Forms.MenuItem menuItem_Exportnew_driftTIC;
-        protected ZedGraph.ZedGraphControl plot_TOF;
         private System.Windows.Forms.MenuItem menuItem_ExportCompressed;
         private System.Windows.Forms.MenuItem menuItem_ExportComplete;
         private System.Windows.Forms.MenuItem menuItem_ExportAll;
@@ -48,10 +46,19 @@ namespace UIMF_File
         private System.Windows.Forms.MenuItem menuItem3a;
         private System.Windows.Forms.MenuItem menuItem_Mobility;
         private System.Windows.Forms.MenuItem menuItem_ScanTime;
-        protected UIMF_File.Utilities.PointAnnotationGraph plot_Mobility;
         private System.Windows.Forms.ContextMenu contextMenu_TOF;
         private System.Windows.Forms.MenuItem menuItem_TOFExport;
         private System.Windows.Forms.MenuItem menuItem_TOFMaximum;
+        private System.Windows.Forms.MenuItem menuItem1;
+        private System.Windows.Forms.MenuItem menuItem_CaptureExperimentFrame;
+        private MenuItem menuItem_SaveIMF;
+        private MenuItem menuItem_WriteUIMF;
+        #endregion
+
+        #region WinForms SubItems
+        protected System.Windows.Forms.Panel pnl_2DMap;
+        protected ZedGraph.ZedGraphControl plot_TOF;
+        protected UIMF_File.Utilities.PointAnnotationGraph plot_Mobility;
         protected System.Windows.Forms.NumericUpDown num_minMobility;
         protected System.Windows.Forms.NumericUpDown num_maxMobility;
         private Label lbl_TIC;
@@ -59,13 +66,6 @@ namespace UIMF_File
         protected System.Windows.Forms.NumericUpDown num_maxBin;
         protected ZedGraph.LineItem waveform_TOFPlot;
         protected ZedGraph.LineItem waveform_MobilityPlot;
-        #endregion
-
-        public ElementHost elementHost_PlotAreaFormatting;
-        private PlotAreaFormattingViewModel plotAreaFormattingVm;
-        private PlotAreaFormattingView plotAreaFormattingView;
-        private System.Windows.Forms.MenuItem menuItem1;
-        private System.Windows.Forms.MenuItem menuItem_CaptureExperimentFrame;
 
         protected System.Windows.Forms.Label lbl_ExperimentDate;
 
@@ -79,17 +79,9 @@ namespace UIMF_File
         private System.Drawing.Graphics pnl_2DMap_Extensions;
         private Pen thick_pen = new Pen(new SolidBrush(Color.Fuchsia), 1);
 
-        private ElementHost elementHost_ChromatogramControls;
-        private ChromatogramControlView chromatogramControlView;
-        private ChromatogramControlViewModel chromatogramControlVm;
-
-        private MenuItem menuItem_SaveIMF;
-        private MenuItem menuItem_WriteUIMF;
         protected TabControl tabpages_Main;
         protected TabPage tab_DataViewer;
         protected TabPage tab_PostProcessing;
-        private ElementHost elementHost_PostProcessing;
-        private PostProcessingView postProcessingView;
         protected GroupBox gb_MZRange;
         private Label lbl_PPM;
         private Label lbl_MZ;
@@ -104,15 +96,33 @@ namespace UIMF_File
         private PictureBox pb_PlayUpOut;
         protected CheckBox cb_Exclusive;
 
-        private ElementHost elementHost_FrameControl;
-        private FrameControlView frameControlView;
-        public FrameControlViewModel frameControlVm;
         private PictureBox pb_Expand;
         private PictureBox pb_Shrink;
+        #endregion
 
+        #region WPF ElementHosts
+        public ElementHost elementHost_PlotAreaFormatting;
+        private ElementHost elementHost_ChromatogramControls;
+        private ElementHost elementHost_PostProcessing;
+        private ElementHost elementHost_FrameControl;
         private ElementHost elementHost_FrameInfo;
+        #endregion
+
+        #region WPF SubItems
+        private PlotAreaFormattingViewModel plotAreaFormattingVm;
+        private PlotAreaFormattingView plotAreaFormattingView;
+
+        private ChromatogramControlView chromatogramControlView;
+        private ChromatogramControlViewModel chromatogramControlVm;
+
+        private PostProcessingView postProcessingView;
+
+        private FrameControlView frameControlView;
+        public FrameControlViewModel frameControlVm;
+
         private FrameInfoView frameInfoView;
         private FrameInfoViewModel frameInfoVm;
+        #endregion
 
         #region Windows Form Designer generated code
         /// <summary>
