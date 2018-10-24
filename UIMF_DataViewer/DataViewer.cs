@@ -293,10 +293,10 @@ namespace UIMF_File
                 this.flag_isTIMS = false;
 
             if (this.uimfReader.UimfGlobalParams.NumFrames > DESIRED_WIDTH_CHROMATOGRAM)
-                this.num_FrameCompression.Value = this.uimfReader.UimfGlobalParams.NumFrames / DESIRED_WIDTH_CHROMATOGRAM;
+                this.chromatogramControlVm.FrameCompression = this.uimfReader.UimfGlobalParams.NumFrames / DESIRED_WIDTH_CHROMATOGRAM;
             else
-                this.num_FrameCompression.Value = 1;
-            this.current_frame_compression = Convert.ToInt32(this.num_FrameCompression.Value);
+                this.chromatogramControlVm.FrameCompression = 1;
+            this.current_frame_compression = this.chromatogramControlVm.FrameCompression;
 
             // Do some math, prevent the viewer from expanding across multiple screens when first opened.
             if (this.pnl_2DMap.Left + this.uimfReader.UimfFrameParams.Scans + 170 < Screen.FromControl(this).Bounds.Width)
@@ -479,9 +479,7 @@ namespace UIMF_File
                 this.num_minBin.ValueChanged += this.num_minBin_ValueChanged;
                 this.plot_TOF.ContextMenu = contextMenu_TOF;
 
-                this.rb_CompleteChromatogram.CheckedChanged += this.rb_CompleteChromatogram_CheckedChanged;
-                this.rb_PartialChromatogram.CheckedChanged += this.rb_PartialChromatogram_CheckedChanged;
-                this.num_FrameCompression.ValueChanged += this.num_FrameCompression_ValueChanged;
+                this.chromatogramControlVm.PropertyChanged += ChromatogramControlVmOnPropertyChanged;
 
                 this.vsb_2DMap.Scroll += this.vsb_2DMap_Scroll;
                 this.hsb_2DMap.Scroll += this.hsb_2DMap_Scroll;
@@ -735,14 +733,14 @@ namespace UIMF_File
 
             this.num_maxBin.Top = this.elementHost_FrameControl.Top + this.elementHost_FrameControl.Height - this.num_maxBin.Height - 6;
 
-            this.pnl_Chromatogram.Top = this.tabpages_FrameInfo.Top - this.pnl_Chromatogram.Height - 6;
             this.elementHost_FrameInfo.Top = this.tab_DataViewer.Height - this.elementHost_FrameInfo.Height - 6;
+            this.elementHost_ChromatogramControls.Top = this.elementHost_FrameInfo.Top - this.elementHost_ChromatogramControls.Height - 6;
 
             this.num_minBin.Left = this.num_maxBin.Left = 20;
             this.plot_TOF.Left = 20;
 
-            this.pnl_Chromatogram.Left = 5;
             this.elementHost_FrameInfo.Left = 5;
+            this.elementHost_ChromatogramControls.Left = 5;
 
             // max_plot_height ************************************************
             this.max_plot_height = this.tab_DataViewer.Height - 420;
@@ -931,7 +929,7 @@ namespace UIMF_File
         protected virtual void Generate2DIntensityArray()
         {
             bool flag_newframe = false;
-            if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
             {
                 MessageBox.Show("ERROR:  should not be here");
                 return;
@@ -1450,7 +1448,7 @@ namespace UIMF_File
             int total_scans = this.uimfReader.UimfFrameParams.Scans;
 
             int data_height;
-            int data_width = total_frames / Convert.ToInt32(this.num_FrameCompression.Value);
+            int data_width = total_frames / this.chromatogramControlVm.FrameCompression;
 
             int new_2dmap_height;
             int new_2dmap_width;
@@ -1477,16 +1475,16 @@ namespace UIMF_File
                 this.CreateProgressBar();
 
                 // only collect this one time.
-                this.chromat_data = new int[total_frames / Convert.ToInt32(this.num_FrameCompression.Value)][];
-                for (mobility_index = 0; mobility_index < total_frames / Convert.ToInt32(this.num_FrameCompression.Value); mobility_index++)
+                this.chromat_data = new int[total_frames / this.chromatogramControlVm.FrameCompression][];
+                for (mobility_index = 0; mobility_index < total_frames / this.chromatogramControlVm.FrameCompression; mobility_index++)
                     this.chromat_data[mobility_index] = new int[total_scans + 1];
 
                 this.flag_collecting_data = true;
 
-                if (this.rb_PartialChromatogram.Checked)
+                if (this.chromatogramControlVm.PartialPeakChromatogramChecked)
                     compression_collection = 1;
                 else
-                    compression_collection = Convert.ToInt32(this.num_FrameCompression.Value);
+                    compression_collection = this.chromatogramControlVm.FrameCompression;
 
                 for (mobility_index = 0; (mobility_index < data_width) && this.flag_Alive; mobility_index++) // wfd
                 {
@@ -1495,7 +1493,7 @@ namespace UIMF_File
                         this.progress_ReadingFile.Value = mobility_index;
                         this.progress_ReadingFile.Update();
 
-                        frame_index = (mobility_index * Convert.ToInt32(this.num_FrameCompression.Value)) + compression;
+                        frame_index = (mobility_index * this.chromatogramControlVm.FrameCompression) + compression;
                         //MessageBox.Show(frame_index.ToString());
 
                         mobility_data = this.uimfReader.GetDriftChromatogram(frame_index, min_MZRange_bin, max_MZRange_bin);
@@ -1508,7 +1506,7 @@ namespace UIMF_File
 
                 this.flag_collecting_data = false;
 
-                if (this.rb_CompleteChromatogram.Checked)
+                if (this.chromatogramControlVm.CompletePeakChromatogramChecked)
                     this.flag_chromatograph_collected_COMPLETE = true;
                 else
                     this.flag_chromatograph_collected_PARTIAL = true;
@@ -1711,7 +1709,7 @@ namespace UIMF_File
 
             // align everything
             this.plot_TOF.Top = this.num_maxBin.Top + this.num_maxBin.Height + 4;
-            this.plot_TOF.Height = this.pnl_Chromatogram.Top - this.plot_TOF.Top - 30;
+            this.plot_TOF.Height = this.elementHost_ChromatogramControls.Top - this.plot_TOF.Top - 30;
 
             this.num_minBin.Top = this.plot_TOF.Top + this.plot_TOF.Height + 4;
 
@@ -1804,7 +1802,7 @@ namespace UIMF_File
                             break;
                         }
 
-                        if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+                        if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
                         {
                             this.Graph_2DPlot();
                             this.flag_update2DGraph = false;
@@ -1986,7 +1984,7 @@ namespace UIMF_File
                         }
                     }
 
-                    if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+                    if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
                     {
                         try
                         {
@@ -2368,7 +2366,7 @@ namespace UIMF_File
             this.progress_ReadingFile.Top = this.pnl_2DMap.Top + this.pnl_2DMap.Height / 2;
             this.progress_ReadingFile.Left = this.pnl_2DMap.Left;
             this.progress_ReadingFile.Width = this.pnl_2DMap.Width;
-            this.progress_ReadingFile.Maximum = (this.uimfReader.UimfGlobalParams.NumFrames / Convert.ToInt32(this.num_FrameCompression.Value)) + 1;
+            this.progress_ReadingFile.Maximum = (this.uimfReader.UimfGlobalParams.NumFrames / this.chromatogramControlVm.FrameCompression) + 1;
             this.progress_ReadingFile.Show();
 
             this.progress_ReadingFile.BringToFront();
@@ -2425,7 +2423,7 @@ namespace UIMF_File
 
                 if (current_valuesPerPixelX < -5)
                 {
-                    if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+                    if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
                     {
                         this.waveform_MobilityPlot.Symbol = new Symbol(SymbolType.None, Color.Salmon);
                     }
@@ -2445,7 +2443,7 @@ namespace UIMF_File
                 double maxX = 0;
                 int xCompressionMultiplier = current_valuesPerPixelX > 1 ? current_valuesPerPixelX : 1;
 
-                if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+                if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
                 {
                     if (this.minFrame_Chromatogram < 1)
                     {
@@ -2492,14 +2490,14 @@ namespace UIMF_File
                     // MessageBox.Show(this.uimf_FrameParameters.Accumulations.ToString());
                     if ((this.mean_TOFScanTime == 0) || this.flag_Chromatogram_Frames)
                     {
-                        //this.plot_Mobility.PlotY(tic_Mobility, (double)0, 1.0 * Convert.ToDouble(this.num_FrameCompression.Value));
-                        this.waveform_MobilityPlot.Points = new BasicArrayPointList(Enumerable.Range(0, tic_Mobility.Length).Select(x => x * Convert.ToDouble(this.num_FrameCompression.Value) * xCompressionMultiplier).ToArray(), tic_Mobility);
+                        //this.plot_Mobility.PlotY(tic_Mobility, (double)0, 1.0 * Convert.ToDouble(this.chromatogramControlVm.FrameCompression));
+                        this.waveform_MobilityPlot.Points = new BasicArrayPointList(Enumerable.Range(0, tic_Mobility.Length).Select(x => x * Convert.ToDouble(this.chromatogramControlVm.FrameCompression) * xCompressionMultiplier).ToArray(), tic_Mobility);
 
                         //this.xAxis_Mobility.Caption = "Frame Number";
                         this.plot_Mobility.GraphPane.XAxis.Title.Text = "Frame Number";
 
                         minX = 0;
-                        //maxX = (tic_Mobility.Length - 1) * Convert.ToDouble(this.num_FrameCompression.Value) * xCompressionMultiplier;
+                        //maxX = (tic_Mobility.Length - 1) * Convert.ToDouble(this.chromatogramControlVm.FrameCompression) * xCompressionMultiplier;
                         maxX = this.waveform_MobilityPlot.Points[this.waveform_MobilityPlot.Points.Count - 1].X;
                     }
                     else
@@ -2640,7 +2638,7 @@ namespace UIMF_File
                 double minY = 0;
                 double maxY = 0;
 
-                if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+                if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
                 {
                     if (this.minMobility_Chromatogram < 0)
                         this.minMobility_Chromatogram = 0;

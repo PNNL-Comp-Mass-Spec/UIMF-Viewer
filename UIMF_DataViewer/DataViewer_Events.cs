@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using UIMFLibrary;
+using UIMF_DataViewer.ChromatogramControl;
 using UIMF_DataViewer.FrameControl;
 using UIMF_DataViewer.FrameInfo;
 using ZedGraph;
@@ -335,7 +336,7 @@ namespace UIMF_File
                     return;
                 }
 
-                if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+                if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
                 {
                     this.minFrame_Chromatogram = 0;
                     this.maxFrame_Chromatogram = this.uimfReader.SetCurrentFrameType(this.current_frame_type) - 1;
@@ -436,8 +437,8 @@ namespace UIMF_File
                     this.flag_selection_drift = true;
                     //this.plot_Mobility.SetRange(min_select_mobility, max_select_mobility);
 
-                    this.rb_PartialChromatogram.Checked = false;
-                    this.rb_CompleteChromatogram.Checked = false;
+                    this.chromatogramControlVm.PartialPeakChromatogramChecked = false;
+                    this.chromatogramControlVm.CompletePeakChromatogramChecked = false;
 
                     this.new_minBin = 0;
                     this.new_minMobility = 0;
@@ -481,7 +482,7 @@ namespace UIMF_File
             this.flag_Painting = true;
 
             // DrawImage seems to make the selection box more responsive.
-            if (!this.rb_CompleteChromatogram.Checked && !this.rb_PartialChromatogram.Checked)
+            if (!this.chromatogramControlVm.CompletePeakChromatogramChecked && !this.chromatogramControlVm.PartialPeakChromatogramChecked)
                 e.Graphics.DrawImage(this.pnl_2DMap.BackgroundImage, 0, 0);
 
             if (_mouseDragging) //&& !toolBar1.Buttons[0].Pushed)
@@ -493,7 +494,7 @@ namespace UIMF_File
             // this section draws the highlight on the plot.
             if (this.flag_selection_drift)
             {
-                if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+                if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
                 {
                     w = this.pnl_2DMap.Width / this.uimfReader.UimfGlobalParams.NumFrames;
                     xl = (this.selection_min_drift * w);
@@ -594,12 +595,12 @@ namespace UIMF_File
                 return;
             }
 
-            if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
             {
                 this.Width = this.pnl_2DMap.Left + this.uimfReader.UimfFrameParams.Scans + 170;
 
-                this.rb_PartialChromatogram.Checked = false;
-                this.rb_CompleteChromatogram.Checked = false;
+                this.chromatogramControlVm.PartialPeakChromatogramChecked = false;
+                this.chromatogramControlVm.CompletePeakChromatogramChecked = false;
 
                 this.plot_Mobility.StopAnnotating(false);
 
@@ -899,7 +900,7 @@ namespace UIMF_File
                 menuItemConvertToMZ.Checked = true;
                 menuItemConvertToTOF.Checked = false;
 
-                if (!this.rb_PartialChromatogram.Checked && !this.rb_CompleteChromatogram.Checked)
+                if (!this.chromatogramControlVm.CompletePeakChromatogramChecked && !this.chromatogramControlVm.PartialPeakChromatogramChecked)
                 {
                     this.flag_display_as_TOF = false;
                     this.flag_update2DGraph = true;
@@ -911,7 +912,7 @@ namespace UIMF_File
                 menuItemConvertToMZ.Checked = false;
                 menuItemConvertToTOF.Checked = true;
 
-                if (!this.rb_PartialChromatogram.Checked && !this.rb_CompleteChromatogram.Checked)
+                if (!this.chromatogramControlVm.CompletePeakChromatogramChecked && !this.chromatogramControlVm.PartialPeakChromatogramChecked)
                     this.flag_update2DGraph = true;
             }
         }
@@ -1031,7 +1032,7 @@ namespace UIMF_File
             if (save_dialog.ShowDialog(this) == DialogResult.OK)
             {
                 System.IO.StreamWriter w = new System.IO.StreamWriter(save_dialog.FileName);
-                if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+                if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
                 {
                     double increment_MobilityValue = this.mean_TOFScanTime * (this.maximum_Mobility + 1) * this.uimfReader.UimfFrameParams.GetValueInt32(FrameParamKeyType.Accumulations) / 1000000.0 / 1000.0;
                     for (int i = 0; i < tic_Mobility.Length; i++)
@@ -1067,7 +1068,7 @@ namespace UIMF_File
 
                 if (save_dialog.ShowDialog(this) == DialogResult.OK)
                 {
-                    if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+                    if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
                         this.export_ChromatogramIntensityMatrix(save_dialog.FileName);
                     else
                         this.export_IntensityMatrix(save_dialog.FileName);
@@ -1081,7 +1082,7 @@ namespace UIMF_File
 
         private void menuItem_ExportComplete_Click(object sender, System.EventArgs e)
         {
-            if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
             {
                 MessageBox.Show(this, "This viewer is not prepared to export the chromatogram.  Please request it.");
                 return;
@@ -1132,7 +1133,7 @@ namespace UIMF_File
 
         protected virtual void export_IntensityMatrix(string filename)
         {
-            if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
             {
                 MessageBox.Show("export_IntensityMatrix needs work chromatogram");
                 return;
@@ -1191,7 +1192,7 @@ namespace UIMF_File
 
         protected virtual void export_CompleteIntensityMatrix(string filename)
         {
-            if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
             {
                 MessageBox.Show("export_IntensityMatrix needs work chromatogram");
                 return;
@@ -1370,7 +1371,7 @@ namespace UIMF_File
             {
                 System.IO.StreamWriter sw_TOF = new System.IO.StreamWriter(save_dialog.FileName);
 
-                if (this.rb_PartialChromatogram.Checked || this.rb_CompleteChromatogram.Checked)
+                if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
                 {
                     double increment_TOFValue = 1.0;
                     for (int i = 0; i < this.tic_TOF.Length; i++)
@@ -1825,7 +1826,7 @@ namespace UIMF_File
 
         private void OnPlotTICRangeChanged(object sender, UIMF_File.Utilities.RangeEventArgs e)
         {
-            if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
                 return;
 
             Graphics g = this.pnl_2DMap.CreateGraphics();
@@ -1846,7 +1847,7 @@ namespace UIMF_File
                 return;
             this.flag_enterMobilityRange = true;
 
-            if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
             {
                 this.minFrame_Chromatogram = Convert.ToInt32(this.num_minMobility.Value);
                 this.maxFrame_Chromatogram = Convert.ToInt32(this.num_maxMobility.Value);
@@ -1890,7 +1891,7 @@ namespace UIMF_File
                 return;
             this.flag_enterBinRange = true;
 
-            if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
             {
                 this.minMobility_Chromatogram = Convert.ToInt32(this.num_minBin.Value);
 
@@ -1960,7 +1961,7 @@ namespace UIMF_File
                 return;
             this.flag_enterBinRange = true;
 
-            if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
             {
                 this.maxMobility_Chromatogram = Convert.ToInt32(this.num_maxBin.Value);
                 if (this.maxMobility_Chromatogram > this.uimfReader.UimfFrameParams.Scans - 1)
@@ -2131,13 +2132,13 @@ namespace UIMF_File
                 return;
 
             if (this.uimfReader.GetNumberOfFrames(frame_type) > DESIRED_WIDTH_CHROMATOGRAM)
-                this.num_FrameCompression.Value = this.uimfReader.GetNumberOfFrames(frame_type) / DESIRED_WIDTH_CHROMATOGRAM;
+                this.chromatogramControlVm.FrameCompression = this.uimfReader.GetNumberOfFrames(frame_type) / DESIRED_WIDTH_CHROMATOGRAM;
             else
             {
-                this.rb_PartialChromatogram.Enabled = false;
-                this.num_FrameCompression.Value = 1;
+                this.chromatogramControlVm.CanCreatePartialChromatogram = false;
+                this.chromatogramControlVm.FrameCompression = 1;
             }
-            this.current_frame_compression = Convert.ToInt32(this.num_FrameCompression.Value);
+            this.current_frame_compression = this.chromatogramControlVm.FrameCompression;
 
             this.flag_selection_drift = false;
             this.plot_Mobility.ClearRange();
@@ -2150,17 +2151,11 @@ namespace UIMF_File
 
             if (frame_count < 2)
             {
-                this.rb_CompleteChromatogram.Enabled = false;
-                this.rb_PartialChromatogram.Enabled = false;
-
-                this.pnl_Chromatogram.Enabled = false;
+                this.chromatogramControlVm.ChromatogramAllowed = false;
             }
             else
             {
-                this.rb_CompleteChromatogram.Enabled = true;
-                this.rb_PartialChromatogram.Enabled = true;
-
-                this.pnl_Chromatogram.Enabled = true;
+                this.chromatogramControlVm.ChromatogramAllowed = true;
             }
 
             this.flag_update2DGraph = true;
@@ -2284,7 +2279,7 @@ namespace UIMF_File
         //
         protected virtual void UpdateCursorReading(System.Windows.Forms.MouseEventArgs e)
         {
-            if ((this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked) || !this.frameInfoVm.CursorTabSelected)
+            if ((this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked) || !this.frameInfoVm.CursorTabSelected)
                 return;
 
             double mobility = (current_valuesPerPixelX >= 1 ? e.X * current_valuesPerPixelX : this.current_minMobility + (e.X / -this.current_valuesPerPixelX));
@@ -2498,12 +2493,12 @@ namespace UIMF_File
             this.lb_DragDropFiles.ClearSelected();
             this.lb_DragDropFiles.SetSelected(this.index_CurrentExperiment, true);
 
-            if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
             {
                 this.Width = this.pnl_2DMap.Left + this.uimfReader.UimfFrameParams.Scans + 170;
 
-                this.rb_PartialChromatogram.Checked = false;
-                this.rb_CompleteChromatogram.Checked = false;
+                this.chromatogramControlVm.PartialPeakChromatogramChecked = false;
+                this.chromatogramControlVm.CompletePeakChromatogramChecked = false;
 
                 this.plot_Mobility.StopAnnotating(false);
 
@@ -2649,7 +2644,7 @@ namespace UIMF_File
         // TODO: Was not wired up before removal of NI Libraries.
         private void btn_ShowChromatogram_Click(object sender, EventArgs e)
         {
-            if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
             {
                 this.Chromatogram_GUI_Settings();
             }
@@ -2659,20 +2654,20 @@ namespace UIMF_File
             GC.Collect();
             if (this.flag_chromatograph_collected_COMPLETE)
             {
-                this.rb_CompleteChromatogram.BackColor = Color.LawnGreen;
-                this.rb_PartialChromatogram.BackColor = Color.Transparent;
+                // TODO: this.rb_CompleteChromatogram.BackColor = Color.LawnGreen;
+                // TODO: this.rb_PartialChromatogram.BackColor = Color.Transparent;
             }
             else
             {
-                this.rb_CompleteChromatogram.BackColor = Color.Transparent;
-                this.rb_PartialChromatogram.BackColor = Color.LawnGreen;
+                // TODO: this.rb_CompleteChromatogram.BackColor = Color.Transparent;
+                // TODO: this.rb_PartialChromatogram.BackColor = Color.LawnGreen;
             }
             //  this.flag_update2DGraph = true;
         }
 
         public void Chromatogram_GUI_Settings()
         {
-            if (this.rb_CompleteChromatogram.Checked)
+            if (this.chromatogramControlVm.CompletePeakChromatogramChecked)
                 this.flag_chromatograph_collected_PARTIAL = false;
             else
                 this.flag_chromatograph_collected_COMPLETE = false;
@@ -2702,56 +2697,61 @@ namespace UIMF_File
             this.num_maxMobility.Increment = 1;
         }
 
+        private void ChromatogramControlVmOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName.Equals(nameof(ChromatogramControlViewModel.PartialPeakChromatogramChecked)))
+            {
+                rb_PartialChromatogram_CheckedChanged(sender, e);
+            }
+            else if (e.PropertyName.Equals(nameof(ChromatogramControlViewModel.CompletePeakChromatogramChecked)))
+            {
+                rb_CompleteChromatogram_CheckedChanged(sender, e);
+            }
+            else if (e.PropertyName.Equals(nameof(ChromatogramControlViewModel.FrameCompression)))
+            {
+                num_FrameCompression_ValueChanged(sender, e);
+            }
+        }
+
         private void rb_PartialChromatogram_CheckedChanged(object sender, EventArgs e)
         {
-            if (this.rb_PartialChromatogram.Checked)
+            if (this.chromatogramControlVm.PartialPeakChromatogramChecked)
             {
-                if (this.num_FrameCompression.Value == 1)
+                if (this.chromatogramControlVm.FrameCompression == 1)
                 {
-                    this.rb_CompleteChromatogram.Checked = true;
+                    this.chromatogramControlVm.CompletePeakChromatogramChecked = true;
                     return;
                 }
 
-                this.rb_PartialChromatogram.ForeColor = Color.LawnGreen;
-                this.rb_CompleteChromatogram.Enabled = false;
-                this.rb_CompleteChromatogram.ForeColor = Color.Yellow;
                 this.Chromatogram_CheckedChanged();
 
                 this.pnl_2DMap.BackgroundImageLayout = ImageLayout.Stretch;
             }
             else
             {
-                this.rb_CompleteChromatogram.Enabled = true;
-
                 this.pnl_2DMap.BackgroundImageLayout = ImageLayout.None;
             }
         }
 
         private void rb_CompleteChromatogram_CheckedChanged(object sender, EventArgs e)
         {
-            if (this.rb_CompleteChromatogram.Checked)
+            if (this.chromatogramControlVm.CompletePeakChromatogramChecked)
             {
-                this.rb_PartialChromatogram.Enabled = false;
-                this.rb_CompleteChromatogram.ForeColor = Color.LawnGreen;
-                this.rb_PartialChromatogram.ForeColor = Color.Yellow;
                 this.Chromatogram_CheckedChanged();
 
                 this.pnl_2DMap.BackgroundImageLayout = ImageLayout.Stretch;
             }
             else
             {
-                this.rb_PartialChromatogram.Enabled = true;
-
                 this.pnl_2DMap.BackgroundImageLayout = ImageLayout.None;
             }
         }
 
         private void num_FrameCompression_ValueChanged(object sender, EventArgs e)
         {
-            if (this.num_FrameCompression.Value != this.current_frame_compression)
+            if (this.chromatogramControlVm.FrameCompression != this.current_frame_compression)
             {
-                this.rb_CompleteChromatogram.ForeColor = Color.Yellow;
-                this.rb_PartialChromatogram.ForeColor = Color.Yellow;
+                this.chromatogramControlVm.NoChromatogramChecked = true;
 
                 this.flag_chromatograph_collected_COMPLETE = false;
                 this.flag_chromatograph_collected_PARTIAL = false;
@@ -2760,16 +2760,14 @@ namespace UIMF_File
             {
                 if (this.flag_chromatograph_collected_COMPLETE)
                 {
-                    this.rb_CompleteChromatogram.ForeColor = Color.LawnGreen;
-                    this.rb_PartialChromatogram.ForeColor = Color.Yellow;
+                    this.chromatogramControlVm.CompletePeakChromatogramChecked = true;
 
                     this.flag_chromatograph_collected_COMPLETE = true;
                     this.flag_chromatograph_collected_PARTIAL = false;
                 }
                 else if (this.flag_chromatograph_collected_PARTIAL)
                 {
-                    this.rb_CompleteChromatogram.ForeColor = Color.Yellow;
-                    this.rb_PartialChromatogram.ForeColor = Color.LawnGreen;
+                    this.chromatogramControlVm.PartialPeakChromatogramChecked = true;
 
                     this.flag_chromatograph_collected_PARTIAL = true;
                     this.flag_chromatograph_collected_COMPLETE = false;
@@ -2786,23 +2784,22 @@ namespace UIMF_File
         {
             if (this.uimfReader.UimfGlobalParams.NumFrames < 2)
             {
-                if (!this.rb_CompleteChromatogram.Checked && !this.rb_PartialChromatogram.Checked)
+                if (!this.chromatogramControlVm.CompletePeakChromatogramChecked && !this.chromatogramControlVm.PartialPeakChromatogramChecked)
                     return;
 
                 MessageBox.Show("Chromatogram's are not available with less than 2 frames");
 
-                this.rb_CompleteChromatogram.Checked = false;
-                this.rb_PartialChromatogram.Checked = false;
-
-                this.rb_CompleteChromatogram.Enabled = false;
-                this.rb_PartialChromatogram.Enabled = false;
+                this.chromatogramControlVm.CompletePeakChromatogramChecked = false;
+                this.chromatogramControlVm.PartialPeakChromatogramChecked = false;
+                this.chromatogramControlVm.NoChromatogramChecked = true;
+                this.chromatogramControlVm.ChromatogramAllowed = false;
 
                 return;
             }
 
-            if (this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked)
+            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
             {
-                if (this.rb_CompleteChromatogram.Checked)
+                if (this.chromatogramControlVm.CompletePeakChromatogramChecked)
                     this.flag_chromatograph_collected_PARTIAL = false;
                 else
                     this.flag_chromatograph_collected_COMPLETE = false;
@@ -3094,8 +3091,7 @@ namespace UIMF_File
             this.flag_chromatograph_collected_COMPLETE = false;
             this.flag_chromatograph_collected_PARTIAL = false;
 
-            this.rb_CompleteChromatogram.ForeColor = Color.Yellow;
-            this.rb_PartialChromatogram.ForeColor = Color.Yellow;
+            this.chromatogramControlVm.NoChromatogramChecked = true;
 
             this.flag_update2DGraph = true;
         }
@@ -3105,8 +3101,7 @@ namespace UIMF_File
             this.flag_chromatograph_collected_COMPLETE = false;
             this.flag_chromatograph_collected_PARTIAL = false;
 
-            this.rb_CompleteChromatogram.ForeColor = Color.Yellow;
-            this.rb_PartialChromatogram.ForeColor = Color.Yellow;
+            this.chromatogramControlVm.NoChromatogramChecked = true;
 
             this.flag_update2DGraph = true;
         }
@@ -3116,8 +3111,7 @@ namespace UIMF_File
             this.flag_chromatograph_collected_COMPLETE = false;
             this.flag_chromatograph_collected_PARTIAL = false;
 
-            this.rb_CompleteChromatogram.ForeColor = Color.Yellow;
-            this.rb_PartialChromatogram.ForeColor = Color.Yellow;
+            this.chromatogramControlVm.NoChromatogramChecked = true;
 
             this.flag_update2DGraph = true;
         }

@@ -1,0 +1,64 @@
+﻿<UserControl x:Class="UIMF_DataViewer.ChromatogramControl.ChromatogramControlView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:UIMF_DataViewer.ChromatogramControl"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance {x:Type local:ChromatogramControlViewModel}, IsDesignTimeCreatable=True}"
+             d:DesignHeight="68" d:DesignWidth="208"
+             FontFamily="Arial" FontSize="8.25pt" FontWeight="Bold">
+    <Grid>
+        <Border Grid.Row="0" Margin="3" BorderThickness="1" BorderBrush="Black" Background="DarkGray" IsEnabled="{Binding ChromatogramAllowed}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <RadioButton Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Margin="1" GroupName="Chromatogram" IsChecked="{Binding PartialPeakChromatogramChecked}" Content="Partial Peak Chromatogram">
+                    <RadioButton.Style>
+                        <Style TargetType="{x:Type RadioButton}" BasedOn="{StaticResource {x:Type RadioButton}}">
+                            <Setter Property="Foreground" Value="Yellow" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding PartialPeakChromatogramChecked}" Value="True">
+                                    <Setter Property="Background" Value="LawnGreen" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding CompletePeakChromatogramChecked}" Value="True">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding CanCreatePartialChromatogram}" Value="False">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RadioButton.Style>
+                </RadioButton>
+                <RadioButton Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="1" GroupName="Chromatogram" IsChecked="{Binding CompletePeakChromatogramChecked}" Content="Complete Peak Chromatogram">
+                    <RadioButton.Style>
+                        <Style TargetType="{x:Type RadioButton}" BasedOn="{StaticResource {x:Type RadioButton}}">
+                            <Setter Property="Foreground" Value="Yellow" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CompletePeakChromatogramChecked}" Value="True">
+                                    <Setter Property="Background" Value="LawnGreen" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding PartialPeakChromatogramChecked}" Value="True">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RadioButton.Style>
+                </RadioButton>
+                <RadioButton Grid.Row="2" Grid.Column="0" Margin="1" GroupName="Chromatogram" IsChecked="{Binding NoChromatogramChecked}" Content="X" Foreground="Red" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Margin="3,0" VerticalAlignment="Center" Text="Frame Compression:" />
+                <xctk:IntegerUpDown Grid.Row="2" Grid.Column="2" Margin="3,0" MinWidth="45" Minimum="1" Maximum="{Binding MaxFrameCompression}" Value="{Binding FrameCompression}"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

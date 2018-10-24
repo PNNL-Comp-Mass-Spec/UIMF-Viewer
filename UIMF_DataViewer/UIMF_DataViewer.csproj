@@ -54,6 +54,10 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChromatogramControl\ChromatogramControlView.xaml.cs">
+      <DependentUpon>ChromatogramControlView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ChromatogramControl\ChromatogramControlViewModel.cs" />
     <Compile Include="FrameControl\EnumDescriptionConverter.cs" />
     <Compile Include="FrameControl\FrameControlView.xaml.cs">
       <DependentUpon>FrameControlView.xaml</DependentUpon>
@@ -197,6 +201,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="ChromatogramControl\ChromatogramControlView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="FrameControl\FrameControlView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

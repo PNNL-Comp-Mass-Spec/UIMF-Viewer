@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
+using UIMF_DataViewer.ChromatogramControl;
 using UIMF_DataViewer.FrameControl;
 using UIMF_DataViewer.FrameInfo;
 using UIMF_DataViewer.PostProcessing;
@@ -78,12 +79,9 @@ namespace UIMF_File
         private System.Drawing.Graphics pnl_2DMap_Extensions;
         private Pen thick_pen = new Pen(new SolidBrush(Color.Fuchsia), 1);
 
-        public NumericUpDown num_FrameCompression;
-
-        private Label lbl_FrameCompression;
-        public RadioButton rb_CompleteChromatogram;
-        public RadioButton rb_PartialChromatogram;
-        protected Panel pnl_Chromatogram;
+        private ElementHost elementHost_ChromatogramControls;
+        private ChromatogramControlView chromatogramControlView;
+        private ChromatogramControlViewModel chromatogramControlVm;
 
         private MenuItem menuItem_SaveIMF;
         private MenuItem menuItem_WriteUIMF;
@@ -173,11 +171,9 @@ namespace UIMF_File
             this.hsb_2DMap = new System.Windows.Forms.HScrollBar();
             this.vsb_2DMap = new System.Windows.Forms.VScrollBar();
             this.btn_Refresh = new System.Windows.Forms.Button();
-            this.num_FrameCompression = new System.Windows.Forms.NumericUpDown();
-            this.lbl_FrameCompression = new System.Windows.Forms.Label();
-            this.rb_CompleteChromatogram = new System.Windows.Forms.RadioButton();
-            this.rb_PartialChromatogram = new System.Windows.Forms.RadioButton();
-            this.pnl_Chromatogram = new System.Windows.Forms.Panel();
+            this.elementHost_ChromatogramControls = new ElementHost();
+            this.chromatogramControlView = new ChromatogramControlView();
+            this.chromatogramControlVm = new ChromatogramControlViewModel();
             this.tabpages_Main = new System.Windows.Forms.TabControl();
             this.tab_DataViewer = new System.Windows.Forms.TabPage();
             this.elementHost_FrameControl = new ElementHost();
@@ -209,8 +205,6 @@ namespace UIMF_File
             ((System.ComponentModel.ISupportInitialize)(this.num_maxMobility)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_maxBin)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_minBin)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.num_FrameCompression)).BeginInit();
-            this.pnl_Chromatogram.SuspendLayout();
             this.tabpages_Main.SuspendLayout();
             this.tab_DataViewer.SuspendLayout();
             this.gb_MZRange.SuspendLayout();
@@ -560,69 +554,13 @@ namespace UIMF_File
             this.btn_Refresh.UseVisualStyleBackColor = false;
             this.btn_Refresh.Click += new System.EventHandler(this.btn_Refresh_Click);
             //
-            // num_FrameCompression
+            // elementHost_ChromatogramControls
             //
-            this.num_FrameCompression.Location = new System.Drawing.Point(148, 40);
-            this.num_FrameCompression.Maximum = new decimal(new int[] {
-            200,
-            0,
-            0,
-            0});
-            this.num_FrameCompression.Name = "num_FrameCompression";
-            this.num_FrameCompression.Size = new System.Drawing.Size(52, 20);
-            this.num_FrameCompression.TabIndex = 73;
-            this.num_FrameCompression.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.num_FrameCompression.Value = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
-            //
-            // lbl_FrameCompression
-            //
-            this.lbl_FrameCompression.ForeColor = System.Drawing.Color.Black;
-            this.lbl_FrameCompression.Location = new System.Drawing.Point(12, 40);
-            this.lbl_FrameCompression.Name = "lbl_FrameCompression";
-            this.lbl_FrameCompression.Size = new System.Drawing.Size(132, 20);
-            this.lbl_FrameCompression.TabIndex = 74;
-            this.lbl_FrameCompression.Text = "Frame Compression:";
-            this.lbl_FrameCompression.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            //
-            // rb_CompleteChromatogram
-            //
-            this.rb_CompleteChromatogram.AutoSize = true;
-            this.rb_CompleteChromatogram.ForeColor = System.Drawing.Color.Yellow;
-            this.rb_CompleteChromatogram.Location = new System.Drawing.Point(8, 16);
-            this.rb_CompleteChromatogram.Name = "rb_CompleteChromatogram";
-            this.rb_CompleteChromatogram.Size = new System.Drawing.Size(196, 18);
-            this.rb_CompleteChromatogram.TabIndex = 78;
-            this.rb_CompleteChromatogram.Text = "Complete Peak Chromatogram";
-            this.rb_CompleteChromatogram.UseVisualStyleBackColor = true;
-            //
-            // rb_PartialChromatogram
-            //
-            this.rb_PartialChromatogram.AutoSize = true;
-            this.rb_PartialChromatogram.ForeColor = System.Drawing.Color.Yellow;
-            this.rb_PartialChromatogram.Location = new System.Drawing.Point(8, 0);
-            this.rb_PartialChromatogram.Name = "rb_PartialChromatogram";
-            this.rb_PartialChromatogram.Size = new System.Drawing.Size(176, 18);
-            this.rb_PartialChromatogram.TabIndex = 77;
-            this.rb_PartialChromatogram.Text = "Partial Peak Chromatogram";
-            this.rb_PartialChromatogram.UseVisualStyleBackColor = true;
-            //
-            // pnl_Chromatogram
-            //
-            this.pnl_Chromatogram.BackColor = System.Drawing.Color.DarkGray;
-            this.pnl_Chromatogram.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pnl_Chromatogram.Controls.Add(this.rb_CompleteChromatogram);
-            this.pnl_Chromatogram.Controls.Add(this.rb_PartialChromatogram);
-            this.pnl_Chromatogram.Controls.Add(this.num_FrameCompression);
-            this.pnl_Chromatogram.Controls.Add(this.lbl_FrameCompression);
-            this.pnl_Chromatogram.Font = new System.Drawing.Font("Arial", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.pnl_Chromatogram.Location = new System.Drawing.Point(14, 580);
-            this.pnl_Chromatogram.Name = "pnl_Chromatogram";
-            this.pnl_Chromatogram.Size = new System.Drawing.Size(208, 68);
-            this.pnl_Chromatogram.TabIndex = 79;
+            this.elementHost_ChromatogramControls.BackColor = System.Drawing.Color.DarkGray;
+            this.elementHost_ChromatogramControls.Location = new System.Drawing.Point(14, 580);
+            this.elementHost_ChromatogramControls.Size = new System.Drawing.Size(208, 68);
+            this.chromatogramControlView.DataContext = this.chromatogramControlVm;
+            this.elementHost_ChromatogramControls.Child = this.chromatogramControlView;
             //
             // tabpages_Main
             //
@@ -653,7 +591,7 @@ namespace UIMF_File
             this.tab_DataViewer.Controls.Add(this.gb_MZRange);
             this.tab_DataViewer.Controls.Add(this.cb_EnableMZRange);
             this.tab_DataViewer.Controls.Add(this.btn_Refresh);
-            this.tab_DataViewer.Controls.Add(this.pnl_Chromatogram);
+            this.tab_DataViewer.Controls.Add(this.elementHost_ChromatogramControls);
             this.tab_DataViewer.Controls.Add(this.pnl_2DMap);
             this.tab_DataViewer.Controls.Add(this.num_minMobility);
             this.tab_DataViewer.Controls.Add(this.lbl_TIC);
@@ -928,9 +866,6 @@ namespace UIMF_File
             ((System.ComponentModel.ISupportInitialize)(this.num_maxMobility)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_maxBin)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_minBin)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.num_FrameCompression)).EndInit();
-            this.pnl_Chromatogram.ResumeLayout(false);
-            this.pnl_Chromatogram.PerformLayout();
             this.tabpages_Main.ResumeLayout(false);
             this.tab_DataViewer.ResumeLayout(false);
             this.tab_DataViewer.PerformLayout();
