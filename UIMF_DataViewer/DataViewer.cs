@@ -24,14 +24,7 @@ using ZedGraph;
 // *
 namespace UIMF_File
 {
-    public struct PixelData
-    {
-        public byte blue;
-        public byte green;
-        public byte red;
-    }
-
-    public unsafe partial class DataViewer : System.Windows.Forms.Form
+    public partial class DataViewer : System.Windows.Forms.Form
     {
         [DllImport("gdi32.dll")]
         private static extern bool BitBlt(IntPtr hdcDest, int nXDest, int nYDest,
@@ -97,10 +90,8 @@ namespace UIMF_File
 
         // Four elements used for Fast Pixellation
         private int pixel_width;
-        private Byte* pBase = null;
         private Bitmap bitmap;
         private Bitmap tmp_Bitmap;
-        private BitmapData bitmapData = null;
         private Point[] corner_2DMap = new Point[4];
 
         // Variables for mapping
@@ -121,7 +112,6 @@ namespace UIMF_File
         private System.Threading.Thread thread_GraphFrame;
 
         // Smoothing and slicing
-        private bool _useDriftTime = true;
 
         private bool flag_selection_drift = false;
         private int selection_min_drift, selection_max_drift;
@@ -179,8 +169,6 @@ namespace UIMF_File
 
         private bool flag_kill_mouse = false;
         private object lock_graphing = new object();
-
-        private UIMF_File.Utilities.ExportExperiment form_ExportExperiment;
 
         private int flag_MovingCorners = -1;
 
@@ -390,9 +378,6 @@ namespace UIMF_File
 
             this.postProcessingView.DataContext = this.pnl_postProcessing;
 
-            menuItem_UseDriftTime.Checked = !_useDriftTime;
-            menuItem_UseScans.Checked = _useDriftTime;
-
             this.AutoScroll = false;
 
             SetupPlots();
@@ -430,14 +415,9 @@ namespace UIMF_File
                 this.menuItem_ExportCompressed.Click += this.menuItem_ExportCompressed_Click;
                 this.menuItem_ExportComplete.Click += this.menuItem_ExportComplete_Click;
                 this.menuItem_ExportAll.Click += this.menuItem_ExportAll_Click;
-                this.menuItem_SuperFrame.Click += this.menuItem_SuperFrame_Click;
-                this.menuItem_SuperExperiment.Click += this.menuItem_SuperExperiment_Click;
                 this.menuItem_CopyToClipboard.Click += this.menuItem_CopyToClipboard_Click;
                 this.menuItem_CaptureExperimentFrame.Click += this.menuItem_CaptureExperimentFrame_Click;
-                this.menuItem_SaveIMF.Click += this.menuitem_SaveIMF_Click;
                 this.menuItem_WriteUIMF.Click += this.menuitem_WriteUIMF_Click;
-                this.menuItem_UseScans.Click += this.menuItem_UseScans_Click;
-                this.menuItem_UseDriftTime.Click += this.menuItem_UseDriftTime_Click;
                 this.menuItem_Exportnew_driftTIC.Click += this.menuItem_ExportDriftTIC_Click;
                 this.menuItem_Frame_driftTIC.Click += this.menuItem_Frame_driftTIC_Click;
                 this.menuItem_Time_driftTIC.Click += this.menuItem_Time_driftTIC_Click;
@@ -2109,7 +2089,8 @@ namespace UIMF_File
             else
                 perPixelY = this.current_valuesPerPixelY;
 
-            LockBitmap();
+            var bitmapData = LockBitmap();
+            var pBase = (Byte*) bitmapData.Scan0.ToPointer();
 
             var thresholdValue = this.plotAreaFormattingVm.ThresholdSliderValue;
 
@@ -2132,8 +2113,7 @@ namespace UIMF_File
                     //    continue;
 
                     // Important to ensure each scan line begins at a pixel, not halfway into a pixel, e.g.
-                    PixelData* pPixel = (perPixelY > 0) ? PixelAt(0, yMax - y - 1) :
-                            PixelAt(0, ((yMax - y) * -perPixelY) - 1);
+                    PixelData* pPixel = (perPixelY > 0) ? PixelAt(pBase, 0, yMax - y - 1) : PixelAt(pBase, 0, ((yMax - y) * -perPixelY) - 1);
                     pos_X = 0;
                     for (int x = 0; (x < new_data2D.Length) && (pos_X - perPixelX < this.pnl_2DMap.Width); x++)
                     {
@@ -2208,8 +2188,8 @@ namespace UIMF_File
                                 PixelData* copyPixel;
                                 try
                                 {
-                                    copyPixel = PixelAt(0, (yMax - y) * -perPixelY - 1);
-                                    pPixel = PixelAt(0, (yMax - y) * -perPixelY - 1 - i);
+                                    copyPixel = PixelAt(pBase, 0, (yMax - y) * -perPixelY - 1);
+                                    pPixel = PixelAt(pBase, 0, (yMax - y) * -perPixelY - 1 - i);
                                 }
                                 catch (Exception ex)
                                 {
@@ -2240,7 +2220,7 @@ namespace UIMF_File
             {
                 MessageBox.Show("DrawBitmap: " + ex.ToString());
                 // wfd this is a cheat!!!!  Must fix.  Problem with zooming!
-                UnlockBitmap();
+                UnlockBitmap(bitmapData);
 
                 // this.imf_ReadFrame(this.new_frame_index, out frame_Data);
                 this.flag_update2DGraph = true;
@@ -2255,15 +2235,22 @@ namespace UIMF_File
 
             //this.Width = this.pnl_2DMap.Left + this.pnl_2DMap.Width + 170;
 
-            UnlockBitmap();
+            UnlockBitmap(bitmapData);
         }
 
-        private unsafe PixelData* PixelAt(int x, int y)
+        private unsafe PixelData* PixelAt(byte* pBase, int x, int y)
         {
             return (PixelData*)(pBase + (y * pixel_width) + (x * sizeof(PixelData)));
         }
 
-        private unsafe void LockBitmap()
+        public struct PixelData
+        {
+            public byte blue;
+            public byte green;
+            public byte red;
+        }
+
+        private unsafe BitmapData LockBitmap()
         {
 
             Rectangle bounds = new Rectangle(0, 0, this.pnl_2DMap.Width, this.pnl_2DMap.Height);
@@ -2281,12 +2268,10 @@ namespace UIMF_File
             //MessageBox.Show("pixel_width: " + pixel_width.ToString());
 
             tmp_Bitmap = new Bitmap(this.pnl_2DMap.Width, this.pnl_2DMap.Height);
-            bitmapData = tmp_Bitmap.LockBits(bounds, ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
-
-            pBase = (Byte*)bitmapData.Scan0.ToPointer();
+            return tmp_Bitmap.LockBits(bounds, ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
         }
 
-        private unsafe void UnlockBitmap()
+        private void UnlockBitmap(BitmapData bitmapData)
         {
             try
             {
@@ -2302,22 +2287,9 @@ namespace UIMF_File
                 // multiple areas attempting to access the plot.
                 this.flag_update2DGraph = true;
             }
-            bitmapData = null;
-            pBase = null;
 
             this.pnl_2DMap.BackgroundImage = this.bitmap;
             // this.pnl_2DMap.Refresh();
-        }
-
-        private Point PixelSize
-        {
-            get
-            {
-                GraphicsUnit unit = GraphicsUnit.Pixel;
-                RectangleF bounds = bitmap.GetBounds(ref unit);
-
-                return new Point((int)bounds.Width, (int)bounds.Height);
-            }
         }
 
         protected void DrawRectangle(Graphics g, Point p1, Point p2)

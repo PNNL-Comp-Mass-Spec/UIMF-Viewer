@@ -25,10 +25,6 @@ namespace UIMF_File
         private System.Windows.Forms.MenuItem menuItem5;
         private System.Windows.Forms.MenuItem menuItemConvertToMZ;
         private System.Windows.Forms.MenuItem menuItemConvertToTOF;
-        private System.Windows.Forms.ContextMenu contextMenu_HorizontalAxis;
-        private System.Windows.Forms.MenuItem menuItem_UseScans;
-        private System.Windows.Forms.MenuItem menuItem_UseDriftTime;
-        private System.Windows.Forms.MenuItem menuItem2;
         private System.Windows.Forms.ContextMenu contextMenu_driftTIC;
         private System.Windows.Forms.MenuItem menuItem6;
         private System.Windows.Forms.MenuItem menuItem8;
@@ -40,8 +36,6 @@ namespace UIMF_File
         private System.Windows.Forms.MenuItem menuItem_ExportComplete;
         private System.Windows.Forms.MenuItem menuItem_ExportAll;
         private System.Windows.Forms.MenuItem menuItem_CopyToClipboard;
-        private System.Windows.Forms.MenuItem menuItem_SuperFrame;
-        private System.Windows.Forms.MenuItem menuItem_SuperExperiment;
         private System.Windows.Forms.MenuItem menuItem3;
         private System.Windows.Forms.MenuItem menuItem3a;
         private System.Windows.Forms.MenuItem menuItem_Mobility;
@@ -51,7 +45,6 @@ namespace UIMF_File
         private System.Windows.Forms.MenuItem menuItem_TOFMaximum;
         private System.Windows.Forms.MenuItem menuItem1;
         private System.Windows.Forms.MenuItem menuItem_CaptureExperimentFrame;
-        private MenuItem menuItem_SaveIMF;
         private MenuItem menuItem_WriteUIMF;
         #endregion
 
@@ -148,17 +141,10 @@ namespace UIMF_File
             this.menuItem_ExportCompressed = new System.Windows.Forms.MenuItem();
             this.menuItem_ExportComplete = new System.Windows.Forms.MenuItem();
             this.menuItem_ExportAll = new System.Windows.Forms.MenuItem();
-            this.menuItem_SuperFrame = new System.Windows.Forms.MenuItem();
-            this.menuItem_SuperExperiment = new System.Windows.Forms.MenuItem();
             this.menuItem1 = new System.Windows.Forms.MenuItem();
             this.menuItem_CopyToClipboard = new System.Windows.Forms.MenuItem();
             this.menuItem_CaptureExperimentFrame = new System.Windows.Forms.MenuItem();
-            this.menuItem_SaveIMF = new System.Windows.Forms.MenuItem();
             this.menuItem_WriteUIMF = new System.Windows.Forms.MenuItem();
-            this.contextMenu_HorizontalAxis = new System.Windows.Forms.ContextMenu();
-            this.menuItem_UseScans = new System.Windows.Forms.MenuItem();
-            this.menuItem_UseDriftTime = new System.Windows.Forms.MenuItem();
-            this.menuItem2 = new System.Windows.Forms.MenuItem();
             this.contextMenu_driftTIC = new System.Windows.Forms.ContextMenu();
             this.menuItem_Frame_driftTIC = new System.Windows.Forms.MenuItem();
             this.menuItem_Time_driftTIC = new System.Windows.Forms.MenuItem();
@@ -246,12 +232,9 @@ namespace UIMF_File
             this.menuItem_ExportCompressed,
             this.menuItem_ExportComplete,
             this.menuItem_ExportAll,
-            this.menuItem_SuperFrame,
-            this.menuItem_SuperExperiment,
             this.menuItem1,
             this.menuItem_CopyToClipboard,
             this.menuItem_CaptureExperimentFrame,
-            this.menuItem_SaveIMF,
             this.menuItem_WriteUIMF});
             //
             // menuItemZoomFull
@@ -329,62 +312,25 @@ namespace UIMF_File
             this.menuItem_ExportAll.Index = 14;
             this.menuItem_ExportAll.Text = "Export All Frames Intensity Values";
             //
-            // menuItem_SuperFrame
-            //
-            this.menuItem_SuperFrame.Index = 15;
-            this.menuItem_SuperFrame.Text = "Export Superframe IMF file";
-            //
-            // menuItem_SuperExperiment
-            //
-            this.menuItem_SuperExperiment.Index = 16;
-            this.menuItem_SuperExperiment.Text = "Create Merged IMF Frame Experiment...";
-            //
             // menuItem1
             //
-            this.menuItem1.Index = 17;
+            this.menuItem1.Index = 15;
             this.menuItem1.Text = "-";
             //
             // menuItem_CopyToClipboard
             //
-            this.menuItem_CopyToClipboard.Index = 18;
+            this.menuItem_CopyToClipboard.Index = 16;
             this.menuItem_CopyToClipboard.Text = "Copy Image to Clipboard";
             //
             // menuItem_CaptureExperimentFrame
             //
-            this.menuItem_CaptureExperimentFrame.Index = 19;
+            this.menuItem_CaptureExperimentFrame.Index = 17;
             this.menuItem_CaptureExperimentFrame.Text = "Save Experiment GUI";
-            //
-            // menuItem_SaveIMF
-            //
-            this.menuItem_SaveIMF.Index = 20;
-            this.menuItem_SaveIMF.Text = "Save Frame IMF";
             //
             // menuItem_WriteUIMF
             //
-            this.menuItem_WriteUIMF.Index = 21;
+            this.menuItem_WriteUIMF.Index = 18;
             this.menuItem_WriteUIMF.Text = "Write Frame to UIMF file";
-            //
-            // contextMenu_HorizontalAxis
-            //
-            this.contextMenu_HorizontalAxis.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.menuItem_UseScans,
-            this.menuItem_UseDriftTime,
-            this.menuItem2});
-            //
-            // menuItem_UseScans
-            //
-            this.menuItem_UseScans.Index = 0;
-            this.menuItem_UseScans.Text = "Scans";
-            //
-            // menuItem_UseDriftTime
-            //
-            this.menuItem_UseDriftTime.Index = 1;
-            this.menuItem_UseDriftTime.Text = "Drift Time";
-            //
-            // menuItem2
-            //
-            this.menuItem2.Index = 2;
-            this.menuItem2.Text = "-";
             //
             // contextMenu_driftTIC
             //
