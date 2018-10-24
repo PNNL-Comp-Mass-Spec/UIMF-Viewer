@@ -1,13 +1,10 @@
 ﻿using System.Drawing;
-using System.Windows;
-using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
 using UIMF_DataViewer.FrameControl;
+using UIMF_DataViewer.FrameInfo;
 using UIMF_DataViewer.PostProcessing;
 using UIMF_DataViewer.PlotAreaFormatting;
-using UIMF_DataViewer.WpfControls;
-using UIMF_DataViewer.WpfControls.LabeledSlider;
 
 namespace UIMF_File
 {
@@ -27,8 +24,6 @@ namespace UIMF_File
         private System.Windows.Forms.MenuItem menuItem5;
         private System.Windows.Forms.MenuItem menuItemConvertToMZ;
         private System.Windows.Forms.MenuItem menuItemConvertToTOF;
-        protected System.Windows.Forms.Label lbl_IonMobilityValue;
-        protected System.Windows.Forms.Label lbl_TOForMZ;
         protected System.Windows.Forms.Panel pnl_2DMap;
         private System.Windows.Forms.ContextMenu contextMenu_HorizontalAxis;
         private System.Windows.Forms.MenuItem menuItem_UseScans;
@@ -42,7 +37,6 @@ namespace UIMF_File
         private System.Windows.Forms.MenuItem menuItem9;
         private System.Windows.Forms.MenuItem menuItem_Exportnew_driftTIC;
         protected ZedGraph.ZedGraphControl plot_TOF;
-        protected System.Windows.Forms.Label label2;
         private System.Windows.Forms.MenuItem menuItem_ExportCompressed;
         private System.Windows.Forms.MenuItem menuItem_ExportComplete;
         private System.Windows.Forms.MenuItem menuItem_ExportAll;
@@ -57,23 +51,15 @@ namespace UIMF_File
         private System.Windows.Forms.ContextMenu contextMenu_TOF;
         private System.Windows.Forms.MenuItem menuItem_TOFExport;
         private System.Windows.Forms.MenuItem menuItem_TOFMaximum;
-        protected System.Windows.Forms.Label lbl_TimeOffset;
         protected System.Windows.Forms.NumericUpDown num_minMobility;
         protected System.Windows.Forms.NumericUpDown num_maxMobility;
         private Label lbl_TIC;
         protected System.Windows.Forms.NumericUpDown num_minBin;
         protected System.Windows.Forms.NumericUpDown num_maxBin;
-        protected System.Windows.Forms.Label label4;
-        protected System.Windows.Forms.Label lbl_CursorMobility;
-        protected System.Windows.Forms.Label lbl_CursorTOF;
-        protected System.Windows.Forms.Label lbl_CursorMZ;
         protected ZedGraph.LineItem waveform_TOFPlot;
         protected ZedGraph.LineItem waveform_MobilityPlot;
         #endregion
 
-        protected System.Windows.Forms.Label label5;
-        protected System.Windows.Forms.Label label3;
-        protected System.Windows.Forms.Label lbl_CursorScanTime;
         public ElementHost elementHost_PlotAreaFormatting;
         private PlotAreaFormattingViewModel plotAreaFormattingVm;
         private PlotAreaFormattingView plotAreaFormattingView;
@@ -81,21 +67,9 @@ namespace UIMF_File
         private System.Windows.Forms.MenuItem menuItem_CaptureExperimentFrame;
 
         protected System.Windows.Forms.Label lbl_ExperimentDate;
-        public System.Windows.Forms.TabControl tabpages_FrameInfo;
-        private System.Windows.Forms.TabPage tabPage_Cursor;
-        protected System.Windows.Forms.TabPage tabPage_Calibration;
-        private System.Windows.Forms.Button btn_setCalDefaults;
-        private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.DateTimePicker date_Calibration;
-        private System.Windows.Forms.Label lbl_CalibratorType;
-        private System.Windows.Forms.Button btn_revertCalDefaults;
 
         protected HScrollBar hsb_2DMap;
         protected VScrollBar vsb_2DMap;
-        private TextBox tb_CalT0;
-        private TextBox tb_CalA;
 
         private ProgressBar progress_ReadingFile;
 
@@ -138,6 +112,10 @@ namespace UIMF_File
         private PictureBox pb_Expand;
         private PictureBox pb_Shrink;
 
+        private ElementHost elementHost_FrameInfo;
+        private FrameInfoView frameInfoView;
+        private FrameInfoViewModel frameInfoVm;
+
         #region Windows Form Designer generated code
         /// <summary>
         /// Required method for Designer support - do not modify
@@ -169,17 +147,6 @@ namespace UIMF_File
             this.menuItem_CaptureExperimentFrame = new System.Windows.Forms.MenuItem();
             this.menuItem_SaveIMF = new System.Windows.Forms.MenuItem();
             this.menuItem_WriteUIMF = new System.Windows.Forms.MenuItem();
-            this.label3 = new System.Windows.Forms.Label();
-            this.lbl_CursorScanTime = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.lbl_CursorMZ = new System.Windows.Forms.Label();
-            this.lbl_CursorTOF = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.lbl_TOForMZ = new System.Windows.Forms.Label();
-            this.lbl_IonMobilityValue = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.lbl_TimeOffset = new System.Windows.Forms.Label();
-            this.lbl_CursorMobility = new System.Windows.Forms.Label();
             this.contextMenu_HorizontalAxis = new System.Windows.Forms.ContextMenu();
             this.menuItem_UseScans = new System.Windows.Forms.MenuItem();
             this.menuItem_UseDriftTime = new System.Windows.Forms.MenuItem();
@@ -203,18 +170,6 @@ namespace UIMF_File
             this.plotAreaFormattingVm = new PlotAreaFormattingViewModel();
             this.plotAreaFormattingView = new PlotAreaFormattingView();
             this.lbl_ExperimentDate = new System.Windows.Forms.Label();
-            this.tabpages_FrameInfo = new System.Windows.Forms.TabControl();
-            this.tabPage_Cursor = new System.Windows.Forms.TabPage();
-            this.tabPage_Calibration = new System.Windows.Forms.TabPage();
-            this.tb_CalT0 = new System.Windows.Forms.TextBox();
-            this.tb_CalA = new System.Windows.Forms.TextBox();
-            this.btn_setCalDefaults = new System.Windows.Forms.Button();
-            this.label9 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.date_Calibration = new System.Windows.Forms.DateTimePicker();
-            this.lbl_CalibratorType = new System.Windows.Forms.Label();
-            this.btn_revertCalDefaults = new System.Windows.Forms.Button();
             this.hsb_2DMap = new System.Windows.Forms.HScrollBar();
             this.vsb_2DMap = new System.Windows.Forms.VScrollBar();
             this.btn_Refresh = new System.Windows.Forms.Button();
@@ -247,13 +202,13 @@ namespace UIMF_File
             this.pb_PlayDownOut = new System.Windows.Forms.PictureBox();
             this.pb_PlayUpIn = new System.Windows.Forms.PictureBox();
             this.pb_PlayUpOut = new System.Windows.Forms.PictureBox();
+            this.elementHost_FrameInfo = new ElementHost();
+            this.frameInfoView = new FrameInfoView();
+            this.frameInfoVm = new FrameInfoViewModel();
             ((System.ComponentModel.ISupportInitialize)(this.num_minMobility)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_maxMobility)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_maxBin)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_minBin)).BeginInit();
-            this.tabpages_FrameInfo.SuspendLayout();
-            this.tabPage_Cursor.SuspendLayout();
-            this.tabPage_Calibration.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.num_FrameCompression)).BeginInit();
             this.pnl_Chromatogram.SuspendLayout();
             this.tabpages_Main.SuspendLayout();
@@ -404,115 +359,6 @@ namespace UIMF_File
             //
             this.menuItem_WriteUIMF.Index = 21;
             this.menuItem_WriteUIMF.Text = "Write Frame to UIMF file";
-            //
-            // label3
-            //
-            this.label3.Location = new System.Drawing.Point(176, 32);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(24, 20);
-            this.label3.TabIndex = 35;
-            this.label3.Text = "us";
-            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            //
-            // lbl_CursorScanTime
-            //
-            this.lbl_CursorScanTime.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.lbl_CursorScanTime.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lbl_CursorScanTime.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_CursorScanTime.Location = new System.Drawing.Point(88, 32);
-            this.lbl_CursorScanTime.Name = "lbl_CursorScanTime";
-            this.lbl_CursorScanTime.Size = new System.Drawing.Size(88, 20);
-            this.lbl_CursorScanTime.TabIndex = 34;
-            this.lbl_CursorScanTime.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            //
-            // label5
-            //
-            this.label5.Location = new System.Drawing.Point(8, 32);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(80, 18);
-            this.label5.TabIndex = 33;
-            this.label5.Text = "Scan Time:";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            //
-            // lbl_CursorMZ
-            //
-            this.lbl_CursorMZ.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.lbl_CursorMZ.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lbl_CursorMZ.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_CursorMZ.Location = new System.Drawing.Point(88, 88);
-            this.lbl_CursorMZ.Name = "lbl_CursorMZ";
-            this.lbl_CursorMZ.Size = new System.Drawing.Size(88, 20);
-            this.lbl_CursorMZ.TabIndex = 32;
-            this.lbl_CursorMZ.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            //
-            // lbl_CursorTOF
-            //
-            this.lbl_CursorTOF.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.lbl_CursorTOF.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lbl_CursorTOF.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_CursorTOF.Location = new System.Drawing.Point(88, 64);
-            this.lbl_CursorTOF.Name = "lbl_CursorTOF";
-            this.lbl_CursorTOF.Size = new System.Drawing.Size(88, 20);
-            this.lbl_CursorTOF.TabIndex = 31;
-            this.lbl_CursorTOF.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            //
-            // label4
-            //
-            this.label4.Location = new System.Drawing.Point(8, 88);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(80, 18);
-            this.label4.TabIndex = 27;
-            this.label4.Text = "M/Z:";
-            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            //
-            // lbl_TOForMZ
-            //
-            this.lbl_TOForMZ.Location = new System.Drawing.Point(8, 64);
-            this.lbl_TOForMZ.Name = "lbl_TOForMZ";
-            this.lbl_TOForMZ.Size = new System.Drawing.Size(80, 18);
-            this.lbl_TOForMZ.TabIndex = 3;
-            this.lbl_TOForMZ.Text = "TOF:";
-            this.lbl_TOForMZ.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            //
-            // lbl_IonMobilityValue
-            //
-            this.lbl_IonMobilityValue.Location = new System.Drawing.Point(8, 8);
-            this.lbl_IonMobilityValue.Name = "lbl_IonMobilityValue";
-            this.lbl_IonMobilityValue.Size = new System.Drawing.Size(80, 18);
-            this.lbl_IonMobilityValue.TabIndex = 2;
-            this.lbl_IonMobilityValue.Text = "Mobility:";
-            this.lbl_IonMobilityValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            //
-            // label2
-            //
-            this.label2.Location = new System.Drawing.Point(176, 64);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(24, 20);
-            this.label2.TabIndex = 4;
-            this.label2.Text = "us";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            //
-            // lbl_TimeOffset
-            //
-            this.lbl_TimeOffset.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_TimeOffset.ForeColor = System.Drawing.Color.DarkSlateGray;
-            this.lbl_TimeOffset.Location = new System.Drawing.Point(16, 112);
-            this.lbl_TimeOffset.Name = "lbl_TimeOffset";
-            this.lbl_TimeOffset.Size = new System.Drawing.Size(168, 24);
-            this.lbl_TimeOffset.TabIndex = 25;
-            this.lbl_TimeOffset.Text = "Time Offset";
-            this.lbl_TimeOffset.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            //
-            // lbl_CursorMobility
-            //
-            this.lbl_CursorMobility.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.lbl_CursorMobility.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.lbl_CursorMobility.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_CursorMobility.Location = new System.Drawing.Point(88, 8);
-            this.lbl_CursorMobility.Name = "lbl_CursorMobility";
-            this.lbl_CursorMobility.Size = new System.Drawing.Size(88, 20);
-            this.lbl_CursorMobility.TabIndex = 30;
-            this.lbl_CursorMobility.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             //
             // contextMenu_HorizontalAxis
             //
@@ -681,144 +527,12 @@ namespace UIMF_File
             this.lbl_ExperimentDate.TabIndex = 38;
             this.lbl_ExperimentDate.Text = "The date";
             //
-            // tabpages_FrameInfo
+            // elementHost_FrameInfo
             //
-            this.tabpages_FrameInfo.Controls.Add(this.tabPage_Cursor);
-            this.tabpages_FrameInfo.Controls.Add(this.tabPage_Calibration);
-            this.tabpages_FrameInfo.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tabpages_FrameInfo.Location = new System.Drawing.Point(10, 672);
-            this.tabpages_FrameInfo.Name = "tabpages_FrameInfo";
-            this.tabpages_FrameInfo.SelectedIndex = 0;
-            this.tabpages_FrameInfo.Size = new System.Drawing.Size(208, 164);
-            this.tabpages_FrameInfo.TabIndex = 42;
-            //
-            // tabPage_Cursor
-            //
-            this.tabPage_Cursor.BackColor = System.Drawing.Color.Gainsboro;
-            this.tabPage_Cursor.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.tabPage_Cursor.Controls.Add(this.label3);
-            this.tabPage_Cursor.Controls.Add(this.lbl_CursorScanTime);
-            this.tabPage_Cursor.Controls.Add(this.label5);
-            this.tabPage_Cursor.Controls.Add(this.lbl_CursorMZ);
-            this.tabPage_Cursor.Controls.Add(this.lbl_CursorTOF);
-            this.tabPage_Cursor.Controls.Add(this.label4);
-            this.tabPage_Cursor.Controls.Add(this.lbl_TOForMZ);
-            this.tabPage_Cursor.Controls.Add(this.lbl_IonMobilityValue);
-            this.tabPage_Cursor.Controls.Add(this.label2);
-            this.tabPage_Cursor.Controls.Add(this.lbl_TimeOffset);
-            this.tabPage_Cursor.Controls.Add(this.lbl_CursorMobility);
-            this.tabPage_Cursor.Location = new System.Drawing.Point(4, 22);
-            this.tabPage_Cursor.Name = "tabPage_Cursor";
-            this.tabPage_Cursor.Size = new System.Drawing.Size(200, 138);
-            this.tabPage_Cursor.TabIndex = 0;
-            this.tabPage_Cursor.Text = " Cursor  ";
-            //
-            // tabPage_Calibration
-            //
-            this.tabPage_Calibration.BackColor = System.Drawing.Color.Gainsboro;
-            this.tabPage_Calibration.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.tabPage_Calibration.Controls.Add(this.tb_CalT0);
-            this.tabPage_Calibration.Controls.Add(this.tb_CalA);
-            this.tabPage_Calibration.Controls.Add(this.btn_setCalDefaults);
-            this.tabPage_Calibration.Controls.Add(this.label9);
-            this.tabPage_Calibration.Controls.Add(this.label8);
-            this.tabPage_Calibration.Controls.Add(this.label7);
-            this.tabPage_Calibration.Controls.Add(this.date_Calibration);
-            this.tabPage_Calibration.Controls.Add(this.lbl_CalibratorType);
-            this.tabPage_Calibration.Controls.Add(this.btn_revertCalDefaults);
-            this.tabPage_Calibration.Location = new System.Drawing.Point(4, 22);
-            this.tabPage_Calibration.Name = "tabPage_Calibration";
-            this.tabPage_Calibration.Size = new System.Drawing.Size(200, 138);
-            this.tabPage_Calibration.TabIndex = 1;
-            this.tabPage_Calibration.Text = " Calibration  ";
-            this.tabPage_Calibration.Visible = false;
-            //
-            // tb_CalT0
-            //
-            this.tb_CalT0.BackColor = System.Drawing.Color.Black;
-            this.tb_CalT0.ForeColor = System.Drawing.Color.White;
-            this.tb_CalT0.Location = new System.Drawing.Point(42, 72);
-            this.tb_CalT0.Name = "tb_CalT0";
-            this.tb_CalT0.Size = new System.Drawing.Size(142, 21);
-            this.tb_CalT0.TabIndex = 54;
-            //
-            // tb_CalA
-            //
-            this.tb_CalA.BackColor = System.Drawing.Color.Black;
-            this.tb_CalA.ForeColor = System.Drawing.Color.White;
-            this.tb_CalA.Location = new System.Drawing.Point(42, 52);
-            this.tb_CalA.Name = "tb_CalA";
-            this.tb_CalA.Size = new System.Drawing.Size(142, 21);
-            this.tb_CalA.TabIndex = 51;
-            //
-            // btn_setCalDefaults
-            //
-            this.btn_setCalDefaults.BackColor = System.Drawing.Color.Gold;
-            this.btn_setCalDefaults.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_setCalDefaults.ForeColor = System.Drawing.Color.Black;
-            this.btn_setCalDefaults.Location = new System.Drawing.Point(108, 100);
-            this.btn_setCalDefaults.Name = "btn_setCalDefaults";
-            this.btn_setCalDefaults.Size = new System.Drawing.Size(80, 32);
-            this.btn_setCalDefaults.TabIndex = 54;
-            this.btn_setCalDefaults.Text = "Set as Default";
-            this.btn_setCalDefaults.UseVisualStyleBackColor = false;
-            //
-            // label9
-            //
-            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.Location = new System.Drawing.Point(20, 72);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(20, 20);
-            this.label9.TabIndex = 51;
-            this.label9.Text = "t0";
-            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            //
-            // label8
-            //
-            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label8.Location = new System.Drawing.Point(20, 52);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(16, 20);
-            this.label8.TabIndex = 50;
-            this.label8.Text = "a";
-            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            //
-            // label7
-            //
-            this.label7.Location = new System.Drawing.Point(16, 4);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(48, 24);
-            this.label7.TabIndex = 49;
-            this.label7.Text = "Date";
-            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            //
-            // date_Calibration
-            //
-            this.date_Calibration.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.date_Calibration.Location = new System.Drawing.Point(68, 4);
-            this.date_Calibration.Name = "date_Calibration";
-            this.date_Calibration.Size = new System.Drawing.Size(112, 21);
-            this.date_Calibration.TabIndex = 47;
-            //
-            // lbl_CalibratorType
-            //
-            this.lbl_CalibratorType.Location = new System.Drawing.Point(8, 32);
-            this.lbl_CalibratorType.Name = "lbl_CalibratorType";
-            this.lbl_CalibratorType.Size = new System.Drawing.Size(180, 16);
-            this.lbl_CalibratorType.TabIndex = 43;
-            this.lbl_CalibratorType.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            //
-            // btn_revertCalDefaults
-            //
-            this.btn_revertCalDefaults.BackColor = System.Drawing.Color.DodgerBlue;
-            this.btn_revertCalDefaults.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_revertCalDefaults.ForeColor = System.Drawing.Color.White;
-            this.btn_revertCalDefaults.Location = new System.Drawing.Point(8, 100);
-            this.btn_revertCalDefaults.Name = "btn_revertCalDefaults";
-            this.btn_revertCalDefaults.Size = new System.Drawing.Size(80, 32);
-            this.btn_revertCalDefaults.TabIndex = 55;
-            this.btn_revertCalDefaults.Text = "Revert to Defaults";
-            this.btn_revertCalDefaults.UseVisualStyleBackColor = false;
+            this.elementHost_FrameInfo.Location = new System.Drawing.Point(10, 672);
+            this.elementHost_FrameInfo.Size = new System.Drawing.Size(208, 164);
+            this.frameInfoView.DataContext = this.frameInfoVm;
+            this.elementHost_FrameInfo.Child = this.frameInfoView;
             //
             // hsb_2DMap
             //
@@ -948,7 +662,7 @@ namespace UIMF_File
             this.tab_DataViewer.Controls.Add(this.num_minBin);
             this.tab_DataViewer.Controls.Add(this.elementHost_PlotAreaFormatting);
             this.tab_DataViewer.Controls.Add(this.lbl_ExperimentDate);
-            this.tab_DataViewer.Controls.Add(this.tabpages_FrameInfo);
+            this.tab_DataViewer.Controls.Add(this.elementHost_FrameInfo);
             this.tab_DataViewer.Controls.Add(this.vsb_2DMap);
             this.tab_DataViewer.Controls.Add(this.hsb_2DMap);
             this.tab_DataViewer.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -1214,10 +928,6 @@ namespace UIMF_File
             ((System.ComponentModel.ISupportInitialize)(this.num_maxMobility)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_maxBin)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.num_minBin)).EndInit();
-            this.tabpages_FrameInfo.ResumeLayout(false);
-            this.tabPage_Cursor.ResumeLayout(false);
-            this.tabPage_Calibration.ResumeLayout(false);
-            this.tabPage_Calibration.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.num_FrameCompression)).EndInit();
             this.pnl_Chromatogram.ResumeLayout(false);
             this.pnl_Chromatogram.PerformLayout();

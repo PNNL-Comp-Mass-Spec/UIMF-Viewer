@@ -9,6 +9,7 @@ using System.Threading;
 using System.Windows.Forms;
 using UIMFLibrary;
 using UIMF_DataViewer.FrameControl;
+using UIMF_DataViewer.FrameInfo;
 using ZedGraph;
 
 namespace UIMF_File
@@ -2283,17 +2284,16 @@ namespace UIMF_File
         //
         protected virtual void UpdateCursorReading(System.Windows.Forms.MouseEventArgs e)
         {
-            if ((this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked) ||
-                (this.tabpages_FrameInfo.SelectedTab != this.tabPage_Cursor))
+            if ((this.rb_CompleteChromatogram.Checked || this.rb_PartialChromatogram.Checked) || !this.frameInfoVm.CursorTabSelected)
                 return;
 
             double mobility = (current_valuesPerPixelX >= 1 ? e.X * current_valuesPerPixelX : this.current_minMobility + (e.X / -this.current_valuesPerPixelX));
 
-            this.lbl_CursorMobility.Text = mobility.ToString();
+            this.frameInfoVm.CursorMobilityScanNumber = mobility;
             if (this.mean_TOFScanTime != -1.0)
-                this.lbl_CursorScanTime.Text = (mobility * this.mean_TOFScanTime).ToString("0.0000");
+                this.frameInfoVm.CursorMobilityScanTime = (mobility * this.mean_TOFScanTime);
             else
-                this.lbl_CursorScanTime.Text = "Not Available";
+                this.frameInfoVm.CursorMobilityScanTime = -1;
 
             if (this.data_2D == null)
                 return;
@@ -2307,10 +2307,11 @@ namespace UIMF_File
                     int tof_bin = ((current_valuesPerPixelY > 0) ? this.current_minBin + ((this.pnl_2DMap.Height - e.Y - 1) * current_valuesPerPixelY) : this.current_minBin + ((this.pnl_2DMap.Height - e.Y - 1) / -current_valuesPerPixelY));
 
                     // this is required to match with the MZ values
+                    // TODO: Is this really required?
                     tof_bin--;   // wfd:  This is a Cheat!!! not sure what side of this belongs MZ or TOF
 
-                    this.lbl_CursorTOF.Text = (tof_bin * this.uimfReader.TenthsOfNanoSecondsPerBin * 1e-4).ToString();
-                    this.lbl_CursorMZ.Text = this.uimfReader.MzCalibration.TOFtoMZ((float)(tof_bin * this.uimfReader.TenthsOfNanoSecondsPerBin)).ToString();
+                    this.frameInfoVm.CursorTOFValue = tof_bin * this.uimfReader.TenthsOfNanoSecondsPerBin * 1e-4; // convert to usec
+                    this.frameInfoVm.CursorMz = this.uimfReader.MzCalibration.TOFtoMZ((float) (tof_bin * this.uimfReader.TenthsOfNanoSecondsPerBin));
                 }
                 else
                 {
@@ -2327,11 +2328,11 @@ namespace UIMF_File
                     double mz = (indexY / rangeTOF) * diffMZ + mzMin;
                     double tof_value = this.uimfReader.MzCalibration.MZtoTOF(mz);
 
-                    this.lbl_CursorMZ.Text = mz.ToString();
-                    this.lbl_CursorTOF.Text = (tof_value * 1e-4).ToString(); // convert to usec
+                    this.frameInfoVm.CursorMz = mz;
+                    this.frameInfoVm.CursorTOFValue = tof_value * 1e-4; // convert to usec
                 }
 
-                this.lbl_TimeOffset.Text = "Time Offset = " + this.uimfReader.UimfGlobalParams.GetValue(GlobalParamKeyType.TimeOffset, 0).ToString() + " nsec";
+                this.frameInfoVm.TimeOffsetNs = this.uimfReader.UimfGlobalParams.GetValue(GlobalParamKeyType.TimeOffset, 0);
 
                 if (current_valuesPerPixelY < 0)
                 {
@@ -2631,6 +2632,7 @@ namespace UIMF_File
 
         private void lbl_FramesShown_Click(object sender, EventArgs e)
         {
+            // TODO: was wired up, but this check blocked all usage.
             if (this.frameControlVm.SummedFrames > 1)
                 return;
 
@@ -2892,50 +2894,64 @@ namespace UIMF_File
 #endif
         }
 
-        private void CalibratorA_Changed(object obj, System.EventArgs e)
+        private void FrameInfoVmOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName.Equals(nameof(FrameInfoViewModel.CalibrationK)))
+            {
+                CalibratorA_Changed();
+            }
+            else if (e.PropertyName.Equals(nameof(FrameInfoViewModel.CalibrationT0)))
+            {
+                CalibratorT0_Changed();
+            }
+        }
+
+        private void CalibratorA_Changed()
         {
             // modify the view; but not the file.
             try
             {
-                this.uimfReader.MzCalibration.K = (float)Convert.ToDouble(this.tb_CalA.Text);
+                this.uimfReader.MzCalibration.K = this.frameInfoVm.CalibrationK;
                 Calibrator_Changed();
+                this.frameInfoVm.ChangeCalibrationKFailed = false;
             }
             catch (Exception ex)
             {
-                this.tb_CalA.BackColor = Color.Red;
-                this.btn_revertCalDefaults.Show();
+                this.frameInfoVm.ChangeCalibrationKFailed = true;
+                this.frameInfoVm.CanRevertCalDefaults = true;
             }
         }
 
-        private void CalibratorT0_Changed(object obj, System.EventArgs e)
+        private void CalibratorT0_Changed()
         {
             try
             {
-                this.uimfReader.MzCalibration.T0 = (float)Convert.ToDouble(this.tb_CalT0.Text);
+                this.uimfReader.MzCalibration.T0 = this.frameInfoVm.CalibrationT0;
                 Calibrator_Changed();
+                this.frameInfoVm.ChangeCalibrationT0Failed = false;
             }
             catch (Exception ex)
             {
-                this.tb_CalT0.BackColor = Color.Red;
-                this.btn_revertCalDefaults.Show();
+                this.frameInfoVm.ChangeCalibrationT0Failed = true;
+                this.frameInfoVm.CanRevertCalDefaults = true;
             }
         }
 
         public void Calibrator_Changed()
         {
-            if ((Convert.ToDouble(this.tb_CalA.Text) != this.uimfReader.MzCalibration.K) ||
-                (Convert.ToDouble(this.tb_CalT0) != this.uimfReader.MzCalibration.T0))
+            if (!this.frameInfoVm.CalibrationK.Equals(this.uimfReader.MzCalibration.K) ||
+                !this.frameInfoVm.CalibrationT0.Equals(this.uimfReader.MzCalibration.T0))
             {
-                // this.m_frameParameters.CalibrationSlope = Convert.ToDouble(this.tb_CalA.Text); //this.UIMF_DataReader.mz_Calibration.k * 10000.0;
-                //  this.m_frameParameters.CalibrationIntercept = Convert.ToDouble(this.tb_CalT0.Text); // this.UIMF_DataReader.mz_Calibration.t0 / 10000.0;
+                // this.m_frameParameters.CalibrationSlope = this.frameInfoVm.CalibrationK; //this.UIMF_DataReader.mz_Calibration.k * 10000.0;
+                //  this.m_frameParameters.CalibrationIntercept = this.frameInfoVm.CalibrationT0; // this.UIMF_DataReader.mz_Calibration.t0 / 10000.0;
                 // this.update_CalibrationCoefficients();
 
-                this.date_Calibration.Value = DateTime.Now;
+                this.frameInfoVm.CalibrationDate = DateTime.Now;
 
-                this.tabpages_FrameInfo.SelectedTab = this.tabPage_Calibration;
+                // TODO: Does this switch the tabs, as desired?
+                this.frameInfoVm.CalibrationTabSelected = true;
 
-                this.btn_revertCalDefaults.Show();
-                this.btn_setCalDefaults.Show();
+                this.frameInfoVm.ShowCalibrationButtons();
             }
 
             // Redraw
@@ -2951,9 +2967,12 @@ namespace UIMF_File
 
         private void update_CalibrationCoefficients()
         {
-            this.tb_CalA.Text = this.uimfReader.MzCalibration.K.ToString("E");
-            this.tb_CalT0.Text = this.uimfReader.MzCalibration.T0.ToString("E");
-            this.lbl_CalibratorType.Text = this.uimfReader.MzCalibration.Description;
+            this.frameInfoVm.CalibrationK = this.uimfReader.MzCalibration.K;
+            this.frameInfoVm.CalibrationT0 = this.uimfReader.MzCalibration.T0;
+            this.frameInfoVm.CalibratorType = this.uimfReader.MzCalibration.Description;
+
+            this.frameInfoVm.ChangeCalibrationKFailed = false;
+            this.frameInfoVm.ChangeCalibrationT0Failed = false;
 
             this.pnl_postProcessing.set_ExperimentalCoefficients(this.uimfReader.MzCalibration.K * 10000.0, this.uimfReader.MzCalibration.T0 / 10000.0);
         }
@@ -2963,15 +2982,16 @@ namespace UIMF_File
 
             this.Enabled = false;
 
-            this.uimfReader.UpdateAllCalibrationCoefficients((float)(Convert.ToSingle(this.tb_CalA.Text) * 10000.0), (float)(Convert.ToSingle(this.tb_CalT0.Text) / 10000.0));
+            this.uimfReader.UpdateAllCalibrationCoefficients(this.frameInfoVm.CalibrationK * 10000.0, this.frameInfoVm.CalibrationT0 / 10000.0);
 
             this.update_CalibrationCoefficients();
 
             this.Enabled = true;
             this.flag_update2DGraph = true;
 
-            this.btn_revertCalDefaults.Hide();
-            this.btn_setCalDefaults.Hide();
+            this.frameInfoVm.HideCalibrationButtons();
+            this.frameInfoVm.ChangeCalibrationKFailed = false;
+            this.frameInfoVm.ChangeCalibrationT0Failed = false;
         }
 
         private void btn_revertCalDefaults_Click(object sender, System.EventArgs e)
@@ -2982,8 +3002,9 @@ namespace UIMF_File
 
             this.flag_update2DGraph = true;
 
-            this.btn_revertCalDefaults.Hide();
-            this.btn_setCalDefaults.Hide();
+            this.frameInfoVm.HideCalibrationButtons();
+            this.frameInfoVm.ChangeCalibrationKFailed = false;
+            this.frameInfoVm.ChangeCalibrationT0Failed = false;
         }
 
         #endregion

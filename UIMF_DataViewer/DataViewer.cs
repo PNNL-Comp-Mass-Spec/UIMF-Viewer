@@ -411,8 +411,7 @@ namespace UIMF_File
             this.frameControlVm.CurrentFrameNumber = 0;
 
             // default values in the calibration require no interface
-            this.btn_revertCalDefaults.Hide();
-            this.btn_setCalDefaults.Hide();
+            this.frameInfoVm.HideCalibrationButtons();
 
             //this.AllowDrop = true;
 
@@ -471,7 +470,8 @@ namespace UIMF_File
                 this.cb_EnableMZRange.CheckedChanged += this.cb_EnableMZRange_CheckedChanged;
                 this.num_MZ.ValueChanged += this.num_MZ_ValueChanged;
                 this.num_PPM.ValueChanged += this.num_PPM_ValueChanged;
-                this.btn_setCalDefaults.Click += this.btn_setCalDefaults_Click;
+                this.frameInfoVm.SetCalDefaults += this.btn_setCalDefaults_Click;
+                this.frameInfoVm.RevertCalDefaults += this.btn_revertCalDefaults_Click;
 
                 this.num_minMobility.ValueChanged += this.num_Mobility_ValueChanged;
                 this.num_maxMobility.ValueChanged += this.num_Mobility_ValueChanged;
@@ -486,13 +486,9 @@ namespace UIMF_File
                 this.vsb_2DMap.Scroll += this.vsb_2DMap_Scroll;
                 this.hsb_2DMap.Scroll += this.hsb_2DMap_Scroll;
 
-                this.tb_CalT0.Click += this.CalibratorT0_Changed;
-                this.tb_CalT0.Leave += this.CalibratorT0_Changed;
-                this.tb_CalA.Click += this.CalibratorA_Changed;
-                this.tb_CalA.Leave += this.CalibratorA_Changed;
+                this.frameInfoVm.PropertyChanged += FrameInfoVmOnPropertyChanged;
 
                 this.plotAreaFormattingVm.ValuesReset += this.PlotAreaFormattingReset;
-                this.btn_revertCalDefaults.Click += this.btn_revertCalDefaults_Click;
 
                 this.tabpages_Main.DrawItem += this.tabpages_Main_DrawItem;
                 this.tabpages_Main.SelectedIndexChanged += this.tabpages_Main_SelectedIndexChanged;
@@ -739,14 +735,14 @@ namespace UIMF_File
 
             this.num_maxBin.Top = this.elementHost_FrameControl.Top + this.elementHost_FrameControl.Height - this.num_maxBin.Height - 6;
 
-            this.tabpages_FrameInfo.Top = this.tab_DataViewer.Height - this.tabpages_FrameInfo.Height - 6;
             this.pnl_Chromatogram.Top = this.tabpages_FrameInfo.Top - this.pnl_Chromatogram.Height - 6;
+            this.elementHost_FrameInfo.Top = this.tab_DataViewer.Height - this.elementHost_FrameInfo.Height - 6;
 
             this.num_minBin.Left = this.num_maxBin.Left = 20;
             this.plot_TOF.Left = 20;
 
-            this.tabpages_FrameInfo.Left = 5;
             this.pnl_Chromatogram.Left = 5;
+            this.elementHost_FrameInfo.Left = 5;
 
             // max_plot_height ************************************************
             this.max_plot_height = this.tab_DataViewer.Height - 420;

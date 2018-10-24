@@ -59,6 +59,10 @@
       <DependentUpon>FrameControlView.xaml</DependentUpon>
     </Compile>
     <Compile Include="FrameControl\FrameControlViewModel.cs" />
+    <Compile Include="FrameInfo\FrameInfoView.xaml.cs">
+      <DependentUpon>FrameInfoView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FrameInfo\FrameInfoViewModel.cs" />
     <Compile Include="PlotAreaFormatting\ColorMapSliderViewModel.cs" />
     <Compile Include="PlotAreaFormatting\PlotAreaFormattingView.xaml.cs">
       <DependentUpon>PlotAreaFormattingView.xaml</DependentUpon>
@@ -194,6 +198,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="FrameControl\FrameControlView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FrameInfo\FrameInfoView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
