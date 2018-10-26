@@ -7,7 +7,7 @@ namespace UIMF_DataViewer.FrameInfo
     public class FrameInfoViewModel : ReactiveObject
     {
         private bool cursorTabSelected = true;
-        private bool calibrationTabSelected = true;
+        private bool calibrationTabSelected = false;
         private double cursorMobilityScanNumber;
         private double cursorMobilityScanTime;
         private double cursorTofValue;

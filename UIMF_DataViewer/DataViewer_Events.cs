@@ -2715,7 +2715,7 @@ namespace UIMF_File
             {
                 // this.m_frameParameters.CalibrationSlope = this.frameInfoVm.CalibrationK; //this.UIMF_DataReader.mz_Calibration.k * 10000.0;
                 //  this.m_frameParameters.CalibrationIntercept = this.frameInfoVm.CalibrationT0; // this.UIMF_DataReader.mz_Calibration.t0 / 10000.0;
-                // this.update_CalibrationCoefficients();
+                // this.ReloadCalibrationCoefficients();
 
                 this.frameInfoVm.CalibrationDate = DateTime.Now;
 
@@ -2732,11 +2732,11 @@ namespace UIMF_File
 
         private void pnl_postProcessing_CalibrationChanged(object sender, EventArgs e)
         {
-            this.update_CalibrationCoefficients();
+            this.ReloadCalibrationCoefficients();
             this.flag_update2DGraph = true;
         }
 
-        private void update_CalibrationCoefficients()
+        private void ReloadCalibrationCoefficients()
         {
             this.frameInfoVm.CalibrationK = this.uimfReader.MzCalibration.K;
             this.frameInfoVm.CalibrationT0 = this.uimfReader.MzCalibration.T0;
@@ -2744,8 +2744,9 @@ namespace UIMF_File
 
             this.frameInfoVm.ChangeCalibrationKFailed = false;
             this.frameInfoVm.ChangeCalibrationT0Failed = false;
+            this.frameInfoVm.HideCalibrationButtons();
 
-            this.pnl_postProcessing.set_ExperimentalCoefficients(this.uimfReader.MzCalibration.K * 10000.0, this.uimfReader.MzCalibration.T0 / 10000.0);
+            this.pnl_postProcessing.SetExperimentalCoefficients(this.uimfReader.MzCalibration.K * 10000.0, this.uimfReader.MzCalibration.T0 / 10000.0);
         }
 
         private void btn_setCalDefaults_Click(object sender, System.EventArgs e)
@@ -2755,7 +2756,7 @@ namespace UIMF_File
 
             this.uimfReader.UpdateAllCalibrationCoefficients(this.frameInfoVm.CalibrationK * 10000.0, this.frameInfoVm.CalibrationT0 / 10000.0);
 
-            this.update_CalibrationCoefficients();
+            this.ReloadCalibrationCoefficients();
 
             this.Enabled = true;
             this.flag_update2DGraph = true;
@@ -2769,7 +2770,7 @@ namespace UIMF_File
         {
             this.uimfReader.ReloadFrameParameters();
 
-            this.update_CalibrationCoefficients();
+            this.ReloadCalibrationCoefficients();
 
             this.flag_update2DGraph = true;
 

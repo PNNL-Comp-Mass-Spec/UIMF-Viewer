@@ -58,7 +58,6 @@
       <DependentUpon>ChromatogramControlView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ChromatogramControl\ChromatogramControlViewModel.cs" />
-    <Compile Include="FrameControl\EnumDescriptionConverter.cs" />
     <Compile Include="FrameControl\FrameControlView.xaml.cs">
       <DependentUpon>FrameControlView.xaml</DependentUpon>
     </Compile>
@@ -73,6 +72,7 @@
     </Compile>
     <Compile Include="PlotAreaFormatting\PlotAreaFormattingViewModel.cs" />
     <Compile Include="PostProcessing\CalibrantInfo.cs" />
+    <Compile Include="PostProcessing\CalibrantSet.cs" />
     <Compile Include="PostProcessing\PostProcessingView.xaml.cs">
       <DependentUpon>PostProcessingView.xaml</DependentUpon>
     </Compile>
@@ -108,6 +108,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Utilities\Calibrator.cs" />
+    <Compile Include="Utilities\EnumDescriptionConverter.cs" />
     <Compile Include="Utilities\PointAnnotationGraph.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -171,6 +172,9 @@
     <Resource Include="Images\triangle_right_out.png" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CsvHelper">
+      <Version>7.1.1</Version>
+    </PackageReference>
     <PackageReference Include="Extended.Wpf.Toolkit">
       <Version>3.4.0</Version>
     </PackageReference>

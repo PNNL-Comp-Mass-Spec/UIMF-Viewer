@@ -299,6 +299,9 @@ namespace UIMF_File
             }
 
             this.pnl_postProcessing.InitializeCalibrants(1, this.uimfReader.UimfFrameParams.CalibrationSlope, this.uimfReader.UimfFrameParams.CalibrationIntercept);
+
+            this.frameInfoVm.CursorTabSelected = true;
+            this.frameInfoVm.HideCalibrationButtons();
         }
 
         /// <summary>
@@ -309,9 +312,6 @@ namespace UIMF_File
         {
             this.flag_Alive = false;
             this.flag_Closing = true;
-
-            RegistrySave(Microsoft.Win32.Registry.CurrentUser.CreateSubKey("Software").CreateSubKey(AppDomain.CurrentDomain.FriendlyName));
-            this.pnl_postProcessing.Save_Registry();
 
             if (this.flag_CinemaPlot)
             {
@@ -346,7 +346,6 @@ namespace UIMF_File
 
         private void IonMobilityDataView_Closed(object sender, System.EventArgs e)
         {
-            RegistrySave(Microsoft.Win32.Registry.CurrentUser.CreateSubKey("Software").CreateSubKey(AppDomain.CurrentDomain.FriendlyName));
             uimfReader.Dispose();
         }
 
@@ -373,7 +372,7 @@ namespace UIMF_File
             this.pb_PlayUpOut.Visible = false;
             this.pb_PlayUpIn.Visible = false;
 
-            this.pnl_postProcessing = new PostProcessingViewModel(MainKey, uimfReader);
+            this.pnl_postProcessing = new PostProcessingViewModel(uimfReader);
             this.pnl_postProcessing.CalibrationChanged += pnl_postProcessing_CalibrationChanged;
 
             this.postProcessingView.DataContext = this.pnl_postProcessing;
@@ -651,33 +650,6 @@ namespace UIMF_File
 
         #endregion
 
-        #region Registry
-
-        private static Microsoft.Win32.RegistryKey MainKey
-        {
-            get { return Application.UserAppDataRegistry; }
-        }
-
-        private void RegistrySave(Microsoft.Win32.RegistryKey key)
-        {
-            using (Microsoft.Win32.RegistryKey sk = key.CreateSubKey(this.Name))
-            {
-            }
-        }
-
-        private void RegistryLoad(Microsoft.Win32.RegistryKey key)
-        {
-            try
-            {
-                using (Microsoft.Win32.RegistryKey sk = key.OpenSubKey(this.Name))
-                {
-                }
-            }
-            catch { }
-        }
-
-        #endregion
-
         protected virtual void ResizeThis()
         {
             if (this.flag_isFullscreen)
@@ -826,7 +798,7 @@ namespace UIMF_File
                 this.flag_selection_drift = false;
 
                 this.lbl_ExperimentDate.Text = this.uimfReader.UimfGlobalParams.GetValue(GlobalParamKeyType.DateStarted, "");
-                this.update_CalibrationCoefficients();
+                this.ReloadCalibrationCoefficients();
 
                 // Initialize boundaries
                 new_minMobility = 0;
@@ -1265,7 +1237,7 @@ namespace UIMF_File
                         MessageBox.Show(ex.ToString());
                     }
 
-                    this.update_CalibrationCoefficients();
+                    this.ReloadCalibrationCoefficients();
                 }
             }
 
@@ -1794,7 +1766,7 @@ namespace UIMF_File
                         {
                             new_frame_number = current_frame_number;
 
-                            this.update_CalibrationCoefficients();
+                            this.ReloadCalibrationCoefficients();
                         }
 
                         if (this.uimfReader.CurrentFrameIndex < this.uimfReader.GetNumberOfFrames(this.uimfReader.CurrentFrameType))

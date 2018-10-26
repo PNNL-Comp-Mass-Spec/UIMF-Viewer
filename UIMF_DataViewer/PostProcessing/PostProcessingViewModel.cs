@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -44,49 +46,13 @@ namespace UIMF_DataViewer.PostProcessing
     }
 
     /// <summary>
-    /// Calibration Settings - to save to registry!
-    /// </summary>
-    public class CalibrationSettings
-    {
-        public bool[] IonSelection;
-        public int NumCalibrants = 0;
-
-        public CalibrationSettings()
-        {
-            IonSelection = new bool[NumCalibrants];
-            for (int i = 0; i < NumCalibrants; i++)
-                IonSelection[i] = false;
-        }
-
-        public static CalibrationSettings Load(RegistryKey parentKey)
-        {
-            CalibrationSettings p = new CalibrationSettings();
-
-            try
-            {
-                SaviorClass.Savior.Read(p, parentKey.CreateSubKey("Calibration_Settings"));
-            }
-            catch (Exception ex)
-            {
-                p.IonSelection = new bool[p.NumCalibrants];
-                for (int i = 0; i < p.NumCalibrants; i++)
-                    p.IonSelection[i] = false;
-            }
-            return p;
-        }
-
-        public void Save(RegistryKey parentKey)
-        {
-            SaviorClass.Savior.Save(this, parentKey.CreateSubKey("Calibration_Settings"));
-        }
-    }
-
-    /// <summary>
     ///
     /// </summary>
     /// <remarks>CODE BY MIKE BELOV TO CALIBRATE DATA</remarks>
     public class PostProcessingViewModel : ReactiveObject
     {
+        private CalibrantSet currentCalibrantSet = CalibrantSet.All;
+        private string customCalibrantsFilePath;
         private double ion1TOFBin;
         private double ion1Mz;
         private double ion2TOFBin;
@@ -102,9 +68,27 @@ namespace UIMF_DataViewer.PostProcessing
         private bool showCompress;
         private string compressSaveFilename;
         private string compressSaveDirectory;
-        private UIMFDataWrapper uimfReader = null;
+        private readonly UIMFDataWrapper uimfReader = null;
+        private double tofBinWidth = 0;
 
-        public ReactiveList<CalibrantInfo> Calibrants { get; } = new ReactiveList<CalibrantInfo>(CalibrantInfo.GetDefaultCalibrants());
+        // TODO: Have this information hard-coded, but also set up and use an external file (or files) specified by the user for customizing the calibrants; also support loading different sets of calibrants, rather than showing all of them in a single list
+        public IReadOnlyReactiveList<CalibrantSet> CalibrantSets { get; }
+
+        public CalibrantSet CurrentCalibrantSet
+        {
+            get => currentCalibrantSet;
+            set => this.RaiseAndSetIfChanged(ref currentCalibrantSet, value);
+        }
+
+        public string CustomCalibrantsFilePath
+        {
+            get => customCalibrantsFilePath;
+            set => this.RaiseAndSetIfChanged(ref customCalibrantsFilePath, value);
+        }
+
+        public string CustomCalibrantsFileDescription => CalibrantInfo.FileFormatDescription;
+
+        public ReactiveList<CalibrantInfo> Calibrants { get; } = new ReactiveList<CalibrantInfo>(CalibrantInfo.GetCalibrantSet(CalibrantSet.All, null));
 
         public double Ion1TOFBin
         {
@@ -196,6 +180,7 @@ namespace UIMF_DataViewer.PostProcessing
             set => this.RaiseAndSetIfChanged(ref compressSaveDirectory, value);
         }
 
+        public ReactiveCommand<Unit, Unit> BrowseForCalibrantsFileCommand { get; }
         public ReactiveCommand<Unit, Unit> AttemptToCalibrateCommand { get; }
         public ReactiveCommand<Unit, Unit> ApplyCalculatedToFrameCommand { get; }
         public ReactiveCommand<Unit, Unit> ApplyExperimentalToAllFramesCommand { get; }
@@ -209,18 +194,23 @@ namespace UIMF_DataViewer.PostProcessing
             ShowDecode = true;
             ShowCompress = true;
 
+            CalibrantSets = new ReactiveList<CalibrantSet>(Enum.GetValues(typeof(CalibrantSet)).Cast<CalibrantSet>());
+
+            BrowseForCalibrantsFileCommand = ReactiveCommand.Create(BrowseForCalibrantsFile);
             AttemptToCalibrateCommand = ReactiveCommand.CreateFromTask(async () => await Task.Run(() => CalibrateFrames()));
             ApplyCalculatedToFrameCommand = ReactiveCommand.CreateFromTask(async () => await Task.Run(() => ApplyCalculatedCalibration()));
             ApplyExperimentalToAllFramesCommand = ReactiveCommand.CreateFromTask(async () => await Task.Run(() => ApplyCalibrationAllFrames()));
             BrowseDecodeDirectoryCommand = ReactiveCommand.Create(DecodeDirectoryBrowse);
             //DecodeExperimentCommand;
             BrowseCompressDirectoryCommand = ReactiveCommand.Create(CompressDirectoryBrowse);
-             CompressExperimentCommand = ReactiveCommand.CreateFromTask(async () => await Task.Run(() => Compress4GHzTo1GHzUIMF())); ;
+            CompressExperimentCommand = ReactiveCommand.CreateFromTask(async () => await Task.Run(() => Compress4GHzTo1GHzUIMF()));
+
+            this.WhenAnyValue(x => x.Ion1Mz, x => x.Ion1TOFBin, x => x.Ion2Mz, x => x.Ion2TOFBin).Subscribe(x => Recalculate2PointCalibration());
+            this.WhenAnyValue(x => x.CurrentCalibrantSet).Subscribe(x => LoadCalibrantSet(x));
         }
 
-        public PostProcessingViewModel(RegistryKey mainKey, UIMFDataWrapper uimf) : this()
+        public PostProcessingViewModel(UIMFDataWrapper uimf) : this()
         {
-            parent_key = mainKey;
             uimfReader = uimf;
 
             DecodeSaveFilename = Path.GetFileNameWithoutExtension(uimf.UimfDataFile);
@@ -238,123 +228,33 @@ namespace UIMF_DataViewer.PostProcessing
                 CompressSaveDirectory = Path.GetDirectoryName(uimf.UimfDataFile);
             }
 
-            this.settings_Calibration = new CalibrationSettings();
-            //  BinResolution = bin_resolution;
-
-#if COEFFICIENTS
-            coef_Sciex.Slope = (double)0.35660427;
-            coef_Sciex.Intercept = (double)-0.07565783;
-            coef_Agilent.Slope = (double)0.57417985;
-            coef_Agilent.Intercept = (double)0.03456597;
-#endif
-
-            elem_charge = 1.60217733 * Math.Pow(10, -19); // elementary charge, Coulomb
-            k_b = 1.380658 * Math.Pow(10, -23);           // Boltzmann's constant, Joule/K
-            AMU = 1.66055402 * Math.Pow(10, -27);         // atomic mass unit, kg
-            n_Lodschmidt = 2.69 * Math.Pow(10, 25);       // Lodschmidt number density, m^-3
-
-            //INITIAL PARAMETERS
-            Sigma_av_reserpine = 300.0 * (double)Math.Pow(10, -20); // analyte collisional cross section, m^2
-            t_modulation_IMS = 200 * (double)Math.Pow(10, -6);      // modulation bin width for IMS drift tube, s
-            t_TOF = 200 * (double)Math.Pow(10, -6);                 // TOF spectrum acquisition rate, s
-            spatial_step_0 = 50 * (double)Math.Pow(10, -6);         // initial granulation for IMS spatial distribution analysis, m
-            TOF_step = (double)Math.Pow(10, -7);                    // granulation for TOF spectrum analysis, s
-            slope_theor = (double)0.42 * (double)Math.Pow(10, 6);   // TOF calibration constant (ExperimentalSlope): sqrt(mass/charge) = ExperimentalSlope*t, where t is in s
-            n_density = (double)(n_Lodschmidt * pressure_IMS / pressure_atm); // ions number density in the IMS drift tube, m^-3
-
-            N_TOF_BINS_PER_MODULATION_BIN = (long)(t_modulation_IMS / TOF_step);
-            N_TOF_BINS_PER_TOF_SCAN = (long)(t_TOF / TOF_step);
-            N_TOF_BINS_PER_IMS_BIN = (long)(N_TIME_STEPS * N_TOF_BINS_PER_TOF_SCAN / N_PRS_BINS);
-            N_SCANS_PER_MODULATION_BIN = (long)(t_modulation_IMS / t_TOF);
-
-            this.CalibrationSuccessful = false;
-
-            this.Load_Registry();
+            CalibrationSuccessful = false;
         }
 
         private CalibrantInfo currentCalibrant = new CalibrantInfo();
 
-        private const int MIN_NUM_CALIBRANTS = 4;
-        private const int NUM_CALIBRANTS = 25;
-        private const int N_PRS_BINS = 511;
-        private const double MAX_ERROR_ACCEPTABLE = 5.0;
+        private const int MinNumCalibrants = 4;
+        private const double MaxErrorAcceptable = 5.0;
 
-        private const double T = 298;            // ambient temperature, K
-        private const double pressure_IMS = 4;   // pressure in the IMS drift tube, torr
-        private const double pressure_atm = 760; // atmospheric pressure, torr
+        private const double NoiseInterval = 30;
+        private const double PeptideInterval = 20;
 
-        private const double mass_N2 = 14;         // molecular mass of nitrogen gas, Da
-        private const double mass_reserpine = 609; // molecular mass of analyte (reserpine), Da
-        private const double L_drift = 2;          // length of an IMS drift tube, m
-        private const double U_drift = 4000;       //potential across IMS drift tube, V
-        private const double N_0 = 100;            //initial number of ions per modulation bin
-        private const double d_ext = (double)0.03; //width of TOF extraction region, m
-        private const double E_field = U_drift / L_drift;  //electric field strength inside the IMS drift tube, V/m
-        //private const double TOF_DELAY = 276000;
-        private const double N_TIME_STEPS = 1022;
-        private const double NOISE_INTERVAL = 30;
-        private const double PEPTIDE_INTERVAL = 20;
-
-#if COEFFICIENTS
-        public Coefficients coef_Sciex;
-        public Coefficients coef_Agilent;
-#endif
-        public Coefficients coef_Internal;
+        private Coefficients internalCoefficients;
 
         //allocate memory for arrays with added zeros
         //  double[] arrival_time2; //drift time
-        double[] arrival_time_TOF2; //arrival time in tof
-        double[] mz2;
-        double[] sum_intensity2;
+        private double[] arrivalTimeTof2; //arrival time in tof
+        private double[] mz2;
+        private double[] sumIntensity2;
 
-
-        //INITIAL PARAMETERS
-        private double elem_charge;         // elementary charge, Coulomb
-        private double k_b;                 // Boltzmann's constant, Joule/K
-        private double AMU;                 // atomic mass unit, kg
-        private double n_Lodschmidt;        // Lodschmidt number density, m^-3
-        private double Sigma_av_reserpine;  // analyte collisional cross section, m^2
-        private double t_modulation_IMS;    // modulation bin width for IMS drift tube, s
-        private double t_TOF;               // TOF spectrum acquisition rate, s
-        private double spatial_step_0 = 50; // initial granulation for IMS spatial distribution analysis, m
-        private double TOF_step;            // granulation for TOF spectrum analysis, s
-        private double slope_theor;         // TOF calibration constant (ExperimentalSlope): sqrt(mass/charge) = ExperimentalSlope*t, where t is in s
-        private double n_density;           // ions number density in the IMS drift tube, m^-3
-
-        private long N_TOF_BINS_PER_MODULATION_BIN;
-        private long N_TOF_BINS_PER_TOF_SCAN;
-        private long N_TOF_BINS_PER_IMS_BIN;
-        private long N_SCANS_PER_MODULATION_BIN;
-
-        //   private double BinResolution;
-
-        private int spectra_with_nonzeroentries = 0;
-
-        RegistryKey parent_key;
-        CalibrationSettings settings_Calibration;
-
-        public double get_Experimental_Intercept()
+        public void CalibrateFrame(double[] summedSpectrum, double[] sumIntensities, double[] binArrivalTime, double binWidth, int totalBins, int totalScans, double mzExperimentalSlope, double mzExperimentalIntercept)
         {
-            return this.ExperimentalIntercept; //  this.coef_Internal.ExperimentalIntercept;
-        }
-        public double get_Experimental_Slope()
-        {
-            return this.ExperimentalSlope; // coef_Internal.ExperimentalSlope;
-        }
-
-        public void CalibrateFrame(double[] summed_spectrum, double[] sum_intensities, double[] bin_arrival_time, double bin_width, int total_bins, int total_scans, double mz_Experimental_Slope, double mz_Experimental_Intercept)
-        {
-            int i;
-            int bins_per_frame = total_bins;
-            int numEnabledCalibrants = 0;
-
-            int max_error_index = 0;
-
-            //this.Calibrants.ClearSelection();
+            var numEnabledCalibrants = 0;
+            //Calibrants.ClearSelection();
 
             RxApp.MainThreadScheduler.Schedule(() =>
             {
-                for (i = 0; i < this.Calibrants.Count - 1; ++i)
+                for (var i = 0; i < Calibrants.Count - 1; ++i)
                 {
                     var calibrant = Calibrants[i];
                     calibrant.Bins = 0;
@@ -365,74 +265,73 @@ namespace UIMF_DataViewer.PostProcessing
 
                     if (calibrant.Enabled)
                     {
-                        this.Calibrants[i].TOF = (double) ((Math.Sqrt(this.Calibrants[i].Mz) / this.ExperimentalSlope) + this.ExperimentalIntercept);
-                        this.Calibrants[i].Bins = this.Calibrants[i].TOF / this.bin_Width;
+                        Calibrants[i].TOF = (double) ((Math.Sqrt(Calibrants[i].Mz) / ExperimentalSlope) + ExperimentalIntercept);
+                        Calibrants[i].Bins = Calibrants[i].TOF / tofBinWidth;
 
                         numEnabledCalibrants++;
                     }
                 }
             });
 
-            while (numEnabledCalibrants >= MIN_NUM_CALIBRANTS)
+            while (numEnabledCalibrants >= MinNumCalibrants)
             {
-                this.spectra_with_nonzeroentries = sum_intensities.Length;
+                var spectraWithNonZeroEntries = sumIntensities.Length;
 
-                this.set_ExperimentalCoefficients(mz_Experimental_Slope, mz_Experimental_Intercept);
+                SetExperimentalCoefficients(mzExperimentalSlope, mzExperimentalIntercept);
 
-                this.sum_intensity2 = new double[spectra_with_nonzeroentries];
-                this.arrival_time_TOF2 = new double[spectra_with_nonzeroentries]; //arrival time in bins
+                sumIntensity2 = new double[spectraWithNonZeroEntries];
+                arrivalTimeTof2 = new double[spectraWithNonZeroEntries]; //arrival time in bins
 
-                Array.Copy(sum_intensities, sum_intensity2, sum_intensities.Length);
-                Array.Copy(bin_arrival_time, arrival_time_TOF2, bin_arrival_time.Length);
+                Array.Copy(sumIntensities, sumIntensity2, sumIntensities.Length);
+                Array.Copy(binArrivalTime, arrivalTimeTof2, binArrivalTime.Length);
 
-                this.mz2 = new double[spectra_with_nonzeroentries];
-                for (i = 0; i < spectra_with_nonzeroentries; i++)
+                mz2 = new double[spectraWithNonZeroEntries];
+                for (var i = 0; i < spectraWithNonZeroEntries; i++)
                 {
-                    // this.arrival_time_TOF2[i] *= bin_width;
-                    mz2[i] = Math.Pow((this.arrival_time_TOF2[i] / 1000.0) - this.ExperimentalIntercept, 2) * this.ExperimentalSlope * this.ExperimentalSlope;
+                    // arrival_time_TOF2[i] *= bin_width;
+                    mz2[i] = Math.Pow((arrivalTimeTof2[i] / 1000.0) - ExperimentalIntercept, 2) * ExperimentalSlope * ExperimentalSlope;
                 }
                 // mz_LIST2[i][k] = (float)pow((double)(arrival_time_LIST2[i][k] - *(TOF_offset_buffer + i) + TimeOffset) / 1000 - ExperimentalIntercept, 2) * (float)pow((double)ExperimentalSlope, 2);
 
-                max_error_index = this.InternalCalibration(CalibrationType.STANDARD, Instrument.AGILENT_TDC, total_scans, numEnabledCalibrants);
+                var maxErrorIndex = InternalCalibration(CalibrationType.STANDARD, Instrument.AGILENT_TDC, totalScans, numEnabledCalibrants);
 
-                if (Math.Abs(this.Calibrants[max_error_index].ErrorPPM) < MAX_ERROR_ACCEPTABLE)
+                if (Math.Abs(Calibrants[maxErrorIndex].ErrorPPM) < MaxErrorAcceptable)
                 {
-                    this.set_ExperimentalCoefficients(coef_Internal.ExperimentalSlope, coef_Internal.ExperimentalIntercept);
+                    SetExperimentalCoefficients(internalCoefficients.ExperimentalSlope, internalCoefficients.ExperimentalIntercept);
                     break;
                 }
                 else
                 {
-                    var index = max_error_index;
+                    var index = maxErrorIndex;
                     RxApp.MainThreadScheduler.Schedule(() =>
                     {
-                        this.CalculatedIntercept = 0;
-                        this.CalculatedSlope = 0;
+                        CalculatedIntercept = 0;
+                        CalculatedSlope = 0;
 
-                        this.set_ExperimentalCoefficients(this.ExperimentalSlope, this.ExperimentalIntercept);
-                        coef_Internal.ExperimentalSlope = this.ExperimentalSlope;
-                        coef_Internal.ExperimentalIntercept = this.ExperimentalIntercept;
+                        SetExperimentalCoefficients(ExperimentalSlope, ExperimentalIntercept);
+                        internalCoefficients.ExperimentalSlope = ExperimentalSlope;
+                        internalCoefficients.ExperimentalIntercept = ExperimentalIntercept;
 
-                        this.Calibrants[index].Enabled = false;
+                        Calibrants[index].Enabled = false;
 
-                        // TODO: (mz_experimental column): this.Calibrants[index].Cells[7].Value = "FAILED";
+                        // TODO: (mz_experimental column): Calibrants[index].Cells[7].Value = "FAILED";
 
                         numEnabledCalibrants = 0;
-                        for (i = 0; i < this.Calibrants.Count - 1; i++)
+                        for (var i = 0; i < Calibrants.Count - 1; i++)
                         {
-                            if (this.Calibrants[i].Enabled)
+                            if (Calibrants[i].Enabled)
                                 numEnabledCalibrants++;
                         }
                     });
                 }
             }
 
-            //MessageBox.Show("'" + this.Calibrants.Rows[7].Cells[6].Value.ToString() + "'  " + this.Calibrants.Rows[7].Cells[6].Value.ToString().Length.ToString() + "\n" + this.Calibrants[7].error_ppm.ToString());
 #if false
             FileStream fs = new FileStream(@"C:\IonMobilityData\Calibration\NewCalib.txt", FileMode.Create);
             StreamWriter sw = new StreamWriter(fs);
             for (int i = 0; i < spectra_with_nonzeroentries; i++)
             {
-                sw.WriteLine(mz2[i].ToString("0.0000") + ", " + sum_intensity2[i].ToString() + ", " + arrival_time_TOF2[i].ToString());
+                sw.WriteLine(mz2[i].ToString("0.0000") + ", " + sumIntensity2[i].ToString() + ", " + arrivalTimeTof2[i].ToString());
             }
             sw.Flush();
             sw.Close();
@@ -440,23 +339,12 @@ namespace UIMF_DataViewer.PostProcessing
 #endif
         }
 
-        public int InternalCalibration(CalibrationType cal_type, Instrument inst_type, int tofs_per_frame, int num_enabled_calibrants)
+        public int InternalCalibration(CalibrationType calibrationType, Instrument instrumentType, int tofsPerFrame, int numEnabledCalibrants)
         {
-            int numEnabledCalibrantsCorrected = 0;
-
-            double sum_mz_term = 0;
-            double sum_TOF_term = 0;
-            double sum_TOF_term_squared = 0;
-            double sum_mz_TOF_term = 0;
-
-            bool flag_success = false;
-
-            int max_error_index = 0;
-
             // now go to TOF spectra and find peak maxima
-            numEnabledCalibrantsCorrected = num_enabled_calibrants;
+            var numEnabledCalibrantsCorrected = numEnabledCalibrants;
 
-            for (var i = 0; i < this.Calibrants.Count - 1; i++)
+            for (var i = 0; i < Calibrants.Count - 1; i++)
             {
                 var calibrant = Calibrants[i];
 
@@ -466,7 +354,7 @@ namespace UIMF_DataViewer.PostProcessing
                     currentCalibrant.Charge = calibrant.Charge;
                     currentCalibrant.Mz = calibrant.Mz;
 
-                    var expTof = FindMonoisotopicPeak(calibrant.Bins, Species.CALIBRANT, PeakPicking.THREE_POINT_QUADRATIC, tofs_per_frame);
+                    var expTof = FindMonoisotopicPeak(calibrant.Bins, Species.CALIBRANT, PeakPicking.THREE_POINT_QUADRATIC, tofsPerFrame);
                     var index = i;
 
                     RxApp.MainThreadScheduler.Schedule(() =>
@@ -482,13 +370,18 @@ namespace UIMF_DataViewer.PostProcessing
                 }
             }
 
+            var maxErrorIndex = 0;
             RxApp.MainThreadScheduler.Schedule(() =>
             {
                 //MessageBox.Show(this, "numEnabledCalibrants: "+numEnabledCalibrants.ToString());
-                cal_type = CalibrationType.AGILENT;
-                if (cal_type == CalibrationType.AGILENT)
+                calibrationType = CalibrationType.AGILENT;
+                if (calibrationType == CalibrationType.AGILENT)
                 {
-                    for (var i = 0; i < this.Calibrants.Count - 1; i++)
+                    var sumMzTerm = 0.0;
+                    var sumTofTerm = 0.0;
+                    var sumTofTermSquared = 0.0;
+                    var sumMzTofTerm = 0.0;
+                    for (var i = 0; i < Calibrants.Count - 1; i++)
                     {
                         var calibrant = Calibrants[i];
                         if (calibrant.Enabled) //calibrant.Mz > 0)
@@ -498,95 +391,64 @@ namespace UIMF_DataViewer.PostProcessing
                             {
                                 calibrant.MzExperimental = Math.Sqrt(calibrant.Mz);
 
-                                sum_mz_term = sum_mz_term + calibrant.MzExperimental;
-                                sum_TOF_term = sum_TOF_term + calibrant.TOFExperimental;
-                                sum_TOF_term_squared = sum_TOF_term_squared + Math.Pow(calibrant.TOFExperimental, 2);
-                                sum_mz_TOF_term = sum_mz_TOF_term + calibrant.MzExperimental * (calibrant.TOFExperimental);
+                                sumMzTerm = sumMzTerm + calibrant.MzExperimental;
+                                sumTofTerm = sumTofTerm + calibrant.TOFExperimental;
+                                sumTofTermSquared = sumTofTermSquared + Math.Pow(calibrant.TOFExperimental, 2);
+                                sumMzTofTerm = sumMzTofTerm + calibrant.MzExperimental * (calibrant.TOFExperimental);
                             }
 
-                            coef_Internal.ExperimentalSlope = (numEnabledCalibrantsCorrected * sum_mz_TOF_term - sum_mz_term * sum_TOF_term) /
-                                                              (numEnabledCalibrantsCorrected * sum_TOF_term_squared - Math.Pow(sum_TOF_term, 2));
-                            coef_Internal.ExperimentalIntercept = (sum_mz_term / numEnabledCalibrantsCorrected) -
-                                                                  ((coef_Internal.ExperimentalSlope * sum_TOF_term) / numEnabledCalibrantsCorrected);
-                            coef_Internal.ExperimentalIntercept = -coef_Internal.ExperimentalIntercept / coef_Internal.ExperimentalSlope;
+                            internalCoefficients.ExperimentalSlope = (numEnabledCalibrantsCorrected * sumMzTofTerm - sumMzTerm * sumTofTerm) /
+                                                              (numEnabledCalibrantsCorrected * sumTofTermSquared - Math.Pow(sumTofTerm, 2));
+                            internalCoefficients.ExperimentalIntercept = (sumMzTerm / numEnabledCalibrantsCorrected) -
+                                                                  ((internalCoefficients.ExperimentalSlope * sumTofTerm) / numEnabledCalibrantsCorrected);
+                            internalCoefficients.ExperimentalIntercept = -internalCoefficients.ExperimentalIntercept / internalCoefficients.ExperimentalSlope;
                         }
                     }
                 }
 
                 // check the results
-                for (var i = 0; i < this.Calibrants.Count - 1; ++i)
-                    if (this.Calibrants[i].Enabled)
+                for (var i = 0; i < Calibrants.Count - 1; ++i)
+                    if (Calibrants[i].Enabled)
                     {
-                        max_error_index = i;
+                        maxErrorIndex = i;
                         break;
                     }
 
-                flag_success = true;
-                for (var i = max_error_index; i < this.Calibrants.Count - 1; ++i)
+                var success = true;
+                for (var i = maxErrorIndex; i < Calibrants.Count - 1; ++i)
                 {
                     var calibrant = Calibrants[i];
                     if (calibrant.Enabled)
                     {
-                        calibrant.MzExperimental = Math.Pow((calibrant.TOFExperimental - coef_Internal.ExperimentalIntercept) * coef_Internal.ExperimentalSlope, 2);
+                        calibrant.MzExperimental = Math.Pow((calibrant.TOFExperimental - internalCoefficients.ExperimentalIntercept) * internalCoefficients.ExperimentalSlope, 2);
                         calibrant.ErrorPPM = ((calibrant.MzExperimental - calibrant.Mz) / calibrant.Mz) * 1e6;
 
-                        if (Math.Abs(calibrant.ErrorPPM) > Math.Abs(this.Calibrants[max_error_index].ErrorPPM))
-                            max_error_index = i;
+                        if (Math.Abs(calibrant.ErrorPPM) > Math.Abs(Calibrants[maxErrorIndex].ErrorPPM))
+                            maxErrorIndex = i;
 
                         if (calibrant.TOFExperimental <= 0)
                         {
-                            flag_success = false;
+                            success = false;
                         }
                     }
                 }
 
-                this.CalibrationSuccessful = flag_success;
+                CalibrationSuccessful = success;
             });
 
-            return max_error_index;
+            return maxErrorIndex;
         }
 
         /// <summary>
         /// routine for finding monoisotopic peak of a peptide
         /// </summary>
-        /// <param name="TOF_peptide"></param>
-        /// <param name="species_ID"></param>
-        /// <param name="peak_picking"></param>
-        /// <param name="spectra_with_nonzeroentries"></param>
+        /// <param name="tofPeptide"></param>
+        /// <param name="speciesId"></param>
+        /// <param name="peakPicking"></param>
+        /// <param name="spectraWithNonzeroEntries"></param>
         /// <returns></returns>
-        private double FindMonoisotopicPeak(double TOF_peptide, Species species_ID, PeakPicking peak_picking, int spectra_with_nonzeroentries)
+        private double FindMonoisotopicPeak(double tofPeptide, Species speciesId, PeakPicking peakPicking, int spectraWithNonzeroEntries)
         {
-            int i;
-            int j;
-
-            double SNR_noise_level;
-
-            int peak_number = 0;
-            double charge = 1;
-            int peak_number_mono = 11;
-            int NumNoiseBins = 0;
-            int pos_peptide_max = 0;
-            int[] Pos_peptide_max = new int[10];
-
-            double TOF_monoisotope = 0.0;
-            double isotope_ratio;
-            double[] peptide_local_max = new double[10];
-            double[] TOF_offset_local = new double[10];
-            double TOF_monoisotope_shift = 0;
-            double TOF_checkup = 0;
-            bool TOF_MONOISOTOPE_FOUND = false;
-            bool PEAK_COUNTER;
-            bool[,] TOF_MONOISOTOPE = new bool[10, 10];
-            long SIGNAL_THRESHOLD = 5;
-            bool found_peptide_pos = false;
-
-            int Pos_noise = 0;
-            int Pos_peptide = 0;
-            int SNR = 3;
-            int NumNonZeroNoiseBins = 0;
-            double noise_intensity_average = 0;
-            double noise_intensity0 = 0;
-
             /*
             int bins_per_tof = 0;
             if (BinResolution <= 3)
@@ -597,115 +459,106 @@ namespace UIMF_DataViewer.PostProcessing
                 bins_per_tof = 40;
             */
 
-            double[] peptide_array_local = new double[80];
-
-            // three point quadratic declarations
-            double sum_x4 = 0;
-            double sum_x3 = 0;
-            double sum_x2 = 0;
-            double sum_x = 0;
-            double sum_yx2 = 0;
-            double sum_yx = 0;
-            double sum_y = 0;
-
-            double pCoefficientA = 0.0;
-            double pCoefficientB = 0.0;
-            double pCoefficientC = 0.0;
-
-            double[,] pVariable;
-            double peptide_monoisotope_max = -1; // initial condition, no peaks found yet
-
+            int charge;
+            double tofMonoisotopeShift;
 #if false
-            if (species_ID == Species.PEPTIDE)
+            if (speciesId == Species.PEPTIDE)
             {
                 charge = current_Peptide.charge;
 
                 //setting up TOF shifts for C12 and C13 peaks as well as signal threshold
-                TOF_monoisotope_shift = (double)(1000.0 / (this.ExperimentalSlope * charge * 2.0 * Math.Sqrt(current_Peptide.mz))); //spacing between isotopes
+                tofMonoisotopeShift = (double)(1000.0 / (ExperimentalSlope * charge * 2.0 * Math.Sqrt(current_Peptide.mz))); //spacing between isotopes
             }
-            else if (species_ID == Species.CALIBRANT)
+            else if (speciesId == Species.CALIBRANT)
 #endif
             {
                 charge = currentCalibrant.Charge;
 
                 //setting up TOF shifts for C12 and C13 peaks as well as signal threshold
-                TOF_monoisotope_shift = (double)(1000.0 / (this.ExperimentalSlope * charge * 2.0 * Math.Sqrt(currentCalibrant.Mz))); //spacing between isotopes
+                tofMonoisotopeShift = (double)(1000.0 / (ExperimentalSlope * charge * 2.0 * Math.Sqrt(currentCalibrant.Mz))); //spacing between isotopes
             }
 
-            // TOF_checkup = 2 * Math.Pow(2, BinResolution) / 10;
-            TOF_checkup = 2.0 / this.bin_Width; // *Math.Pow(2, 2) / 10;
+            // tofCheckup = 2 * Math.Pow(2, BinResolution) / 10;
+            var tofCheckup = 2.0 / tofBinWidth;
 
-            //TOF_monoisotope_shift = 1000;
-            // TOF_checkup = 200;
-            //MessageBox.Show(this, "TOF_checkup=" + TOF_checkup.ToString() + ", TOF_monoisotope_shift=" + TOF_monoisotope_shift.ToString());
+            //tofMonoisotopeShift = 1000;
+            // tofCheckup = 200;
+            //MessageBox.Show(this, "tofCheckup=" + tofCheckup.ToString() + ", tofMonoisotopeShift=" + tofMonoisotopeShift.ToString());
 
-            isotope_ratio = 2.5;
+            var isotopeRatio = 2.5;
+            var snr = 3;
             if (charge == 1)
             {
-                isotope_ratio = 10.0;
-                SNR = 2;
+                isotopeRatio = 10.0;
+                snr = 2;
             }
 
-            Pos_peptide = 0;
-            for (i = 0; i < this.spectra_with_nonzeroentries; i++)
+            var posPeptide = 0;
+            var foundPeptidePos = false;
+            for (var i = 0; i < spectraWithNonzeroEntries; i++)
             {
-                if ((TOF_peptide - this.arrival_time_TOF2[i]) < PEPTIDE_INTERVAL / this.bin_Width)
+                if ((tofPeptide - arrivalTimeTof2[i]) < PeptideInterval / tofBinWidth)
                 {
-                    Pos_peptide = i;
-                    found_peptide_pos = true;
+                    posPeptide = i;
+                    foundPeptidePos = true;
                     break;
                 }
             }
-            // MessageBox.Show(this, "found_peptide_pos: " + found_peptide_pos.ToString()+ "  "+(this.arrival_time_TOF2[i]* this.bin_Width).ToString() );
+            // MessageBox.Show(this, "foundPeptidePos: " + foundPeptidePos.ToString()+ "  "+(arrivalTimeTof2[i]* bin_Width).ToString() );
 
-            if (!found_peptide_pos)
-                return TOF_monoisotope = 0;
+            if (!foundPeptidePos)
+                return 0;
 
-            peak_number = 0;
-            for (i = 0; i < 10; i++)
+
+            var peptideLocalMax = new double[10];
+            var tofOffsetLocal = new double[10];
+            var posPeptideMaxMatches = new int[10];
+            var peakNumber = 0;
+            for (var i = 0; i < 10; i++)
             {
-                peptide_local_max[i] = 0;
-                TOF_offset_local[i] = 0;
-                Pos_peptide_max[i] = 0;
+                peptideLocalMax[i] = 0;
+                tofOffsetLocal[i] = 0;
+                posPeptideMaxMatches[i] = 0;
             }
 
-            for (i = 0; i < 10; i++)
-                for (j = 0; j < 10; j++)
-                    TOF_MONOISOTOPE[i, j] = false;
+            var tofMonoisotopeCheckArray = new bool[10, 10];
+            for (var i = 0; i < 10; i++)
+                for (var j = 0; j < 10; j++)
+                    tofMonoisotopeCheckArray[i, j] = false;
 
             // estimate average noise intensity at the left wing of isotopic distribution
-            i = 0;
+            int posNoise;
+            var i2 = 0;
             do
             {
-                Pos_noise = Pos_peptide - i;
-                ++i;
-            } while ((Pos_noise > 0) && (this.arrival_time_TOF2[Pos_peptide] - this.arrival_time_TOF2[Pos_noise] < NOISE_INTERVAL / this.bin_Width));
+                posNoise = posPeptide - i2;
+                ++i2;
+            } while ((posNoise > 0) && (arrivalTimeTof2[posPeptide] - arrivalTimeTof2[posNoise] < NoiseInterval / tofBinWidth));
 
-            NumNoiseBins = i - 1;
-            NumNonZeroNoiseBins = 0;
-            noise_intensity_average = 0;
+            var numNoiseBins = i2 - 1;
+            var numNonZeroNoiseBins = 0;
+            double noiseIntensityAverage = 0;
 
-            if (this.arrival_time_TOF2[Pos_peptide] - this.arrival_time_TOF2[Pos_noise] > NOISE_INTERVAL / this.bin_Width)
+            if (arrivalTimeTof2[posPeptide] - arrivalTimeTof2[posNoise] > NoiseInterval / tofBinWidth)
             {
-                Pos_noise = Pos_noise + 1;
-                NumNoiseBins = i - 2;
+                posNoise = posNoise + 1;
+                numNoiseBins = i2 - 2;
             }
 
             try
             {
-                for (i = Pos_noise; i < Pos_noise + NumNoiseBins; ++i)
+                for (var i = posNoise; i < posNoise + numNoiseBins; ++i)
                 {
-                    if (this.sum_intensity2[i] > 0 && NumNonZeroNoiseBins == 0)
+                    if (sumIntensity2[i] > 0 && numNonZeroNoiseBins == 0)
                     {
-                        NumNonZeroNoiseBins++;
-                        noise_intensity_average = noise_intensity_average + this.sum_intensity2[i];
-                        noise_intensity0 = noise_intensity_average;
+                        numNonZeroNoiseBins++;
+                        noiseIntensityAverage = noiseIntensityAverage + sumIntensity2[i];
                     }
 
-                    if (this.sum_intensity2[i] > 0 && NumNonZeroNoiseBins > 0) /*&& fabs(this.sum_intensity2[i]/noise_intensity0) < 10*/
+                    if (sumIntensity2[i] > 0 && numNonZeroNoiseBins > 0) /*&& fabs(sum_intensity2[i]/noise_intensity0) < 10*/
                     {
-                        NumNonZeroNoiseBins++;
-                        noise_intensity_average = noise_intensity_average + this.sum_intensity2[i];
+                        numNonZeroNoiseBins++;
+                        noiseIntensityAverage = noiseIntensityAverage + sumIntensity2[i];
                     }
                 }
             }
@@ -714,108 +567,109 @@ namespace UIMF_DataViewer.PostProcessing
                 MessageBox.Show("arg" + ex.ToString());
             }
 
-            // finding average noise for all NumNoiseBins without taking into account the outlyars
-            if (NumNonZeroNoiseBins > 0)
-                noise_intensity_average = noise_intensity_average / NumNonZeroNoiseBins / 4.0;
+            // finding average noise for all NumNoiseBins without taking into account the outliers
+            if (numNonZeroNoiseBins > 0)
+                noiseIntensityAverage = noiseIntensityAverage / numNonZeroNoiseBins / 4.0;
 
-            for (i = Pos_peptide; (i < Pos_peptide + 80) && (i < sum_intensity2.Length); ++i)
+            long signalThreshold = 5;
+            for (var i = posPeptide; (i < posPeptide + 80) && (i < sumIntensity2.Length); ++i)
             {
                 // now identify isotopic peaks
-                if ((i > 4) && (peak_number < 10))
+                if ((i > 4) && (peakNumber < 10))
                 {
-                    SNR_noise_level = noise_intensity_average * SNR;
+                    var snrNoiseLevel = noiseIntensityAverage * snr;
 
-                    if (((this.sum_intensity2[i] > SIGNAL_THRESHOLD) && (this.sum_intensity2[i] > SNR_noise_level)) ||
-                        ((this.sum_intensity2[i - 4] > SIGNAL_THRESHOLD) && (this.sum_intensity2[i - 4] > SNR_noise_level)) ||
-                        ((this.sum_intensity2[i - 3] > SIGNAL_THRESHOLD) && (this.sum_intensity2[i - 3] > SNR_noise_level)) ||
-                        ((this.sum_intensity2[i - 2] > SIGNAL_THRESHOLD) && (this.sum_intensity2[i - 2] > SNR_noise_level)) ||
-                        ((this.sum_intensity2[i - 1] > SIGNAL_THRESHOLD) && (this.sum_intensity2[i - 1] > SNR_noise_level)))
+                    if (((sumIntensity2[i] > signalThreshold) && (sumIntensity2[i] > snrNoiseLevel)) ||
+                        ((sumIntensity2[i - 4] > signalThreshold) && (sumIntensity2[i - 4] > snrNoiseLevel)) ||
+                        ((sumIntensity2[i - 3] > signalThreshold) && (sumIntensity2[i - 3] > snrNoiseLevel)) ||
+                        ((sumIntensity2[i - 2] > signalThreshold) && (sumIntensity2[i - 2] > snrNoiseLevel)) ||
+                        ((sumIntensity2[i - 1] > signalThreshold) && (sumIntensity2[i - 1] > snrNoiseLevel)))
                     {
-                        if ((this.sum_intensity2[i - 2] > this.sum_intensity2[i - 1]) && //
-                            (this.sum_intensity2[i - 1] > this.sum_intensity2[i]) &&     // fixed this line
-                            (this.sum_intensity2[i - 3] < this.sum_intensity2[i - 2]) && //
-                            (this.sum_intensity2[i - 4] < this.sum_intensity2[i - 2]))   //
+                        if ((sumIntensity2[i - 2] > sumIntensity2[i - 1]) && //
+                            (sumIntensity2[i - 1] > sumIntensity2[i]) &&     // fixed this line
+                            (sumIntensity2[i - 3] < sumIntensity2[i - 2]) && //
+                            (sumIntensity2[i - 4] < sumIntensity2[i - 2]))   //
                         {
-                            peptide_local_max[peak_number] = this.sum_intensity2[i - 2];
-                            TOF_offset_local[peak_number] = this.arrival_time_TOF2[i - 2]; // define file pointer position corresponding to the local max signal
-                            Pos_peptide_max[peak_number] = i - 2;
-                            peak_number++;
+                            peptideLocalMax[peakNumber] = sumIntensity2[i - 2];
+                            tofOffsetLocal[peakNumber] = arrivalTimeTof2[i - 2]; // define file pointer position corresponding to the local max signal
+                            posPeptideMaxMatches[peakNumber] = i - 2;
+                            peakNumber++;
                         }
                     }
                 }
             }
 
-            if ((peak_number < 3) && (charge != 1))
+            if ((peakNumber < 3) && (charge != 1))
             {
                 // didn't find isotopic cluster for multiply charged states
-                TOF_monoisotope = 0;
-                return TOF_monoisotope;
+                return 0;
             }
 
-            double peptide_local_max1 = peptide_local_max[0];
+            var peakNumberMono = 11;
 
             // Analyze all combinations of found peptide peaks and find the two matching the criterium of TOF_checkup.
             // Then select the smallest index as peak_number_mono
-            if ((species_ID == Species.PEPTIDE) || (species_ID == Species.CALIBRANT))
+            if ((speciesId == Species.PEPTIDE) || (speciesId == Species.CALIBRANT))
             {
-                for (i = 0; i < peak_number; ++i)
+                for (var i = 0; i < peakNumber; ++i)
                 {
-                    for (j = i + 1; j < peak_number; ++j)
+                    for (var j = i + 1; j < peakNumber; ++j)
                     {
-                        if (Math.Abs(Math.Abs(TOF_offset_local[i] - TOF_offset_local[j]) - TOF_monoisotope_shift) < TOF_checkup * 10.0)
+                        if (Math.Abs(Math.Abs(tofOffsetLocal[i] - tofOffsetLocal[j]) - tofMonoisotopeShift) < tofCheckup * 10.0)
                         {
-                            if (peptide_local_max[i] != 0)
+                            if (peptideLocalMax[i] != 0)
                             {
-                                if ((peptide_local_max[i] / peptide_local_max[j] < isotope_ratio && peptide_local_max[i] / peptide_local_max[j] > 1 / isotope_ratio) || (peptide_local_max[j] / peptide_local_max[i] < isotope_ratio && peptide_local_max[j] / peptide_local_max[i] > 1 / isotope_ratio))
+                                if ((peptideLocalMax[i] / peptideLocalMax[j] < isotopeRatio && peptideLocalMax[i] / peptideLocalMax[j] > 1 / isotopeRatio) || (peptideLocalMax[j] / peptideLocalMax[i] < isotopeRatio && peptideLocalMax[j] / peptideLocalMax[i] > 1 / isotopeRatio))
                                 {
-                                    if (i < j && peak_number_mono > i)
+                                    bool peakCounter;
+                                    if (i < j && peakNumberMono > i)
                                     {
-                                        PEAK_COUNTER = false;
+                                        peakCounter = false;
                                         if (j - i > 1 && (charge != 1)) // verifying that peaks in between the putative isotopic peaks are less than both isotopes
                                         {
-                                            for (int k = i + 1; k <= j - 1; ++k)
+                                            for (var k = i + 1; k <= j - 1; ++k)
                                             {
-                                                if (peptide_local_max[k] > peptide_local_max[i] || peptide_local_max[k] > peptide_local_max[j] || PEAK_COUNTER)
+                                                if (peptideLocalMax[k] > peptideLocalMax[i] || peptideLocalMax[k] > peptideLocalMax[j] || peakCounter)
                                                 {
-                                                    TOF_MONOISOTOPE[i, j] = false;
-                                                    PEAK_COUNTER = true; //accounts for the case of several peaks between putative isotopic peaks
+                                                    tofMonoisotopeCheckArray[i, j] = false;
+                                                    peakCounter = true; //accounts for the case of several peaks between putative isotopic peaks
                                                 }
                                                 else
                                                 {
-                                                    peak_number_mono = i;
-                                                    TOF_MONOISOTOPE[i, j] = true;
+                                                    peakNumberMono = i;
+                                                    tofMonoisotopeCheckArray[i, j] = true;
                                                 }
                                             }
                                         }
                                         else
                                         {
-                                            TOF_MONOISOTOPE[i, j] = true;
-                                            peak_number_mono = i;
+                                            tofMonoisotopeCheckArray[i, j] = true;
+                                            peakNumberMono = i;
                                         }
                                     }
-                                    if (i > j && peak_number_mono > j)
+                                    if (i > j && peakNumberMono > j)
                                     {
-                                        PEAK_COUNTER = false;
+                                        peakCounter = false;
                                         if (i - j > 1 && (charge != 1)) // verifying that intensities of peaks in between the putative isotopic peaks are less than that of both isotopes
                                         {
-                                            for (int k = j + 1; k <= i - 1; ++k)
+                                            for (var k = j + 1; k <= i - 1; ++k)
                                             {
-                                                if (peptide_local_max[k] > peptide_local_max[i] || peptide_local_max[k] > peptide_local_max[j] || PEAK_COUNTER)
+                                                if (peptideLocalMax[k] > peptideLocalMax[i] || peptideLocalMax[k] > peptideLocalMax[j] || peakCounter)
                                                 {
-                                                    TOF_MONOISOTOPE[i, j] = false;
-                                                    PEAK_COUNTER = true;
+                                                    tofMonoisotopeCheckArray[i, j] = false;
+                                                    peakCounter = true;
                                                 }
                                                 else
                                                 {
-                                                    peak_number_mono = j;
-                                                    TOF_MONOISOTOPE[i, j] = true;
+                                                    peakNumberMono = j;
+                                                    tofMonoisotopeCheckArray[i, j] = true;
                                                 }
                                             }
                                         }
                                         else
                                         {
-                                            TOF_MONOISOTOPE[i, j] = true;
-                                            peak_number_mono = j;
+                                            tofMonoisotopeCheckArray[i, j] = true;
+                                            peakNumberMono = j;
                                         }
                                     }
                                 }
@@ -826,110 +680,117 @@ namespace UIMF_DataViewer.PostProcessing
             }
 
             // check if monoisotopic peak was ever found
-            TOF_MONOISOTOPE_FOUND = false;
-            for (i = 0; i < 10; i++)
-                for (j = 0; j < 10; j++)
+            var tofMonoisotopeFound = false;
+            for (var i = 0; i < 10; i++)
+                for (var j = 0; j < 10; j++)
                 {
-                    if (TOF_MONOISOTOPE[i, j])
-                        TOF_MONOISOTOPE_FOUND = true;
+                    if (tofMonoisotopeCheckArray[i, j])
+                        tofMonoisotopeFound = true;
                 }
 
-            if (peak_number_mono > 10 || !TOF_MONOISOTOPE_FOUND)
-                TOF_monoisotope = 0;
-            else if (TOF_MONOISOTOPE_FOUND)
+            var tofMonoisotope = 0.0;
+            if (peakNumberMono > 10 || !tofMonoisotopeFound)
+                tofMonoisotope = 0;
+            else if (tofMonoisotopeFound)
             {
                 // if PeakPicking.APEX peak picking - return TOF monoisotope from the next line
-                if (peak_picking == PeakPicking.APEX)
+                if (peakPicking == PeakPicking.APEX)
                 {
-                    TOF_monoisotope = (double)Pos_peptide_max[peak_number_mono];
-                    peptide_monoisotope_max = peptide_local_max[peak_number_mono];
+                    tofMonoisotope = (double)posPeptideMaxMatches[peakNumberMono];
                 }
 
                 // if THREE POINT QUADRATIC peak picking - return TOF monoisotope after routine below
-                if (peak_picking == PeakPicking.THREE_POINT_QUADRATIC)
+                if (peakPicking == PeakPicking.THREE_POINT_QUADRATIC)
                 {
-                    for (i = 0; i < 3; ++i)
+                    // three point quadratic declarations
+                    var sumX4 = 0.0;
+                    var sumX3 = 0.0;
+                    var sumX2 = 0.0;
+                    var sumX = 0.0;
+                    var sumYx2 = 0.0;
+                    var sumYx = 0.0;
+                    var sumY = 0.0;
+                    var posPeptideMax = 0;
+
+                    for (var i = 0; i < 3; ++i)
                     {
-                        //sum_x4 = sum_x4 + Math.Pow((double)((Pos_peptide_max[peak_number_mono]+sizeof(double)*(i-1))/sizeof(double) - fSpectrumNumber * NumElementsIn)*AcquisitionBin + offset_mariner,4);
-                        sum_x4 = sum_x4 + Math.Pow(i, 4);
-                        sum_x3 = sum_x3 + Math.Pow(i, 3);
-                        sum_x2 = sum_x2 + Math.Pow(i, 2);
-                        sum_x = sum_x + i;
+                        //sum_x4 = sum_x4 + Math.Pow((double)((posPeptideMaxMatches[peak_number_mono]+sizeof(double)*(i-1))/sizeof(double) - fSpectrumNumber * NumElementsIn)*AcquisitionBin + offset_mariner,4);
+                        sumX4 = sumX4 + Math.Pow(i, 4);
+                        sumX3 = sumX3 + Math.Pow(i, 3);
+                        sumX2 = sumX2 + Math.Pow(i, 2);
+                        sumX = sumX + i;
 
-                        pos_peptide_max = Pos_peptide_max[peak_number_mono] + (i - 1);
+                        posPeptideMax = posPeptideMaxMatches[peakNumberMono] + (i - 1);
 
-                        sum_yx2 = sum_yx2 + this.sum_intensity2[pos_peptide_max] * i * i;
-                        sum_yx = sum_yx + this.sum_intensity2[pos_peptide_max] * i;
-                        sum_y = sum_y + this.sum_intensity2[pos_peptide_max];
+                        sumYx2 = sumYx2 + sumIntensity2[posPeptideMax] * i * i;
+                        sumYx = sumYx + sumIntensity2[posPeptideMax] * i;
+                        sumY = sumY + sumIntensity2[posPeptideMax];
                     }
 
-                    double[,] local_Variable = {{sum_x4, sum_x3, sum_x2, sum_yx2},
-                                           {sum_x3, sum_x2, sum_x, sum_yx},
-                                           {sum_x2, sum_x,  3, sum_y}};
+                    double[,] variable =
+                    {
+                        {sumX4, sumX3, sumX2, sumYx2},
+                        {sumX3, sumX2, sumX, sumYx},
+                        {sumX2, sumX, 3, sumY}
+                    };
 
-                    pVariable = (double[,])local_Variable.Clone();
+                    OnQuadraticLeastSquareFit(variable, out var coefficientA, out var coefficientB, out var coefficientC);
 
-                    OnQuadraticLeastSquareFit(pVariable, out pCoefficientA, out pCoefficientB, out pCoefficientC);
-
-                    if (pCoefficientA != 0)
-                        TOF_monoisotope = -pCoefficientB / (2 * pCoefficientA);
+                    if (coefficientA != 0)
+                        tofMonoisotope = -coefficientB / (2 * coefficientA);
                     else
-                        TOF_monoisotope = 0;
+                        tofMonoisotope = 0;
 
-                    TOF_monoisotope = TOF_monoisotope + (this.arrival_time_TOF2[pos_peptide_max - 2] * this.bin_Width);
+                    tofMonoisotope = tofMonoisotope + (arrivalTimeTof2[posPeptideMax - 2] * tofBinWidth);
 
-                    //   if (TOF_monoisotope > 110000)
-                    //      TOF_monoisotope = 0; //set TOF to zero if outside of m/z range
-
-                    peptide_monoisotope_max = peptide_local_max[peak_number_mono];
+                    //   if (tofMonoisotope > 110000)
+                    //      tofMonoisotope = 0; //set TOF to zero if outside of m/z range
                 }
             }
-            //MessageBox.Show(this, "TOF_monoisotope: "+TOF_monoisotope.ToString());
-            TOF_monoisotope = TOF_monoisotope / 1000;
+            //MessageBox.Show(this, "tofMonoisotope: "+tofMonoisotope.ToString());
+            tofMonoisotope = tofMonoisotope / 1000;
 
-            return TOF_monoisotope;
+            return tofMonoisotope;
         }
 
-        void OnQuadraticLeastSquareFit(double[,] Variable, out double pCoefficientA, out double pCoefficientB, out double pCoefficientC)
+        void OnQuadraticLeastSquareFit(double[,] variable, out double coefficientA, out double coefficientB, out double coefficientC)
         {
-            double Determinant0, DeterminantA, DeterminantB, DeterminantC;
             int i = 0, j = 0;
 
-            pCoefficientA = 0;
-            pCoefficientB = 0;
-            pCoefficientC = 0;
+            coefficientA = 0;
+            coefficientB = 0;
+            coefficientC = 0;
 
-            Determinant0 = Math.Pow(-1, i + j) * Variable[i, j] * (Variable[i + 1, j + 1] * Variable[i + 2, j + 2] - Variable[i + 2, j + 1] * Variable[i + 1, j + 2]);
-            Determinant0 = Determinant0 + Math.Pow(-1, i + j + 1) * Variable[i, j + 1] * (Variable[i + 1, j] * Variable[i + 2, j + 2] - Variable[i + 2, j] * Variable[i + 1, j + 2]);
-            Determinant0 = Determinant0 + Math.Pow(-1, i + j + 2) * Variable[i, j + 2] * (Variable[i + 1, j] * Variable[i + 2, j + 1] - Variable[i + 2, j] * Variable[i + 1, j + 1]);
+            var determinant0 = Math.Pow(-1, i + j) * variable[i, j] * (variable[i + 1, j + 1] * variable[i + 2, j + 2] - variable[i + 2, j + 1] * variable[i + 1, j + 2]) +
+                               Math.Pow(-1, i + j + 1) * variable[i, j + 1] * (variable[i + 1, j] * variable[i + 2, j + 2] - variable[i + 2, j] * variable[i + 1, j + 2]) +
+                               Math.Pow(-1, i + j + 2) * variable[i, j + 2] * (variable[i + 1, j] * variable[i + 2, j + 1] - variable[i + 2, j] * variable[i + 1, j + 1]);
 
-            DeterminantA = Math.Pow(-1, i + j) * Variable[i, j + 3] * (Variable[i + 1, j + 1] * Variable[i + 2, j + 2] - Variable[i + 2, j + 1] * Variable[i + 1, j + 2]);
-            DeterminantA = DeterminantA + Math.Pow(-1, i + j + 1) * Variable[i, j + 1] * (Variable[i + 1, j + 3] * Variable[i + 2, j + 2] - Variable[i + 2, j + 3] * Variable[i + 1, j + 2]);
-            DeterminantA = DeterminantA + Math.Pow(-1, i + j + 2) * Variable[i, j + 2] * (Variable[i + 1, j + 3] * Variable[i + 2, j + 1] - Variable[i + 2, j + 3] * Variable[i + 1, j + 1]);
+            var determinantA = Math.Pow(-1, i + j) * variable[i, j + 3] * (variable[i + 1, j + 1] * variable[i + 2, j + 2] - variable[i + 2, j + 1] * variable[i + 1, j + 2]) +
+                               Math.Pow(-1, i + j + 1) * variable[i, j + 1] * (variable[i + 1, j + 3] * variable[i + 2, j + 2] - variable[i + 2, j + 3] * variable[i + 1, j + 2]) +
+                               Math.Pow(-1, i + j + 2) * variable[i, j + 2] * (variable[i + 1, j + 3] * variable[i + 2, j + 1] - variable[i + 2, j + 3] * variable[i + 1, j + 1]);
 
-            DeterminantB = Math.Pow(-1, i + j) * Variable[i, j] * (Variable[i + 1, j + 3] * Variable[i + 2, j + 2] - Variable[i + 2, j + 3] * Variable[i + 1, j + 2]);
-            DeterminantB = DeterminantB + Math.Pow(-1, i + j + 1) * Variable[i, j + 3] * (Variable[i + 1, j] * Variable[i + 2, j + 2] - Variable[i + 2, j] * Variable[i + 1, j + 2]);
-            DeterminantB = DeterminantB + Math.Pow(-1, i + j + 2) * Variable[i, j + 2] * (Variable[i + 1, j] * Variable[i + 2, j + 3] - Variable[i + 2, j] * Variable[i + 1, j + 3]);
+            var determinantB = Math.Pow(-1, i + j) * variable[i, j] * (variable[i + 1, j + 3] * variable[i + 2, j + 2] - variable[i + 2, j + 3] * variable[i + 1, j + 2]) +
+                               Math.Pow(-1, i + j + 1) * variable[i, j + 3] * (variable[i + 1, j] * variable[i + 2, j + 2] - variable[i + 2, j] * variable[i + 1, j + 2]) +
+                               Math.Pow(-1, i + j + 2) * variable[i, j + 2] * (variable[i + 1, j] * variable[i + 2, j + 3] - variable[i + 2, j] * variable[i + 1, j + 3]);
 
-            DeterminantC = Math.Pow(-1, i + j) * Variable[i, j] * (Variable[i + 1, j + 1] * Variable[i + 2, j + 3] - Variable[i + 2, j + 1] * Variable[i + 1, j + 3]);
-            DeterminantC = DeterminantC + Math.Pow(-1, i + j + 1) * Variable[i, j + 1] * (Variable[i + 1, j] * Variable[i + 2, j + 3] - Variable[i + 2, j] * Variable[i + 1, j + 3]);
-            DeterminantC = DeterminantC + Math.Pow(-1, i + j + 2) * Variable[i, j + 3] * (Variable[i + 1, j] * Variable[i + 2, j + 1] - Variable[i + 2, j] * Variable[i + 1, j + 1]);
+            var determinantC = Math.Pow(-1, i + j) * variable[i, j] * (variable[i + 1, j + 1] * variable[i + 2, j + 3] - variable[i + 2, j + 1] * variable[i + 1, j + 3]) +
+                               Math.Pow(-1, i + j + 1) * variable[i, j + 1] * (variable[i + 1, j] * variable[i + 2, j + 3] - variable[i + 2, j] * variable[i + 1, j + 3]) +
+                               Math.Pow(-1, i + j + 2) * variable[i, j + 3] * (variable[i + 1, j] * variable[i + 2, j + 1] - variable[i + 2, j] * variable[i + 1, j + 1]);
 
-            if (Determinant0 != 0)
+            if (determinant0 != 0)
             {
-                pCoefficientA = DeterminantA / Determinant0;
-                pCoefficientB = DeterminantB / Determinant0;
-                pCoefficientC = DeterminantC / Determinant0;
+                coefficientA = determinantA / determinant0;
+                coefficientB = determinantB / determinant0;
+                coefficientC = determinantC / determinant0;
             }
             else
             {
-                pCoefficientA = 0;
-                pCoefficientB = 0;
-                pCoefficientC = 0;
+                coefficientA = 0;
+                coefficientB = 0;
+                coefficientC = 0;
             }
         }
 
-        double bin_Width = 0;
         public void InitializeCalibrants(double binWidth, double calibrationSlope, double calibrationIntercept)
         {
             RxApp.MainThreadScheduler.Schedule(() =>
@@ -937,30 +798,28 @@ namespace UIMF_DataViewer.PostProcessing
                 using (Calibrants.SuppressChangeNotifications())
                 {
                     Calibrants.Clear();
-                    Calibrants.AddRange(CalibrantInfo.GetDefaultCalibrants());
+                    Calibrants.AddRange(CalibrantInfo.GetCalibrantSet(CurrentCalibrantSet, CustomCalibrantsFilePath));
                 }
             });
 
             CalculateCalibrantExperimentalValues(binWidth, calibrationSlope, calibrationIntercept);
-            for (int i = 0; (i < this.settings_Calibration.NumCalibrants) && (i < this.Calibrants.Count); i++)
-                this.Calibrants[i].Enabled = this.settings_Calibration.IonSelection[i];
         }
 
         public void CalculateCalibrantExperimentalValues(double binWidth, double calibrationSlope, double calibrationIntercept)
         {
-            this.bin_Width = binWidth;
+            tofBinWidth = binWidth;
 
-            this.set_ExperimentalCoefficients(calibrationSlope, calibrationIntercept);
+            SetExperimentalCoefficients(calibrationSlope, calibrationIntercept);
             RxApp.MainThreadScheduler.Schedule(() =>
             {
                 foreach (var calibrant in Calibrants)
                 {
                     try
                     {
-                        calibrant.TOF = Math.Sqrt(calibrant.Mz) / this.ExperimentalSlope + this.ExperimentalIntercept;
+                        calibrant.TOF = Math.Sqrt(calibrant.Mz) / ExperimentalSlope + ExperimentalIntercept;
                         calibrant.Bins = (calibrant.TOF) * 1000.0 / binWidth;
 
-                        // MessageBox.Show(this.ExperimentalSlope.ToString() + " " + this.ExperimentalIntercept.ToString());
+                        // MessageBox.Show(ExperimentalSlope.ToString() + " " + ExperimentalIntercept.ToString());
                     }
                     catch (Exception ex)
                     {
@@ -972,72 +831,37 @@ namespace UIMF_DataViewer.PostProcessing
 
         // this is all dealing with calibrants
 
-        private void num_CalculateCalibration_ValueChanged(object sender, EventArgs e)
+        private void Recalculate2PointCalibration()
         {
-            double bin1 = Convert.ToDouble(this.Ion1TOFBin);
-            double bin2 = Convert.ToDouble(this.Ion2TOFBin);
-            double mz1 = Convert.ToDouble(this.Ion1Mz);
-            double mz2 = Convert.ToDouble(this.Ion2Mz);
-
-            if ((bin1 == 0.0) || (bin2 == 0.0) || (mz1 == 0.0) || (mz2 == 0.0))
+            if (Ion1TOFBin.Equals(0) || Ion2TOFBin.Equals(0) || Ion1Mz.Equals(0) || Ion2Mz.Equals(0))
             {
                 return;
             }
 
-            RxApp.MainThreadScheduler.Schedule(() =>
-            {
-                this.CalculatedIntercept = (Math.Sqrt(mz2) * bin1 - Math.Sqrt(mz1) * bin2) / (Math.Sqrt(mz2) - Math.Sqrt(mz1));
-                this.CalculatedSlope = Math.Sqrt(mz1) / (bin1 - this.CalculatedIntercept);
-            });
+            // This function is only triggered by UI-bound property-changed events, so we don't need to wrap with with RxApp.MainThreadScheduler.Schedule().
+            CalculatedIntercept = (Math.Sqrt(Ion2Mz) * Ion1TOFBin - Math.Sqrt(Ion1Mz) * Ion2TOFBin) / (Math.Sqrt(Ion2Mz) - Math.Sqrt(Ion1Mz));
+            CalculatedSlope = Math.Sqrt(Ion1Mz) / (Ion1TOFBin - CalculatedIntercept);
         }
 
-        public void set_ExperimentalCoefficients(double slope, double intercept)
+        public void SetExperimentalCoefficients(double slope, double intercept)
         {
             RxApp.MainThreadScheduler.Schedule(() =>
             {
-                this.ExperimentalSlope = slope;
-                this.ExperimentalIntercept = intercept;
+                ExperimentalSlope = slope;
+                ExperimentalIntercept = intercept;
             });
-        }
-
-        public void update_Calibrants()
-        {
-            for (int i = 0; i < this.settings_Calibration.NumCalibrants && i < Calibrants.Count; i++)
-            {
-                this.settings_Calibration.IonSelection[i] = this.Calibrants[i].Enabled;
-            }
-        }
-
-        public void Load_Registry()
-        {
-            this.settings_Calibration = CalibrationSettings.Load(this.parent_key);
-            RxApp.MainThreadScheduler.Schedule(() =>
-            {
-                for (int i = 0; (i < this.settings_Calibration.NumCalibrants) && (i < this.Calibrants.Count); i++)
-                    this.Calibrants[i].Enabled = this.settings_Calibration.IonSelection[i];
-            });
-        }
-
-        public void Save_Registry()
-        {
-            this.settings_Calibration.NumCalibrants = this.Calibrants.Count;
-
-            this.settings_Calibration.IonSelection = new bool[this.settings_Calibration.NumCalibrants];
-            update_Calibrants();
-
-            this.settings_Calibration.Save(this.parent_key);
         }
 
         // /////////////////////////////////////////////////////////////////////////////
         // logic developed by Matt Monroe 06/23/2011
         //
-        public int get_CalibrantCountMatched()
+        public int GetCalibrantCountMatched()
         {
-            int count = 0;
+            var count = 0;
 
-            for (int j = 0; j < this.Calibrants.Count - 1; ++j)
+            for (var j = 0; j < Calibrants.Count - 1; ++j)
             {
-                if ((this.Calibrants[j].Enabled) && (Calibrants[j].TOFExperimental > 0) && (Math.Abs(Calibrants[j].ErrorPPM) < 50000.0))
+                if ((Calibrants[j].Enabled) && (Calibrants[j].TOFExperimental > 0) && (Math.Abs(Calibrants[j].ErrorPPM) < 50000.0))
                 {
                     count++;
                 }
@@ -1045,13 +869,13 @@ namespace UIMF_DataViewer.PostProcessing
             return count;
         }
 
-        public int get_CalibrantCountValid()
+        public int GetCalibrantCountValid()
         {
-            int count = 0;
+            var count = 0;
 
-            for (int j = 0; j < this.Calibrants.Count - 1; ++j)
+            for (var j = 0; j < Calibrants.Count - 1; ++j)
             {
-                if ((this.Calibrants[j].Enabled) && (Calibrants[j].TOFExperimental > 0) && (Math.Abs(Calibrants[j].ErrorPPM) < 10.0))
+                if ((Calibrants[j].Enabled) && (Calibrants[j].TOFExperimental > 0) && (Math.Abs(Calibrants[j].ErrorPPM) < 10.0))
                 {
                     count++;
                 }
@@ -1059,14 +883,14 @@ namespace UIMF_DataViewer.PostProcessing
             return count;
         }
 
-        public double get_AverageMassError()
+        public double GetAverageMassError()
         {
-            int count = 0;
-            double error = 0.0;
+            var count = 0;
+            var error = 0.0;
 
-            for (int j = 0; j < this.Calibrants.Count - 1; ++j)
+            for (var j = 0; j < Calibrants.Count - 1; ++j)
             {
-                if ((this.Calibrants[j].Enabled) && (Calibrants[j].TOFExperimental > 0) && (Math.Abs(Calibrants[j].ErrorPPM) < 50000.0))
+                if ((Calibrants[j].Enabled) && (Calibrants[j].TOFExperimental > 0) && (Math.Abs(Calibrants[j].ErrorPPM) < 50000.0))
                 {
                     count++;
                     error += Calibrants[j].ErrorPPM;
@@ -1076,14 +900,14 @@ namespace UIMF_DataViewer.PostProcessing
             return error / (double)count;
         }
 
-        public double get_AverageAbsoluteValueMassError()
+        public double GetAverageAbsoluteValueMassError()
         {
-            int count = 0;
-            double error = 0.0;
+            var count = 0;
+            var error = 0.0;
 
-            for (int j = 0; j < this.Calibrants.Count - 1; ++j)
+            for (var j = 0; j < Calibrants.Count - 1; ++j)
             {
-                if ((this.Calibrants[j].Enabled) && (Calibrants[j].TOFExperimental > 0) && (Math.Abs(Calibrants[j].ErrorPPM) < 50000.0))
+                if ((Calibrants[j].Enabled) && (Calibrants[j].TOFExperimental > 0) && (Math.Abs(Calibrants[j].ErrorPPM) < 50000.0))
                 {
                     count++;
                     error += Math.Abs(Calibrants[j].ErrorPPM);
@@ -1093,37 +917,84 @@ namespace UIMF_DataViewer.PostProcessing
             return error / (double)count;
         }
 
-        public int disable_CalibrantMaxPPMError()
+        public int DisableCalibrantMaxPPMError()
         {
-            int count_calibrants = 0;
-            double error_max = 0.0;
-            int index_max = 0;
+            var countCalibrants = 0;
+            var errorMax = 0.0;
+            var indexMax = 0;
 
-            for (int j = 0; j < this.Calibrants.Count - 1; ++j)
+            for (var j = 0; j < Calibrants.Count - 1; ++j)
             {
-                if (this.Calibrants[j].Enabled)
+                if (Calibrants[j].Enabled)
                 {
-                    count_calibrants++;
-                    if (error_max < Math.Abs(Calibrants[j].ErrorPPM))
+                    countCalibrants++;
+                    if (errorMax < Math.Abs(Calibrants[j].ErrorPPM))
                     {
-                        error_max = Math.Abs(Calibrants[j].ErrorPPM);
-                        index_max = j;
+                        errorMax = Math.Abs(Calibrants[j].ErrorPPM);
+                        indexMax = j;
                     }
                 }
             }
 
-            count_calibrants--;
+            countCalibrants--;
 
-            RxApp.MainThreadScheduler.Schedule(() => this.Calibrants[index_max].Enabled = false);
+            RxApp.MainThreadScheduler.Schedule(() => Calibrants[indexMax].Enabled = false);
 
-            return count_calibrants;
+            return countCalibrants;
+        }
+
+        private void BrowseForCalibrantsFile()
+        {
+            var fileBrowser = new CommonOpenFileDialog
+            {
+                Title = "Select Custom Calibrants File",
+                Filters = { new CommonFileDialogFilter("Tab-separated", "*.tsv;*.txt"), new CommonFileDialogFilter("Comma-separated", "*.csv") }
+            };
+
+            if (!string.IsNullOrWhiteSpace(CustomCalibrantsFilePath))
+            {
+                var dir = Path.GetDirectoryName(CustomCalibrantsFilePath);
+                if (string.IsNullOrWhiteSpace(dir))
+                {
+                    dir = ".";
+                }
+
+                if (Directory.Exists(dir))
+                {
+                    fileBrowser.InitialDirectory = Path.GetDirectoryName(CustomCalibrantsFilePath);
+                }
+            }
+
+            var result = fileBrowser.ShowDialog();
+            if (result == CommonFileDialogResult.Ok)
+            {
+                // Just set the backing variable to something that is not 'custom', to allow the normal handling to handle everything else.
+                currentCalibrantSet = CalibrantSet.PolyalaninesNegative;
+                RxApp.MainThreadScheduler.Schedule(() =>
+                {
+                    CustomCalibrantsFilePath = fileBrowser.FileName;
+                    CurrentCalibrantSet = CalibrantSet.Custom;
+                });
+            }
+        }
+
+        private void LoadCalibrantSet(CalibrantSet calibrantSet)
+        {
+            var calibrants = CalibrantInfo.GetCalibrantSet(calibrantSet, CustomCalibrantsFilePath);
+
+            using (Calibrants.SuppressChangeNotifications())
+            {
+                Calibrants.Clear();
+                Calibrants.AddRange(calibrants);
+            }
+
+            // Set the theoretical experimental values
+            CalculateCalibrantExperimentalValues(tofBinWidth, ExperimentalSlope, ExperimentalIntercept);
         }
 
         private void DecodeDirectoryBrowse()
         {
-            var folderBrowser = new CommonOpenFileDialog();
-            folderBrowser.IsFolderPicker = true;
-            folderBrowser.Title = "Select Decoded UIMF Experiment Folder";
+            var folderBrowser = new CommonOpenFileDialog { IsFolderPicker = true, Title = "Select Decoded UIMF Experiment Folder" };
             if (Directory.Exists(DecodeSaveDirectory))
             {
                 folderBrowser.InitialDirectory = DecodeSaveDirectory;
@@ -1138,9 +1009,7 @@ namespace UIMF_DataViewer.PostProcessing
 
         private void CompressDirectoryBrowse()
         {
-            var folderBrowser = new CommonOpenFileDialog();
-            folderBrowser.IsFolderPicker = true;
-            folderBrowser.Title = "Select Compressed 1GHz UIMF Experiment Folder";
+            var folderBrowser = new CommonOpenFileDialog { IsFolderPicker = true, Title = "Select Compressed 1GHz UIMF Experiment Folder" };
             if (Directory.Exists(CompressSaveDirectory))
             {
                 folderBrowser.InitialDirectory = CompressSaveDirectory;
@@ -1167,31 +1036,29 @@ namespace UIMF_DataViewer.PostProcessing
         //
         private void ApplyCalculatedCalibration()
         {
-            this.uimfReader.UpdateCalibrationCoefficients(this.uimfReader.CurrentFrameIndex, (float)this.CalculatedSlope,
-                (float)this.CalculatedIntercept);
+            uimfReader.UpdateCalibrationCoefficients(uimfReader.CurrentFrameIndex, CalculatedSlope,
+                CalculatedIntercept);
 
             OnCalibrationChanged();
 
-            this.InitializeCalibrants(this.uimfReader.UimfGlobalParams.BinWidth, this.CalculatedSlope, this.CalculatedIntercept);
+            InitializeCalibrants(uimfReader.UimfGlobalParams.BinWidth, CalculatedSlope, CalculatedIntercept);
         }
 
         private void ApplyCalibrationAllFrames()
         {
-            //MessageBox.Show((Convert.ToDouble(this.tb_CalA.Text) * 10000.0).ToString() + "  " + this.pnl_postProcessing.Experimental_Slope.ToString());
-            this.uimfReader.UpdateAllCalibrationCoefficients((float)this.get_Experimental_Slope(),
-                (float)this.get_Experimental_Intercept());
+            //MessageBox.Show((Convert.ToDouble(tb_CalA.Text) * 10000.0).ToString() + "  " + pnl_postProcessing.ExperimentalSlope.ToString());
+            uimfReader.UpdateAllCalibrationCoefficients(ExperimentalSlope, ExperimentalIntercept);
 
             OnCalibrationChanged();
 
-            this.InitializeCalibrants(this.uimfReader.UimfGlobalParams.BinWidth, this.get_Experimental_Slope(), this.get_Experimental_Intercept());
+            InitializeCalibrants(uimfReader.UimfGlobalParams.BinWidth, ExperimentalSlope, ExperimentalIntercept);
         }
 
         private void CalibrateFrames()
         {
             var flagAutoCalibrate = false;
-            this.update_Calibrants();
 
-            this.CalibrateFrame(this.uimfReader.CurrentFrameIndex, out var slope, out var intercept, out _);
+            CalibrateFrame(uimfReader.CurrentFrameIndex, out var slope, out var intercept, out _);
 
             if (double.IsNaN(slope) || double.IsNaN(intercept))
             {
@@ -1206,168 +1073,154 @@ namespace UIMF_DataViewer.PostProcessing
             }
             else
             {
-                this.uimfReader.MzCalibration.K = slope / 10000.0;
-                this.uimfReader.MzCalibration.T0 = intercept * 10000.0;
+                uimfReader.MzCalibration.K = slope / 10000.0;
+                uimfReader.MzCalibration.T0 = intercept * 10000.0;
             }
 
             if (flagAutoCalibrate)
-                this.uimfReader.UpdateAllCalibrationCoefficients(slope, intercept, flagAutoCalibrate);
+                uimfReader.UpdateAllCalibrationCoefficients(slope, intercept, flagAutoCalibrate);
 
             OnCalibrationChanged();
         }
 
-        private void CalibrateFrame(int frame_index, out double calibration_slope, out double calibration_intercept, out int total_calibrants_matched)
+        private void CalibrateFrame(int frameIndex, out double calibrationSlope, out double calibrationIntercept, out int totalCalibrantsMatched)
         {
-            int i, j, k;
-            int scans;
+            var maximumSpectrum = 0;
 
-            int uimf_bins;
-            int maximum_spectrum = 0;
-
-            double[] nonzero_bins;
-            double[] nonzero_intensities;
-            int above_noise_bins = 0;
-            int compressed_bins = 0;
-            int added_zeros = 0;
-
-            int NOISE_REGION = 50;
-            int noise_peaks = 0;
-            int noise_intensity = 0;
+            var noiseRegion = 50;
             int compression;
-            double[] summed_spectrum;
-            bool[] flag_above_noise;
-            double[] spectrum = new double[this.uimfReader.UimfGlobalParams.Bins];
-            int[] max_spectrum = new int[this.uimfReader.UimfGlobalParams.Bins];
-            int[] bins = new int[this.uimfReader.UimfGlobalParams.Bins];
+            var maxSpectrum = new int[uimfReader.UimfGlobalParams.Bins];
 
-            double slope = this.uimfReader.UimfFrameParams.CalibrationSlope;
-            double intercept = this.uimfReader.UimfFrameParams.CalibrationIntercept;
+            var slope = uimfReader.UimfFrameParams.CalibrationSlope;
+            var intercept = uimfReader.UimfFrameParams.CalibrationIntercept;
 
-            int CalibrantCountMatched = 100;
-            int CalibrantCountValid = 0;
-            double AverageAbsoluteValueMassError = 0.0;
-            double AverageMassError = 0.0;
+            var calibrantCountMatched = 100;
 
-            if (this.uimfReader.UimfGlobalParams.BinWidth == .25)
+            if (uimfReader.UimfGlobalParams.BinWidth.Equals(0.25))
+                compression = 4;
+            else if (uimfReader.UimfGlobalParams.BinWidth.Equals(0.50))
                 compression = 4;
             else
                 compression = 1;
 
-            calibration_slope = -1.0;
-            calibration_intercept = -1.0;
-            total_calibrants_matched = 0;
+            calibrationSlope = -1.0;
+            calibrationIntercept = -1.0;
+            totalCalibrantsMatched = 0;
 
-            summed_spectrum = new double[this.uimfReader.UimfGlobalParams.Bins / compression];
-            flag_above_noise = new bool[this.uimfReader.UimfGlobalParams.Bins / compression];
+            var summedSpectrum = new double[uimfReader.UimfGlobalParams.Bins / compression];
+            var flagAboveNoise = new bool[uimfReader.UimfGlobalParams.Bins / compression];
 
-            if (CalibrantCountMatched > 4)
+            if (calibrantCountMatched > 4)
             {
                 // clear arrays
-                for (i = 0; i < this.uimfReader.UimfGlobalParams.Bins / compression; i++)
+                int i;
+                for (i = 0; i < uimfReader.UimfGlobalParams.Bins / compression; i++)
                 {
-                    flag_above_noise[i] = false;
-                    max_spectrum[i] = 0;
-                    summed_spectrum[i] = 0;
-                    max_spectrum[i] = 0;
+                    flagAboveNoise[i] = false;
+                    maxSpectrum[i] = 0;
+                    summedSpectrum[i] = 0;
+                    maxSpectrum[i] = 0;
                 }
 
-                bins = this.uimfReader.GetSumScans(this.uimfReader.ArrayFrameNum[frame_index], 0, this.uimfReader.UimfFrameParams.Scans);
+                var bins = uimfReader.GetSumScans(uimfReader.ArrayFrameNum[frameIndex], 0, uimfReader.UimfFrameParams.Scans);
 
+                int j;
                 for (j = 0; j < bins.Length; j++)
                 {
-                    summed_spectrum[j / compression] += bins[j];
+                    summedSpectrum[j / compression] += bins[j];
 
-                    if (max_spectrum[j / compression] < summed_spectrum[j / compression])
+                    if (maxSpectrum[j / compression] < summedSpectrum[j / compression])
                     {
-                        max_spectrum[j / compression] = (int)summed_spectrum[j / compression];
+                        maxSpectrum[j / compression] = (int)summedSpectrum[j / compression];
 
-                        if (maximum_spectrum < summed_spectrum[j / compression])
-                            maximum_spectrum = (int)summed_spectrum[j / compression];
+                        if (maximumSpectrum < summedSpectrum[j / compression])
+                            maximumSpectrum = (int)summedSpectrum[j / compression];
                     }
                 }
 
                 // determine noise level and filter summed spectrum
-                for (j = NOISE_REGION / 2; (j < (this.uimfReader.UimfGlobalParams.Bins / compression) - NOISE_REGION); j++)
+                for (j = noiseRegion / 2; (j < (uimfReader.UimfGlobalParams.Bins / compression) - noiseRegion); j++)
                 {
                     // get the total intensity and divide by the number of peaks
-                    noise_peaks = 0;
-                    noise_intensity = 0;
-                    for (k = j - (NOISE_REGION / 2); k < j + (NOISE_REGION / 2); k++)
+                    var noisePeaks = 0;
+                    var noiseIntensity = 0;
+                    int k;
+                    for (k = j - (noiseRegion / 2); k < j + (noiseRegion / 2); k++)
                     {
-                        if (max_spectrum[k] > 0)
+                        if (maxSpectrum[k] > 0)
                         {
-                            noise_intensity += max_spectrum[k];
-                            noise_peaks++;
+                            noiseIntensity += maxSpectrum[k];
+                            noisePeaks++;
                         }
                     }
 
-                    if (noise_peaks > 0)
+                    if (noisePeaks > 0)
                     {
-                        if (max_spectrum[j] > noise_intensity / noise_peaks) // the average level...
-                            flag_above_noise[j] = true;
+                        if (maxSpectrum[j] > noiseIntensity / noisePeaks) // the average level...
+                            flagAboveNoise[j] = true;
                     }
                     else
-                        flag_above_noise[j] = false;
+                        flagAboveNoise[j] = false;
                 }
 
                 // calculate size of the array of filtered sum spectrum for calibration routine
-                above_noise_bins = 0;
-                added_zeros = 0;
-                for (i = 1; i < this.uimfReader.UimfGlobalParams.Bins / compression; i++)
+                var aboveNoiseBins = 0;
+                var addedZeros = 0;
+                for (i = 1; i < uimfReader.UimfGlobalParams.Bins / compression; i++)
                 {
-                    if (flag_above_noise[i])
+                    if (flagAboveNoise[i])
                     {
-                        above_noise_bins++;
+                        aboveNoiseBins++;
                     }
-                    else if (flag_above_noise[i - 1])
+                    else if (flagAboveNoise[i - 1])
                     {
-                        added_zeros += 2;
+                        addedZeros += 2;
                     }
                 }
 
                 // compress the arrays to nonzero with greater than noiselevel;
-                compressed_bins = 0;
-                nonzero_bins = new double[above_noise_bins + added_zeros];
-                nonzero_intensities = new double[above_noise_bins + added_zeros];
-                for (i = 0; (i < (this.uimfReader.UimfGlobalParams.Bins / compression) - 1) && (compressed_bins < above_noise_bins + added_zeros); i++)
+                var compressedBins = 0;
+                var nonzeroBins = new double[aboveNoiseBins + addedZeros];
+                var nonzeroIntensities = new double[aboveNoiseBins + addedZeros];
+                for (i = 0; (i < (uimfReader.UimfGlobalParams.Bins / compression) - 1) && (compressedBins < aboveNoiseBins + addedZeros); i++)
                 {
-                    if (flag_above_noise[i])
+                    if (flagAboveNoise[i])
                     {
-                        nonzero_bins[compressed_bins] = i;
-                        nonzero_intensities[compressed_bins] = summed_spectrum[i];
-                        compressed_bins++;
+                        nonzeroBins[compressedBins] = i;
+                        nonzeroIntensities[compressedBins] = summedSpectrum[i];
+                        compressedBins++;
                     }
-                    else if ((i > 0) && ((flag_above_noise[i - 1] || flag_above_noise[i + 1])))
+                    else if ((i > 0) && ((flagAboveNoise[i - 1] || flagAboveNoise[i + 1])))
                     {
-                        nonzero_bins[compressed_bins] = i;
-                        nonzero_intensities[compressed_bins] = 0;
-                        compressed_bins++;
+                        nonzeroBins[compressedBins] = i;
+                        nonzeroIntensities[compressedBins] = 0;
+                        compressedBins++;
                     }
                 }
 
                 // pass arrays into calibration routine
-                this.CalibrateFrame(summed_spectrum, nonzero_intensities, nonzero_bins,
-                    this.uimfReader.UimfGlobalParams.BinWidth * (double)compression, this.uimfReader.UimfGlobalParams.Bins / compression,
-                    this.uimfReader.UimfFrameParams.Scans, slope, intercept);
+                CalibrateFrame(summedSpectrum, nonzeroIntensities, nonzeroBins,
+                    uimfReader.UimfGlobalParams.BinWidth * (double)compression, uimfReader.UimfGlobalParams.Bins / compression,
+                    uimfReader.UimfFrameParams.Scans, slope, intercept);
 
-                CalibrantCountMatched = this.get_CalibrantCountMatched();
-                CalibrantCountValid = this.get_CalibrantCountValid();
-                AverageAbsoluteValueMassError = this.get_AverageAbsoluteValueMassError();
-                AverageMassError = this.get_AverageMassError();
+                calibrantCountMatched = GetCalibrantCountMatched();
+                var calibrantCountValid = GetCalibrantCountValid();
+                GetAverageAbsoluteValueMassError();
+                GetAverageMassError();
 
-                if (CalibrantCountMatched == CalibrantCountValid)
+                if (calibrantCountMatched == calibrantCountValid)
                 {
                     // done, slope and intercept acceptable
-                    calibration_slope = this.get_Experimental_Slope();
-                    calibration_intercept = this.get_Experimental_Intercept();
-                    total_calibrants_matched = CalibrantCountMatched;
+                    calibrationSlope = ExperimentalSlope;
+                    calibrationIntercept = ExperimentalIntercept;
+                    totalCalibrantsMatched = calibrantCountMatched;
                     //break;
                 }
-                else if (CalibrantCountMatched > 4)
-                    this.disable_CalibrantMaxPPMError();
+                else if (calibrantCountMatched > 4)
+                    DisableCalibrantMaxPPMError();
             }
 
-            this.uimfReader.ClearFrameParametersCache();
+            uimfReader.ClearFrameParametersCache();
         }
 
         #endregion
@@ -1379,95 +1232,88 @@ namespace UIMF_DataViewer.PostProcessing
         /// </summary>
         private void Compress4GHzTo1GHzUIMF()
         {
-            UIMFLibrary.GlobalParams gp = this.uimfReader.GetGlobalParams();
-            UIMFLibrary.FrameParams fp;
-            int i;
-            int j;
-            int k;
-            int current_frame;
-            int[] current_intensities = new int[gp.Bins / 4];
+            var gp = uimfReader.GetGlobalParams();
+            int currentFrame;
+            var currentIntensities = new int[gp.Bins / 4];
 
-            double[] array_Bins = new double[0];
-            int[] array_Intensity = new int[0];
-            var list_nzVals = new List<Tuple<int, int>>();
-            List<int> list_Scans = new List<int>();
-            List<int> list_Count = new List<int>();
+            var listNzValues = new List<Tuple<int, int>>();
 
-            Stopwatch stop_watch = new Stopwatch();
+            var stopWatch = new Stopwatch();
 
             // create new UIMF File
-            string UIMF_filename = Path.Combine(this.CompressSaveDirectory, this.CompressSaveFilename + "_1GHz.UIMF");
-            if (File.Exists(UIMF_filename))
+            var uimfFilename = Path.Combine(CompressSaveDirectory, CompressSaveFilename + "_1GHz.UIMF");
+            if (File.Exists(uimfFilename))
             {
                 if (MessageBox.Show("File Exists", "File Exists, Replace?", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
-                    File.Delete(UIMF_filename);
+                    File.Delete(uimfFilename);
                 else
                     return;
             }
 
-            UIMFLibrary.DataWriter UIMF_Writer = new UIMFLibrary.DataWriter(UIMF_filename);
-            UIMF_Writer.CreateTables(null);
+            var uimfWriter = new DataWriter(uimfFilename);
+            uimfWriter.CreateTables(null);
 
             gp.AddUpdateValue(GlobalParamKeyType.BinWidth, 1);
             gp.AddUpdateValue(GlobalParamKeyType.Bins, gp.Bins / 4);
-            UIMF_Writer.InsertGlobal(gp);
+            uimfWriter.InsertGlobal(gp);
 
-            int max_time = 0;
+            var maxTime = 0;
 
             var cancelToken = new CancellationTokenSource();
-            var prog = new ProgressViewModel(gp.NumFrames, cancelToken);
-            var progWindow = new ProgressWindow() { DataContext = prog };
-            progWindow.ShowActivated = true;
-            progWindow.Show();
+            var progress = new ProgressViewModel(gp.NumFrames, cancelToken);
+            var progressWindow = new ProgressWindow { DataContext = progress, ShowActivated = true };
+            progressWindow.Show();
 
-            for (current_frame = 0; ((current_frame < (int)this.uimfReader.CurrentFrameType) && !cancelToken.IsCancellationRequested); current_frame++)
+            for (currentFrame = 0; ((currentFrame < (int)uimfReader.CurrentFrameType) && !cancelToken.IsCancellationRequested); currentFrame++)
             {
-                prog.SetProgress(current_frame, stop_watch.ElapsedMilliseconds);
+                progress.SetProgress(currentFrame, stopWatch.ElapsedMilliseconds);
 
-                stop_watch.Reset();
-                stop_watch.Start();
+                stopWatch.Reset();
+                stopWatch.Start();
 
-                fp = this.uimfReader.GetFrameParams(current_frame);
-                UIMF_Writer.InsertFrame(current_frame, fp);
+                var fp = uimfReader.GetFrameParams(currentFrame);
+                uimfWriter.InsertFrame(currentFrame, fp);
 
+                int i;
                 for (i = 0; i < fp.Scans; i++)
                 {
+                    int j;
                     for (j = 0; j < gp.Bins; j++)
                     {
-                        current_intensities[j] = 0;
+                        currentIntensities[j] = 0;
                     }
 
-                    this.uimfReader.GetSpectrum(this.uimfReader.ArrayFrameNum[current_frame], this.uimfReader.FrameTypeDict[this.uimfReader.ArrayFrameNum[current_frame]], i, out array_Bins, out array_Intensity);
+                    uimfReader.GetSpectrum(uimfReader.ArrayFrameNum[currentFrame], uimfReader.FrameTypeDict[uimfReader.ArrayFrameNum[currentFrame]], i, out var arrayBins, out var arrayIntensity);
 
-                    for (j = 0; j < array_Bins.Length; j++)
-                        current_intensities[(int)array_Bins[j] / 4] += array_Intensity[j];
+                    for (j = 0; j < arrayBins.Length; j++)
+                        currentIntensities[(int)arrayBins[j] / 4] += arrayIntensity[j];
 
-                    list_nzVals.Clear();
+                    listNzValues.Clear();
                     for (j = 0; j < gp.Bins; j++)
                     {
-                        if (current_intensities[j] > 0)
+                        if (currentIntensities[j] > 0)
                         {
-                            list_nzVals.Add(new Tuple<int, int>(j, current_intensities[j]));
+                            listNzValues.Add(new Tuple<int, int>(j, currentIntensities[j]));
                         }
                     }
 
-                    UIMF_Writer.InsertScan(current_frame, fp, i, list_nzVals, 1, gp.GetValueInt32(GlobalParamKeyType.TimeOffset) / 4);
+                    uimfWriter.InsertScan(currentFrame, fp, i, listNzValues, 1, gp.GetValueInt32(GlobalParamKeyType.TimeOffset) / 4);
                 }
 
-                stop_watch.Stop();
-                if (stop_watch.ElapsedMilliseconds > max_time)
+                stopWatch.Stop();
+                if (stopWatch.ElapsedMilliseconds > maxTime)
                 {
-                    max_time = (int)stop_watch.ElapsedMilliseconds;
-                    prog.AddStatus("Max Time: Frame " + current_frame.ToString() + " ..... " + max_time.ToString() + " msec", false);
+                    maxTime = (int)stopWatch.ElapsedMilliseconds;
+                    progress.AddStatus("Max Time: Frame " + currentFrame.ToString() + " ..... " + maxTime.ToString() + " msec", false);
                 }
             }
 
-            if (prog.Success)
+            if (progress.Success)
             {
-                progWindow.Dispatcher.Invoke(() => progWindow.Close());
+                progressWindow.Dispatcher.Invoke(() => progressWindow.Close());
             }
 
-            UIMF_Writer.Dispose();
+            uimfWriter.Dispose();
         }
 
         #endregion

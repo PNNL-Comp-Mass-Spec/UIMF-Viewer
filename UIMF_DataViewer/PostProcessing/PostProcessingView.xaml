@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:postProcessing="clr-namespace:UIMF_DataViewer.PostProcessing"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:utilities="clr-namespace:UIMF_DataViewer.Utilities"
              mc:Ignorable="d"
              Background="Silver"
              d:DesignHeight="847" d:DesignWidth="1072"
@@ -27,6 +28,7 @@
             <Setter Property="FontWeight" Value="Bold" />
         </Style>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <utilities:EnumDescriptionConverter x:Key="EnumDesc" />
         <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="FontFamily" Value="Verdana" />
@@ -89,6 +91,7 @@
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -100,28 +103,49 @@
             <ColumnDefinition Width="Auto" MinWidth="300" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <DataGrid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Background="DimGray" ItemsSource="{Binding Calibrants}" AutoGenerateColumns="False" ColumnWidth="SizeToCells" CanUserAddRows="True" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserResizeRows="False" RowHeaderWidth="0">
+        <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Margin="3" VerticalAlignment="Center" Text="Calibrant Set:" Style="{StaticResource TextBlock11Style}" />
+            <ComboBox Grid.Column="1" Margin="3" MinWidth="150" ItemsSource="{Binding CalibrantSets}" SelectedItem="{Binding CurrentCalibrantSet}" FontFamily="Arial" FontSize="11.25pt">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type postProcessing:CalibrantSet}">
+                        <TextBlock Text="{Binding Converter={StaticResource EnumDesc}}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBox Grid.Column="3" Margin="3" Text="{Binding CustomCalibrantsFilePath}" Style="{StaticResource TextBox11Style}" ToolTip="{Binding CustomCalibrantsFileDescription}">
+            </TextBox>
+            <TextBlock Grid.Column="2" Margin="20,3,3,3" VerticalAlignment="Center" Text="Custom:" Style="{StaticResource TextBlock11Style}" />
+            <Button Grid.Column="4" Margin="3" Content="Browse" Command="{Binding BrowseForCalibrantsFileCommand}" Style="{StaticResource Button11Style}" />
+        </Grid>
+        <DataGrid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Background="DimGray" ItemsSource="{Binding Calibrants}" AutoGenerateColumns="False" ColumnWidth="SizeToCells" CanUserAddRows="True" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserResizeRows="False" RowHeaderWidth="0">
             <DataGrid.Resources>
                 <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
                                  Color="PowderBlue"/>
             </DataGrid.Resources>
             <DataGrid.Columns>
-                <DataGridTemplateColumn MinWidth="20" CanUserSort="False" CellStyle="{DynamicResource TextOnlyCellFormat}">
+                <DataGridTemplateColumn MinWidth="20" CanUserSort="False" CellStyle="{StaticResource TextOnlyCellFormat}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <CheckBox IsChecked="{Binding Enabled}" VerticalAlignment="Center" HorizontalAlignment="Center" Background="Transparent" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Calibrant Name" MinWidth="175" CanUserSort="False" CellStyle="{DynamicResource TextOnlyCellFormat}">
+                <DataGridTemplateColumn Header="Calibrant Name" MinWidth="175" CanUserSort="False" CellStyle="{StaticResource TextOnlyCellFormat}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBox Text="{Binding Name}" VerticalContentAlignment="Center" HorizontalContentAlignment="Left" FontFamily="Verdana" FontWeight="Bold" FontSize="9pt" Background="Transparent" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <!--<DataGridTextColumn Header="Calibrant Name" MinWidth="175" CanUserSort="False" Binding="{Binding Name}" CellStyle="{DynamicResource TextOnlyCellFormat}" />-->
-                <DataGridTemplateColumn Header="M/Z" MinWidth="110" CanUserSort="False" CellStyle="{DynamicResource TemplatedCellFormat}">
+                <!--<DataGridTextColumn Header="Calibrant Name" MinWidth="175" CanUserSort="False" Binding="{Binding Name}" CellStyle="{StaticResource TextOnlyCellFormat}" />-->
+                <DataGridTemplateColumn Header="M/Z" MinWidth="110" CanUserSort="False" CellStyle="{StaticResource TemplatedCellFormat}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <xctk:DoubleUpDown Minimum="0" Value="{Binding Mz}" ShowButtonSpinner="False" AllowSpin="False" FormatString="N5" FontFamily="Verdana" FontWeight="Bold" FontSize="9pt" Background="Transparent" />
@@ -129,7 +153,7 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <!--<DataGridTextColumn Header="M/Z" MinWidth="110" CanUserSort="False" Binding="{Binding Mz, StringFormat={}{0:n5}}" />-->
-                <DataGridTemplateColumn Header="Charge" MinWidth="70" CanUserSort="False" CellStyle="{DynamicResource TemplatedCellFormat}">
+                <DataGridTemplateColumn Header="Charge" MinWidth="70" CanUserSort="False" CellStyle="{StaticResource TemplatedCellFormat}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <xctk:IntegerUpDown Minimum="0" Value="{Binding Charge}" ShowButtonSpinner="False" AllowSpin="False" FontFamily="Verdana" FontWeight="Bold" FontSize="9pt" Background="Transparent" />
@@ -261,7 +285,7 @@
                 </DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>
-        <GroupBox Grid.Row="1" Grid.Column="0" Header="Manual Calibration Calculator" Margin="5" HeaderTemplate="{DynamicResource GroupBoxHeaderTemplate}">
+        <GroupBox Grid.Row="2" Grid.Column="0" Header="Manual Calibration Calculator" Margin="5" HeaderTemplate="{StaticResource GroupBoxHeaderTemplate}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
@@ -278,24 +302,24 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical" VerticalAlignment="Bottom" HorizontalAlignment="Center">
-                    <TextBlock Margin="3,0" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Known" Style="{DynamicResource TextBlock11Style}" FontWeight="Bold" />
-                    <TextBlock Margin="3,0" VerticalAlignment="Center" HorizontalAlignment="Center" Text="TOF Bin" Style="{DynamicResource TextBlock11Style}" FontWeight="Bold" />
+                    <TextBlock Margin="3,0" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Known" Style="{StaticResource TextBlock11Style}" FontWeight="Bold" />
+                    <TextBlock Margin="3,0" VerticalAlignment="Center" HorizontalAlignment="Center" Text="TOF Bin" Style="{StaticResource TextBlock11Style}" FontWeight="Bold" />
                 </StackPanel>
                 <StackPanel Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" Orientation="Vertical" VerticalAlignment="Bottom" HorizontalAlignment="Center">
-                    <TextBlock Margin="3,0" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Desired" Style="{DynamicResource TextBlock11Style}" FontWeight="Bold" />
-                    <TextBlock Margin="3,0" VerticalAlignment="Center" HorizontalAlignment="Center" Text="M/Z Value" Style="{DynamicResource TextBlock11Style}" FontWeight="Bold" />
+                    <TextBlock Margin="3,0" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Desired" Style="{StaticResource TextBlock11Style}" FontWeight="Bold" />
+                    <TextBlock Margin="3,0" VerticalAlignment="Center" HorizontalAlignment="Center" Text="M/Z Value" Style="{StaticResource TextBlock11Style}" FontWeight="Bold" />
                 </StackPanel>
-                <TextBlock Grid.Row="2" Grid.Column="0" Margin="3" VerticalAlignment="Center" Text="Ion 1" Style="{DynamicResource TextBlock11Style}" FontWeight="Bold" />
-                <TextBlock Grid.Row="3" Grid.Column="0" Margin="3" VerticalAlignment="Center" Text="Ion 2" Style="{DynamicResource TextBlock11Style}" FontWeight="Bold" />
+                <TextBlock Grid.Row="2" Grid.Column="0" Margin="3" VerticalAlignment="Center" Text="Ion 1" Style="{StaticResource TextBlock11Style}" FontWeight="Bold" />
+                <TextBlock Grid.Row="3" Grid.Column="0" Margin="3" VerticalAlignment="Center" Text="Ion 2" Style="{StaticResource TextBlock11Style}" FontWeight="Bold" />
                 <xctk:DoubleUpDown Grid.Row="2" Grid.Column="1" Margin="7,3" Minimum="0" Maximum="50000" Value="{Binding Ion1TOFBin}" FormatString="F3" FontWeight="Bold" FontSize="11.25pt" FontFamily="Arial" />
                 <xctk:DoubleUpDown Grid.Row="3" Grid.Column="1" Margin="7,3" Minimum="0" Maximum="50000" Value="{Binding Ion1Mz}" FormatString="F3" FontWeight="Bold" FontSize="11.25pt" FontFamily="Arial" />
                 <xctk:DoubleUpDown Grid.Row="2" Grid.Column="2" Margin="7,3" Minimum="0" Maximum="50000" Value="{Binding Ion2TOFBin}" FormatString="F4" FontWeight="Bold" FontSize="11.25pt" FontFamily="Arial" />
                 <xctk:DoubleUpDown Grid.Row="3" Grid.Column="2" Margin="7,3" Minimum="0" Maximum="50000" Value="{Binding Ion2Mz}" FormatString="F4" FontWeight="Bold" FontSize="11.25pt" FontFamily="Arial" />
-                <TextBlock Grid.Row="0" Grid.Column="4" Margin="3" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Slope" Style="{DynamicResource TextBlock11Style}" FontWeight="Bold" />
-                <TextBlock Grid.Row="1" Grid.Column="4" Margin="3" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Intercept" Style="{DynamicResource TextBlock11Style}" FontWeight="Bold" />
-                <TextBox Grid.Row="0" Grid.Column="5" Margin="3" IsReadOnly="True" Background="LightGray" Text="{Binding CalculatedSlope, StringFormat={}{0:0.00000000}}" HorizontalContentAlignment="Right" Style="{DynamicResource TextBox11Style}" FontWeight="Bold" />
-                <TextBox Grid.Row="1" Grid.Column="5" Margin="3" IsReadOnly="True" Background="LightGray" Text="{Binding CalculatedIntercept, StringFormat={}{0:0.00000000}}" HorizontalContentAlignment="Right" Style="{DynamicResource TextBox11Style}" FontWeight="Bold" />
-                <Button Grid.Row="2" Grid.Column="4" Grid.RowSpan="2" Grid.ColumnSpan="2" Margin="5" Background="LightSalmon" Command="{Binding ApplyCalculatedToFrameCommand}" Style="{DynamicResource Button11Style}" FontWeight="Bold">
+                <TextBlock Grid.Row="0" Grid.Column="4" Margin="3" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Slope" Style="{StaticResource TextBlock11Style}" FontWeight="Bold" />
+                <TextBlock Grid.Row="1" Grid.Column="4" Margin="3" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Intercept" Style="{StaticResource TextBlock11Style}" FontWeight="Bold" />
+                <TextBox Grid.Row="0" Grid.Column="5" Margin="3" IsReadOnly="True" Background="LightGray" Text="{Binding CalculatedSlope, StringFormat={}{0:0.00000000}}" HorizontalContentAlignment="Right" Style="{StaticResource TextBox11Style}" FontWeight="Bold" />
+                <TextBox Grid.Row="1" Grid.Column="5" Margin="3" IsReadOnly="True" Background="LightGray" Text="{Binding CalculatedIntercept, StringFormat={}{0:0.00000000}}" HorizontalContentAlignment="Right" Style="{StaticResource TextBox11Style}" FontWeight="Bold" />
+                <Button Grid.Row="2" Grid.Column="4" Grid.RowSpan="2" Grid.ColumnSpan="2" Margin="5" Background="LightSalmon" Command="{Binding ApplyCalculatedToFrameCommand}" Style="{StaticResource Button11Style}" FontWeight="Bold">
                     <StackPanel Orientation="Vertical">
                         <TextBlock HorizontalAlignment="Center" Margin="10,0" Text="Apply Calibration Values" />
                         <TextBlock HorizontalAlignment="Center" Text="to this Frame" />
@@ -303,7 +327,7 @@
                 </Button>
             </Grid>
         </GroupBox>
-        <Grid Grid.Row="1" Grid.Column="2" Margin="3">
+        <Grid Grid.Row="2" Grid.Column="2" Margin="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -315,19 +339,19 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Button Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Background="LightSalmon" Content="Attempt to Calibrate Frame" Command="{Binding AttemptToCalibrateCommand}" Style="{DynamicResource Button11Style}" FontWeight="Bold" />
-            <TextBlock Grid.Row="2" Grid.Column="0" Margin="10,3,3,3" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Slope" Style="{DynamicResource TextBlock11Style}" FontWeight="Bold" />
-            <TextBlock Grid.Row="3" Grid.Column="0" Margin="10,3,3,3" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Intercept" Style="{DynamicResource TextBlock11Style}" FontWeight="Bold" />
-            <TextBox Grid.Row="2" Grid.Column="1" Margin="3,3,10,3" IsReadOnly="True" Background="LightGray" Text="{Binding ExperimentalSlope, StringFormat={}{0:0.00000000}}" HorizontalContentAlignment="Right" Style="{DynamicResource TextBox11Style}" FontWeight="Bold" />
-            <TextBox Grid.Row="3" Grid.Column="1" Margin="3,3,10,3" IsReadOnly="True" Background="LightGray" Text="{Binding ExperimentalIntercept, StringFormat={}{0:0.00000000}}" HorizontalContentAlignment="Right" Style="{DynamicResource TextBox11Style}" FontWeight="Bold" />
-            <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="30,5" Background="LightSalmon" Command="{Binding ApplyExperimentalToAllFramesCommand}" Style="{DynamicResource Button11Style}" FontWeight="Bold">
+            <Button Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="5" Background="LightSalmon" Content="Attempt to Calibrate Frame" Command="{Binding AttemptToCalibrateCommand}" Style="{StaticResource Button11Style}" FontWeight="Bold" />
+            <TextBlock Grid.Row="2" Grid.Column="0" Margin="10,3,3,3" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Slope" Style="{StaticResource TextBlock11Style}" FontWeight="Bold" />
+            <TextBlock Grid.Row="3" Grid.Column="0" Margin="10,3,3,3" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Intercept" Style="{StaticResource TextBlock11Style}" FontWeight="Bold" />
+            <TextBox Grid.Row="2" Grid.Column="1" Margin="3,3,10,3" IsReadOnly="True" Background="LightGray" Text="{Binding ExperimentalSlope, StringFormat={}{0:0.00000000}}" HorizontalContentAlignment="Right" Style="{StaticResource TextBox11Style}" FontWeight="Bold" />
+            <TextBox Grid.Row="3" Grid.Column="1" Margin="3,3,10,3" IsReadOnly="True" Background="LightGray" Text="{Binding ExperimentalIntercept, StringFormat={}{0:0.00000000}}" HorizontalContentAlignment="Right" Style="{StaticResource TextBox11Style}" FontWeight="Bold" />
+            <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="30,5" Background="LightSalmon" Command="{Binding ApplyExperimentalToAllFramesCommand}" Style="{StaticResource Button11Style}" FontWeight="Bold">
                 <StackPanel Orientation="Vertical">
                     <TextBlock HorizontalAlignment="Center" Margin="10,0" Text="Apply Calibration Values" />
                     <TextBlock HorizontalAlignment="Center" Text="to All Frames" />
                 </StackPanel>
             </Button>
         </Grid>
-        <GroupBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Header="Decode Multiplexed Experiment" Margin="5" HeaderTemplate="{DynamicResource GroupBoxHeaderTemplate}" Visibility="{Binding ShowDecode, Converter={StaticResource BoolToVis}}">
+        <GroupBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Header="Decode Multiplexed Experiment" Margin="5" HeaderTemplate="{StaticResource GroupBoxHeaderTemplate}" Visibility="{Binding ShowDecode, Converter={StaticResource BoolToVis}}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
@@ -339,13 +363,13 @@
                     <ColumnDefinition Width="Auto" MinWidth="120" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Row="0" Grid.Column="0" Margin="3" Text="Save Filename:" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{DynamicResource TextBlock11Style}" />
-                <TextBlock Grid.Row="1" Grid.Column="0" Margin="3" Text="Save Directory:" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{DynamicResource TextBlock11Style}" />
-                <TextBox Grid.Row="0" Grid.Column="1" Margin="3" Text="{Binding DecodeSaveFilename}" Style="{DynamicResource TextBox11Style}" />
-                <TextBox Grid.Row="1" Grid.Column="1" Margin="3" Text="{Binding DecodeSaveDirectory}" Style="{DynamicResource TextBox11Style}" />
-                <TextBlock Grid.Row="0" Grid.Column="2" Margin="3" Text="_decoded.UIMF" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{DynamicResource TextBlock11Style}" FontWeight="Bold" />
-                <Button Grid.Row="1" Grid.Column="2" Margin="3" Content="Browse" Command="{Binding BrowseDecodeDirectoryCommand}" Style="{DynamicResource Button11Style}" />
-                <Button Grid.Row="0" Grid.Column="3" Grid.RowSpan="2" Margin="15,3,5,3" Width="100" Background="PowderBlue" Command="{Binding DecodeExperimentCommand}" Style="{DynamicResource Button11Style}" FontWeight="Bold">
+                <TextBlock Grid.Row="0" Grid.Column="0" Margin="3" Text="Save Filename:" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource TextBlock11Style}" />
+                <TextBlock Grid.Row="1" Grid.Column="0" Margin="3" Text="Save Directory:" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource TextBlock11Style}" />
+                <TextBox Grid.Row="0" Grid.Column="1" Margin="3" Text="{Binding DecodeSaveFilename}" Style="{StaticResource TextBox11Style}" />
+                <TextBox Grid.Row="1" Grid.Column="1" Margin="3" Text="{Binding DecodeSaveDirectory}" Style="{StaticResource TextBox11Style}" />
+                <TextBlock Grid.Row="0" Grid.Column="2" Margin="3" Text="_decoded.UIMF" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource TextBlock11Style}" FontWeight="Bold" />
+                <Button Grid.Row="1" Grid.Column="2" Margin="3" Content="Browse" Command="{Binding BrowseDecodeDirectoryCommand}" Style="{StaticResource Button11Style}" />
+                <Button Grid.Row="0" Grid.Column="3" Grid.RowSpan="2" Margin="15,3,5,3" Width="100" Background="PowderBlue" Command="{Binding DecodeExperimentCommand}" Style="{StaticResource Button11Style}" FontWeight="Bold">
                     <StackPanel Orientation="Vertical">
                         <TextBlock HorizontalAlignment="Center" Text="Decode" />
                         <TextBlock HorizontalAlignment="Center" Text="Experiment" />
@@ -353,7 +377,7 @@
                 </Button>
             </Grid>
         </GroupBox>
-        <GroupBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Header="Compress Experiment from 4GHz to 1GHz data" Margin="5" HeaderTemplate="{DynamicResource GroupBoxHeaderTemplate}" Visibility="{Binding ShowCompress, Converter={StaticResource BoolToVis}}">
+        <GroupBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Header="Compress Experiment from 4GHz to 1GHz data" Margin="5" HeaderTemplate="{StaticResource GroupBoxHeaderTemplate}" Visibility="{Binding ShowCompress, Converter={StaticResource BoolToVis}}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
@@ -365,13 +389,13 @@
                     <ColumnDefinition Width="Auto" MinWidth="120" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Row="0" Grid.Column="0" Margin="3" Text="Save Filename:" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{DynamicResource TextBlock11Style}" />
-                <TextBlock Grid.Row="1" Grid.Column="0" Margin="3" Text="Save Directory:" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{DynamicResource TextBlock11Style}" />
-                <TextBox Grid.Row="0" Grid.Column="1" Margin="3" Text="{Binding CompressSaveFilename}" Style="{DynamicResource TextBox11Style}" />
-                <TextBox Grid.Row="1" Grid.Column="1" Margin="3" Text="{Binding CompressSaveDirectory}" Style="{DynamicResource TextBox11Style}" />
-                <TextBlock Grid.Row="0" Grid.Column="2" Margin="3" Text="_1GHz.UIMF" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{DynamicResource TextBlock11Style}" FontWeight="Bold" />
-                <Button Grid.Row="1" Grid.Column="2" Margin="3" Content="Browse" Command="{Binding BrowseCompressDirectoryCommand}" Style="{DynamicResource Button11Style}" />
-                <Button Grid.Row="0" Grid.Column="3" Grid.RowSpan="2" Margin="15,3,5,3" Width="100" Background="PowderBlue" Command="{Binding CompressExperimentCommand}" Style="{DynamicResource Button11Style}" FontWeight="Bold">
+                <TextBlock Grid.Row="0" Grid.Column="0" Margin="3" Text="Save Filename:" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource TextBlock11Style}" />
+                <TextBlock Grid.Row="1" Grid.Column="0" Margin="3" Text="Save Directory:" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource TextBlock11Style}" />
+                <TextBox Grid.Row="0" Grid.Column="1" Margin="3" Text="{Binding CompressSaveFilename}" Style="{StaticResource TextBox11Style}" />
+                <TextBox Grid.Row="1" Grid.Column="1" Margin="3" Text="{Binding CompressSaveDirectory}" Style="{StaticResource TextBox11Style}" />
+                <TextBlock Grid.Row="0" Grid.Column="2" Margin="3" Text="_1GHz.UIMF" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource TextBlock11Style}" FontWeight="Bold" />
+                <Button Grid.Row="1" Grid.Column="2" Margin="3" Content="Browse" Command="{Binding BrowseCompressDirectoryCommand}" Style="{StaticResource Button11Style}" />
+                <Button Grid.Row="0" Grid.Column="3" Grid.RowSpan="2" Margin="15,3,5,3" Width="100" Background="PowderBlue" Command="{Binding CompressExperimentCommand}" Style="{StaticResource Button11Style}" FontWeight="Bold">
                     <StackPanel Orientation="Vertical">
                         <TextBlock HorizontalAlignment="Center" Text="Compress" />
                         <TextBlock HorizontalAlignment="Center" Text="Experiment" />

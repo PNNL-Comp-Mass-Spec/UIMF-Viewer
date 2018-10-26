@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
 
-namespace UIMF_DataViewer.FrameControl
+namespace UIMF_DataViewer.Utilities
 {
     public class EnumDescriptionConverter : IValueConverter
     {
