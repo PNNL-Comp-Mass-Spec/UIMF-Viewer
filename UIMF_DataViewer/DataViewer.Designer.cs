@@ -34,7 +34,6 @@ namespace UIMF_File
         private System.Windows.Forms.MenuItem menuItem_Exportnew_driftTIC;
         private System.Windows.Forms.MenuItem menuItem_ExportCompressed;
         private System.Windows.Forms.MenuItem menuItem_ExportComplete;
-        private System.Windows.Forms.MenuItem menuItem_ExportAll;
         private System.Windows.Forms.MenuItem menuItem_CopyToClipboard;
         private System.Windows.Forms.MenuItem menuItem3;
         private System.Windows.Forms.MenuItem menuItem3a;
@@ -134,7 +133,6 @@ namespace UIMF_File
             this.menuItem_SelectionCorners = new System.Windows.Forms.MenuItem();
             this.menuItem_ExportCompressed = new System.Windows.Forms.MenuItem();
             this.menuItem_ExportComplete = new System.Windows.Forms.MenuItem();
-            this.menuItem_ExportAll = new System.Windows.Forms.MenuItem();
             this.menuItem1 = new System.Windows.Forms.MenuItem();
             this.menuItem_CopyToClipboard = new System.Windows.Forms.MenuItem();
             this.menuItem_CaptureExperimentFrame = new System.Windows.Forms.MenuItem();
@@ -215,7 +213,6 @@ namespace UIMF_File
             this.menuItem_SelectionCorners,
             this.menuItem_ExportCompressed,
             this.menuItem_ExportComplete,
-            this.menuItem_ExportAll,
             this.menuItem1,
             this.menuItem_CopyToClipboard,
             this.menuItem_CaptureExperimentFrame,
@@ -291,29 +288,24 @@ namespace UIMF_File
             this.menuItem_ExportComplete.Index = 13;
             this.menuItem_ExportComplete.Text = "Export Intensity Values (Complete Bin Resolution)";
             //
-            // menuItem_ExportAll
-            //
-            this.menuItem_ExportAll.Index = 14;
-            this.menuItem_ExportAll.Text = "Export All Frames Intensity Values";
-            //
             // menuItem1
             //
-            this.menuItem1.Index = 15;
+            this.menuItem1.Index = 14;
             this.menuItem1.Text = "-";
             //
             // menuItem_CopyToClipboard
             //
-            this.menuItem_CopyToClipboard.Index = 16;
+            this.menuItem_CopyToClipboard.Index = 15;
             this.menuItem_CopyToClipboard.Text = "Copy Image to Clipboard";
             //
             // menuItem_CaptureExperimentFrame
             //
-            this.menuItem_CaptureExperimentFrame.Index = 17;
+            this.menuItem_CaptureExperimentFrame.Index = 16;
             this.menuItem_CaptureExperimentFrame.Text = "Save Experiment GUI";
             //
             // menuItem_WriteUIMF
             //
-            this.menuItem_WriteUIMF.Index = 18;
+            this.menuItem_WriteUIMF.Index = 17;
             this.menuItem_WriteUIMF.Text = "Write Frame to UIMF file";
             //
             // contextMenu_driftTIC
@@ -492,7 +484,7 @@ namespace UIMF_File
             this.btn_Refresh.TabIndex = 64;
             this.btn_Refresh.Text = "Refresh";
             this.btn_Refresh.UseVisualStyleBackColor = false;
-            this.btn_Refresh.Click += new System.EventHandler(this.btn_Refresh_Click);
+            this.btn_Refresh.Click += new System.EventHandler(this.RefreshClick);
             //
             // elementHost_ChromatogramControls
             //

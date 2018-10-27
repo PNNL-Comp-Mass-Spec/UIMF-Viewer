@@ -60,7 +60,7 @@ namespace UIMFViewer
                     }
 
                     // Old method, enabled for debug: Limit to 5 files, each file is a direct child window of IonMobilityMain
-                    var dataViewer = new DataViewer(path, true);
+                    var dataViewer = new DataViewer(path);
 
                     this.openExperiments.Add(dataViewer);
                 }

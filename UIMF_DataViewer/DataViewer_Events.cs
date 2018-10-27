@@ -5,7 +5,6 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Windows.Forms;
 using UIMFLibrary;
 using UIMF_DataViewer.ChromatogramControl;
@@ -17,50 +16,43 @@ namespace UIMF_File
 {
     public partial class DataViewer
     {
-        private void tabpages_Main_SelectedIndexChanged(object sender, System.EventArgs e)
+        private void MainTabsSelectedIndexChanged(object sender, EventArgs e)
         {
-            if (this.tabpages_Main.SelectedTab == this.tab_PostProcessing)
+            if (tabpages_Main.SelectedTab == tab_PostProcessing)
             {
-                if (this.Width < this.elementHost_PostProcessing.Left + this.elementHost_PostProcessing.Width + 70)
+                if (Width < elementHost_PostProcessing.Left + elementHost_PostProcessing.Width + 70)
                 {
-                    this.Width = this.elementHost_PostProcessing.Left + this.elementHost_PostProcessing.Width + 70;
-                    this.tabpages_Main.Width = this.Width;
+                    Width = elementHost_PostProcessing.Left + elementHost_PostProcessing.Width + 70;
+                    tabpages_Main.Width = Width;
                 }
             }
         }
 
-        private void tabpages_Main_DrawItem(object sender, System.Windows.Forms.DrawItemEventArgs e)
+        private void MainTabsDrawItem(object sender, DrawItemEventArgs e)
         {
-            Font fntTab;
             Brush bshFore;
             Brush bshBack;
-            Font tab_font = new System.Drawing.Font("Comic Sans MS", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            var tabFont = new Font("Comic Sans MS", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
 
-            if (e.Index != this.tabpages_Main.SelectedIndex)
+            if (e.Index != tabpages_Main.SelectedIndex)
             {
-                fntTab = new Font(e.Font, FontStyle.Bold);
-
                 bshFore = Brushes.Ivory;
-                bshBack = new System.Drawing.Drawing2D.LinearGradientBrush(e.Bounds, Color.RoyalBlue, Color.DimGray, System.Drawing.Drawing2D.LinearGradientMode.BackwardDiagonal);
-                e.Graphics.FillRectangle(bshBack, e.Bounds);
+                bshBack = new LinearGradientBrush(e.Bounds, Color.RoyalBlue, Color.DimGray, LinearGradientMode.BackwardDiagonal);
             }
             else
             {
-                fntTab = new Font(e.Font, FontStyle.Regular);
-
                 bshFore = Brushes.Black;
-                //bshBack = new SolidBrush(Color.WhiteSmoke);   // Color.GhostWhite);
-                bshBack = new System.Drawing.Drawing2D.LinearGradientBrush(e.Bounds, Color.White, Color.WhiteSmoke, System.Drawing.Drawing2D.LinearGradientMode.BackwardDiagonal);
-                e.Graphics.FillRectangle(bshBack, e.Bounds);
+                bshBack = new LinearGradientBrush(e.Bounds, Color.White, Color.WhiteSmoke, LinearGradientMode.BackwardDiagonal);
             }
 
-            string tabName = this.tabpages_Main.TabPages[e.Index].Text;
-            System.Drawing.SizeF s = e.Graphics.MeasureString(tabName, tab_font);
+            e.Graphics.FillRectangle(bshBack, e.Bounds);
+
+            var tabName = tabpages_Main.TabPages[e.Index].Text;
+            var s = e.Graphics.MeasureString(tabName, tabFont);
 
             e.Graphics.RotateTransform(270.0f);
             e.Graphics.TranslateTransform(-s.Width, 0);
-            // MessageBox.Show((e.Bounds.Left).ToString()+","+ (e.Bounds.Top).ToString());
-            e.Graphics.DrawString(tabName, tab_font, bshFore, -e.Bounds.Top - 28, e.Bounds.Left + 4);
+            e.Graphics.DrawString(tabName, tabFont, bshFore, -e.Bounds.Top - 28, e.Bounds.Left + 4);
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -70,89 +62,81 @@ namespace UIMF_File
             // ignore the system paint.
         }
 
-        // /////////////////////////////////////////////////////////////////////////////////////////////
-        // resize start at the left side, top to bottom
-        //
-        public void IonMobilityDataView_Resize(object obj, System.EventArgs e)
+        private void Zoom(Point p1, Point p2)
         {
-            this.flag_ResizeThis = true;
-        }
-
-        protected virtual void Zoom(Point p1, Point p2)
-        {
-            lock (this.lock_graphing)
+            lock (plot2DChangeLock)
             {
-                this.flag_selection_drift = false;
-                this.plot_Mobility.ClearRange();
+                selectingMobilityRange = false;
+                plot_Mobility.ClearRange();
 
                 // Prep variables
-                float min_Px = Math.Min(p1.X, p2.X);
-                float max_Px = Math.Max(p1.X, p2.X);
-                float min_Py = this.pnl_2DMap.Height - Math.Max(p1.Y, p2.Y);
-                float max_Py = this.pnl_2DMap.Height - Math.Min(p1.Y, p2.Y);
+                var minPtX = Math.Min(p1.X, p2.X);
+                var maxPtX = Math.Max(p1.X, p2.X);
+                var minPtY = pnl_2DMap.Height - Math.Max(p1.Y, p2.Y);
+                var maxPtY = pnl_2DMap.Height - Math.Min(p1.Y, p2.Y);
 
                 // don't zoom if the user mistakenly presses the mouse button
-                if ((max_Px - min_Px < -this.current_valuesPerPixelX) && (max_Py - min_Py < -this.current_valuesPerPixelY))
+                if ((maxPtX - minPtX < -currentValuesPerPixelX) && (maxPtY - minPtY < -currentValuesPerPixelY))
                     return;
 
                 // Calculate the data enclosing boundaries
-                // Need to do new_maxMobility first since new_minMobilitychanges beforehand
-                if (current_valuesPerPixelX <= 1)
+                // Need to do new_maxMobility first since new_minMobility changes beforehand
+                if (currentValuesPerPixelX <= 1)
                 {
-                    new_maxMobility = (int) (new_minMobility + (max_Px / -current_valuesPerPixelX));
-                    new_minMobility = (int) (new_minMobility + (min_Px / -current_valuesPerPixelX));
+                    newMaxMobility = (int) (newMinMobility + ((double)maxPtX / -currentValuesPerPixelX));
+                    newMinMobility = (int) (newMinMobility + ((double)minPtX / -currentValuesPerPixelX));
                 }
                 else
                 {
-                    new_maxMobility = (int) (new_minMobility + max_Px * current_valuesPerPixelX);
-                    new_minMobility = (int) (new_minMobility + min_Px * current_valuesPerPixelX);
+                    newMaxMobility = (int) (newMinMobility + (double)maxPtX * currentValuesPerPixelX);
+                    newMinMobility = (int) (newMinMobility + (double)minPtX * currentValuesPerPixelX);
                 }
 
 
-                if (new_maxMobility - new_minMobility < MIN_GRAPHED_MOBILITY)
+                if (newMaxMobility - newMinMobility < MinGraphedMobility)
                 {
-                    new_minMobility -= (MIN_GRAPHED_MOBILITY - (new_maxMobility - new_minMobility)) / 2;
-                    new_maxMobility = new_minMobility + MIN_GRAPHED_MOBILITY;
+                    newMinMobility -= (MinGraphedMobility - (newMaxMobility - newMinMobility)) / 2;
+                    newMaxMobility = newMinMobility + MinGraphedMobility;
                 }
 
                 // MessageBox.Show(new_maxMobility.ToString()+", "+new_minMobility.ToString());
-                if ((min_Py != 0) || (max_Py != this.pnl_2DMap.Height))
+                if ((minPtY != 0) || (maxPtY != pnl_2DMap.Height))
                 {
-                    if (this.current_valuesPerPixelY < 0)
+                    if (currentValuesPerPixelY < 0)
                     {
-                        new_maxBin = (int)this.uimfReader.GetBinForPixel((int)max_Py / -this.current_valuesPerPixelY);
-                        new_minBin = (int)this.uimfReader.GetBinForPixel((int)min_Py / -this.current_valuesPerPixelY);
+                        newMaxTofBin = (int)uimfReader.GetBinForPixel(maxPtY / -currentValuesPerPixelY);
+                        newMinTofBin = (int)uimfReader.GetBinForPixel(minPtY / -currentValuesPerPixelY);
                     }
                     else
                     {
-                        new_maxBin = (int)this.uimfReader.GetBinForPixel((int)max_Py);
-                        new_minBin = (int)this.uimfReader.GetBinForPixel((int)min_Py);
+                        newMaxTofBin = (int)uimfReader.GetBinForPixel(maxPtY);
+                        newMinTofBin = (int)uimfReader.GetBinForPixel(minPtY);
                     }
                 }
 
-                if (this.new_maxMobility - this.new_minMobility < MIN_GRAPHED_MOBILITY)
+                if (newMaxMobility - newMinMobility < MinGraphedMobility)
                 {
-                    this.new_maxMobility = ((this.new_maxMobility + this.new_minMobility) / 2) + (MIN_GRAPHED_MOBILITY / 2);
-                    this.new_minMobility = ((this.new_maxMobility + this.new_minMobility) / 2) - (MIN_GRAPHED_MOBILITY / 2);
+                    newMaxMobility = ((newMaxMobility + newMinMobility) / 2) + (MinGraphedMobility / 2);
+                    newMinMobility = ((newMaxMobility + newMinMobility) / 2) - (MinGraphedMobility / 2);
                 }
 
-                if (this.new_minMobility < 0)
-                    this.new_minMobility = 0;
-                if (this.new_maxMobility > this.maximum_Mobility)
-                    this.new_maxMobility = this.maximum_Mobility;
+                if (newMinMobility < 0)
+                    newMinMobility = 0;
+                if (newMaxMobility > frameMaximumMobility)
+                    newMaxMobility = frameMaximumMobility;
 
-                if (this.new_minBin < 0)
-                    this.new_minBin = 0;
-                if (this.new_maxBin > this.maximum_Bins)
-                    this.new_maxBin = this.maximum_Bins;
+                if (newMinTofBin < 0)
+                    newMinTofBin = 0;
+                if (newMaxTofBin > frameMaximumTofBins)
+                    newMaxTofBin = frameMaximumTofBins;
 
                 // save new zoom...
-                this.SaveZoom(new_minMobility, new_maxMobility, new_minBin, new_maxBin);
+                SaveZoom(newMinMobility, newMaxMobility, newMinTofBin, newMaxTofBin);
 
-                this.current_maxBin = this.new_maxBin;
-                this.current_minBin = this.new_minBin;
+                currentMaxTofBin = newMaxTofBin;
+                currentMinTofBin = newMinTofBin;
 
-                this.flag_update2DGraph = true;
+                needToUpdate2DPlot = true;
             }
         }
 
@@ -160,66 +144,66 @@ namespace UIMF_File
         {
             var newZoom = new ZoomInfo(minMobility, maxMobility, minBin, maxBin);
 
-            if (_zoom.Count > 0 && newZoom.Equals(_zoom[_zoom.Count - 1]))
+            if (zoomHistory.Count > 0 && newZoom.Equals(zoomHistory[zoomHistory.Count - 1]))
             {
                 return;
             }
 
-            _zoom.Add(newZoom);
+            zoomHistory.Add(newZoom);
         }
 
         #region 2DMap Events
 
         //wfd
-        private void pnl_2DMap_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
+        private void Plot2DMouseDown(object sender, MouseEventArgs e)
         {
-            if ((this.flag_kill_mouse) || // if plotting the plot, prevent zooming!
-                (this.flag_CinemaPlot))
+            if ((disableMouseControls) || // if plotting the plot, prevent zooming!
+                (playingCinemaPlot))
                 return;
 
-            // Graphics g = this.pnl_2DMap.CreateGraphics();
+            // Graphics g = pnl_2DMap.CreateGraphics();
             // g.DrawString(e.X.ToString(), new Font(FontFamily.GenericSerif, 10, FontStyle.Regular), new SolidBrush(Color.Yellow), 10, 50);
 
-            if (this.menuItem_SelectionCorners.Checked && (e.Button == MouseButtons.Middle))
-                MessageBox.Show("Mouse at " + e.X.ToString() + ", " + e.Y.ToString() + (this.inside_Polygon_Pixel(e.X, this.pnl_2DMap.Height - e.Y) ? " is inside" : " is outside"));
+            if (menuItem_SelectionCorners.Checked && (e.Button == MouseButtons.Middle))
+                MessageBox.Show("Mouse at " + e.X.ToString() + ", " + e.Y.ToString() + (InsidePolygonPixel(e.X, pnl_2DMap.Height - e.Y) ? " is inside" : " is outside"));
 
             // Starting a zoom process
             if (e.Button == MouseButtons.Left)
             {
-                if ((e.X > this.pnl_2DMap.Width - 17) && (e.Y < 17))
+                if ((e.X > pnl_2DMap.Width - 17) && (e.Y < 17))
                 {
-                    this.flag_isFullscreen = !this.flag_isFullscreen;
-                    if (this.flag_isFullscreen)
+                    is2DPlotFullScreen = !is2DPlotFullScreen;
+                    if (is2DPlotFullScreen)
                     {
-                        this.max_plot_height = this.tab_DataViewer.ClientSize.Height - 400;
-                        this.max_plot_width = this.tab_DataViewer.ClientSize.Width - 100;
+                        max2DPlotHeight = tab_DataViewer.ClientSize.Height - 400;
+                        max2DPlotWidth = tab_DataViewer.ClientSize.Width - 100;
                     }
                     else
                     {
-                        this.max_plot_width = this.tab_DataViewer.ClientSize.Width;
-                        this.max_plot_height = this.tab_DataViewer.ClientSize.Height;
+                        max2DPlotWidth = tab_DataViewer.ClientSize.Width;
+                        max2DPlotHeight = tab_DataViewer.ClientSize.Height;
                     }
 
-                    this.flag_ResizeThis = true;
-                    this.flag_update2DGraph = true;
+                    viewerNeedsResizing = true;
+                    needToUpdate2DPlot = true;
                 }
 
-                _mouseDragging = true;
+                mouseDragging = true;
 
-                this.Cursor = Cursors.Cross;
-                _mouseDownPoint = new Point(e.X, e.Y);
-                _mouseMovePoint = new Point(e.X, e.Y);
+                Cursor = Cursors.Cross;
+                mouseDownPoint = new Point(e.X, e.Y);
+                mouseMovePoint = new Point(e.X, e.Y);
             }
 
             // Pop-up Menu
             if (e.Button == MouseButtons.Right)
-                contextMenu_pb_2DMap.Show(this, new Point(e.X + this.pnl_2DMap.Left, e.Y + this.pnl_2DMap.Top));
+                contextMenu_pb_2DMap.Show(this, new Point(e.X + pnl_2DMap.Left, e.Y + pnl_2DMap.Top));
 
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
-                if ((Math.Abs(e.X - this.corner_2DMap[i].X) <= 6) && (Math.Abs(e.Y - this.corner_2DMap[i].Y) <= 6))
+                if ((Math.Abs(e.X - plot2DSelectionCorners[i].X) <= 6) && (Math.Abs(e.Y - plot2DSelectionCorners[i].Y) <= 6))
                 {
-                    this.flag_MovingCorners = i;
+                    isMovingSelectionCorners = i;
                     return;
                 }
             }
@@ -228,433 +212,360 @@ namespace UIMF_File
             // enough.  Lot of waste; but it only occurs when the mouse is pressed down.
             //
             // wfd:  this will do for now.  I am sure there is a much more efficient method of
-            // handling this.  For now, the race is on.
-            if ((current_valuesPerPixelY < -10) && (current_valuesPerPixelX < -20))
+            // handling this. For now, the race is on.
+            if ((currentValuesPerPixelY < -10) && (currentValuesPerPixelX < -20))
             {
-                this.pnl_2DMap_Extensions = this.pnl_2DMap.CreateGraphics();
-                for (int i = 0; i <= this.data_2D.Length - 1; i++)
-                    for (int j = 0; j <= this.data_2D[0].Length - 1; j++)
+                pnl_2DMap_Extensions = pnl_2DMap.CreateGraphics();
+                var mapFont = new Font("Verdana", 7);
+                var foreBrush = new SolidBrush(Color.White);
+                var backBrush = new SolidBrush(Color.DimGray);
+                for (var i = 0; i <= data_2D.Length - 1; i++)
+                    for (var j = 0; j <= data_2D[0].Length - 1; j++)
                     {
-                        if (this.data_2D[i][j] != 0)
+                        if (data_2D[i][j] != 0)
                         {
-                            this.pnl_2DMap_Extensions.DrawString(this.data_2D[i][j].ToString("#"), map_font, back_brush, (i * -this.current_valuesPerPixelX) + 1, this.pnl_2DMap.Height - ((j + 1) * -this.current_valuesPerPixelY) - 1);
-                            this.pnl_2DMap_Extensions.DrawString(this.data_2D[i][j].ToString("#"), map_font, fore_brush, (i * -this.current_valuesPerPixelX), this.pnl_2DMap.Height - ((j + 1) * -this.current_valuesPerPixelY));
+                            pnl_2DMap_Extensions.DrawString(data_2D[i][j].ToString("#"), mapFont, backBrush, (i * -currentValuesPerPixelX) + 1, pnl_2DMap.Height - ((j + 1) * -currentValuesPerPixelY) - 1);
+                            pnl_2DMap_Extensions.DrawString(data_2D[i][j].ToString("#"), mapFont, foreBrush, (i * -currentValuesPerPixelX), pnl_2DMap.Height - ((j + 1) * -currentValuesPerPixelY));
                         }
                     }
             }
         }
 
-        protected int prev_cursorX = 0;
-        protected int prev_cursorY = 0;
-        protected virtual void pnl_2DMap_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
+        private int prevCursorX;
+        private int prevCursorY;
+        private void Plot2DMouseMove(object sender, MouseEventArgs e)
         {
-            if (this.flag_kill_mouse) // if plotting the plot, prevent zooming!
+            if (disableMouseControls) // if plotting the plot, prevent zooming!
                 return;
 
-            if ((Math.Abs(prev_cursorX - e.X) > 3) || (Math.Abs(prev_cursorY - e.Y) > 3))
+            if ((Math.Abs(prevCursorX - e.X) > 3) || (Math.Abs(prevCursorY - e.Y) > 3))
             {
-                prev_cursorX = e.X;
-                prev_cursorY = e.Y;
+                prevCursorX = e.X;
+                prevCursorY = e.Y;
                 UpdateCursorReading(e);
             }
             else
                 return;
 
-            if (this.flag_MovingCorners >= 0)
+            if (isMovingSelectionCorners >= 0)
             {
                 if (e.X < 0)
-                    this.corner_2DMap[this.flag_MovingCorners].X = 0;
-                else if (e.X > this.pnl_2DMap.Width)
-                    this.corner_2DMap[this.flag_MovingCorners].X = this.pnl_2DMap.Width;
+                    plot2DSelectionCorners[isMovingSelectionCorners].X = 0;
+                else if (e.X > pnl_2DMap.Width)
+                    plot2DSelectionCorners[isMovingSelectionCorners].X = pnl_2DMap.Width;
                 else
-                    this.corner_2DMap[this.flag_MovingCorners].X = e.X;
+                    plot2DSelectionCorners[isMovingSelectionCorners].X = e.X;
 
                 if (e.Y < 0)
-                    this.corner_2DMap[this.flag_MovingCorners].Y = 0;
-                else if (e.Y > this.pnl_2DMap.Height)
-                    this.corner_2DMap[this.flag_MovingCorners].Y = this.pnl_2DMap.Height;
+                    plot2DSelectionCorners[isMovingSelectionCorners].Y = 0;
+                else if (e.Y > pnl_2DMap.Height)
+                    plot2DSelectionCorners[isMovingSelectionCorners].Y = pnl_2DMap.Height;
                 else
-                    this.corner_2DMap[this.flag_MovingCorners].Y = e.Y;
+                    plot2DSelectionCorners[isMovingSelectionCorners].Y = e.Y;
 
-                this.pnl_2DMap.Invalidate();
+                pnl_2DMap.Invalidate();
                 return;
             }
 
             // Draw a rectangle along with the dragging mouse.
-            if (_mouseDragging) //&& !toolBar1.Buttons[0].Pushed)
+            if (mouseDragging) //&& !toolBar1.Buttons[0].Pushed)
             {
-                int x, y;
                 // Ensure that the mouse point does not overstep its bounds
-                x = Math.Min(e.X, this.pnl_2DMap.Width - 1);
+                var x = Math.Min(e.X, pnl_2DMap.Width - 1);
                 x = Math.Max(x, 0);
-                y = Math.Min(e.Y, this.pnl_2DMap.Height - 1);
+                var y = Math.Min(e.Y, pnl_2DMap.Height - 1);
                 y = Math.Max(y, 0);
 
-                _mouseMovePoint = new Point(x, y);
+                mouseMovePoint = new Point(x, y);
 
-                this.pnl_2DMap.Invalidate();
+                pnl_2DMap.Invalidate();
             }
         }
 
-        private void pnl_2DMap_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
+        private void Plot2DMouseUp(object sender, MouseEventArgs e)
         {
-            if (this.flag_kill_mouse)  // if plotting the plot, prevent zooming!
+            if (disableMouseControls)  // if plotting the plot, prevent zooming!
                 return;
 
-            if (this.flag_MovingCorners >= 0)
+            if (isMovingSelectionCorners >= 0)
             {
-                convex_Polygon();
+                ConvexPolygon();
 
                 // ensure there are no negative angles.
-                this.flag_MovingCorners = -1; // no more moving corner
+                isMovingSelectionCorners = -1; // no more moving corner
 
-                this.flag_update2DGraph = true;
+                needToUpdate2DPlot = true;
             }
 
-            if (this.pnl_2DMap_Extensions != null)
+            if (pnl_2DMap_Extensions != null)
             {
-                this.pnl_2DMap.Refresh();
-                this.pnl_2DMap_Extensions = null;
+                pnl_2DMap.Refresh();
+                pnl_2DMap_Extensions = null;
             }
 
-            this.Cursor = Cursors.Default;
-
-            int minframe_Data_number;
-            int maxframe_Data_number;
-            int min_select_mobility;
-            int max_select_mobility;
+            Cursor = Cursors.Default;
 
             // Zoom the image in...
             if (e.Button == MouseButtons.Left)
             {
                 // most likely a double click
-                if ((Math.Abs(this._mouseDownPoint.X - this._mouseMovePoint.X) < 3) &&
-                    (Math.Abs(this._mouseDownPoint.Y - this._mouseMovePoint.Y) < 3))
+                if ((Math.Abs(mouseDownPoint.X - mouseMovePoint.X) < 3) &&
+                    (Math.Abs(mouseDownPoint.Y - mouseMovePoint.Y) < 3))
                 {
-                    _mouseMovePoint = _mouseDownPoint;
-                    this._mouseDragging = false;
+                    mouseMovePoint = mouseDownPoint;
+                    mouseDragging = false;
                     return;
                 }
 
-                if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
+                if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
                 {
-                    this.minFrame_Chromatogram = 0;
-                    this.maxFrame_Chromatogram = this.uimfReader.SetCurrentFrameType(this.current_frame_type) - 1;
+                    chromatogramMinFrame = 0;
+                    chromatogramMaxFrame = uimfReader.SetCurrentFrameType(currentFrameType) - 1;
 
                     // select the range of frames
-                    if (this.chromatogram_valuesPerPixelX < 0)
+                    int minFrameDataNumber;
+                    int maxFrameDataNumber;
+                    if (chromatogramValuesPerPixelX < 0)
                     {
-                        if (this._mouseDownPoint.X > this._mouseMovePoint.X)
+                        if (mouseDownPoint.X > mouseMovePoint.X)
                         {
-                            minframe_Data_number = this.minFrame_Chromatogram + (this._mouseMovePoint.X * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
-                            maxframe_Data_number = this.minFrame_Chromatogram + (this._mouseDownPoint.X * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
+                            minFrameDataNumber = chromatogramMinFrame + (mouseMovePoint.X * (chromatogramMaxFrame - chromatogramMinFrame) / pnl_2DMap.Width);
+                            maxFrameDataNumber = chromatogramMinFrame + (mouseDownPoint.X * (chromatogramMaxFrame - chromatogramMinFrame) / pnl_2DMap.Width);
 
-                            // minframe_Data_number = this.minFrame_Chromatogram + (this._mouseMovePoint.X / -this.chromatogram_valuesPerPixelX) + 1;
-                            //  maxframe_Data_number = this.minFrame_Chromatogram + (this._mouseDownPoint.X / -this.chromatogram_valuesPerPixelX) + 1;
+                            //minFrameDataNumber = minFrame_Chromatogram + (_mouseMovePoint.X / -chromatogram_valuesPerPixelX) + 1;
+                            //maxFrameDataNumber = minFrame_Chromatogram + (_mouseDownPoint.X / -chromatogram_valuesPerPixelX) + 1;
                         }
                         else
                         {
-                            //  MessageBox.Show("here");
-
-                            minframe_Data_number = this.minFrame_Chromatogram + (this._mouseDownPoint.X * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
-                            maxframe_Data_number = this.minFrame_Chromatogram + (this._mouseMovePoint.X * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
-                            //minframe_Data_number = this.minFrame_Chromatogram + (this._mouseDownPoint.X / -this.chromatogram_valuesPerPixelX) + 1;
-                            //maxframe_Data_number = this.minFrame_Chromatogram + (this._mouseMovePoint.X / -this.chromatogram_valuesPerPixelX) + 1;
+                            minFrameDataNumber = chromatogramMinFrame + (mouseDownPoint.X * (chromatogramMaxFrame - chromatogramMinFrame) / pnl_2DMap.Width);
+                            maxFrameDataNumber = chromatogramMinFrame + (mouseMovePoint.X * (chromatogramMaxFrame - chromatogramMinFrame) / pnl_2DMap.Width);
+                            //minFrameDataNumber = minFrame_Chromatogram + (_mouseDownPoint.X / -chromatogram_valuesPerPixelX) + 1;
+                            //maxFrameDataNumber = minFrame_Chromatogram + (_mouseMovePoint.X / -chromatogram_valuesPerPixelX) + 1;
                         }
                     }
                     else // we have compressed the chromatogram
                     {
-                        if (this._mouseDownPoint.X > this._mouseMovePoint.X)
+                        if (mouseDownPoint.X > mouseMovePoint.X)
                         {
-                            minframe_Data_number = this.minFrame_Chromatogram + (this._mouseMovePoint.X * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
-                            maxframe_Data_number = this.minFrame_Chromatogram + (this._mouseDownPoint.X * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
-                            //minframe_Data_number = this.minFrame_Chromatogram + (this._mouseMovePoint.X * this.chromatogram_valuesPerPixelX) + 1;
-                            //maxframe_Data_number = this.minFrame_Chromatogram + (this._mouseDownPoint.X * this.chromatogram_valuesPerPixelX) + 1;
+                            minFrameDataNumber = chromatogramMinFrame + (mouseMovePoint.X * (chromatogramMaxFrame - chromatogramMinFrame) / pnl_2DMap.Width);
+                            maxFrameDataNumber = chromatogramMinFrame + (mouseDownPoint.X * (chromatogramMaxFrame - chromatogramMinFrame) / pnl_2DMap.Width);
+                            //minFrameDataNumber = minFrame_Chromatogram + (_mouseMovePoint.X * chromatogram_valuesPerPixelX) + 1;
+                            //maxFrameDataNumber = minFrame_Chromatogram + (_mouseDownPoint.X * chromatogram_valuesPerPixelX) + 1;
                         }
                         else
                         {
-                            minframe_Data_number = this.minFrame_Chromatogram + (this._mouseDownPoint.X * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
-                            maxframe_Data_number = this.minFrame_Chromatogram + (this._mouseMovePoint.X * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
-                            //minframe_Data_number = this.minFrame_Chromatogram + (this._mouseDownPoint.X * this.chromatogram_valuesPerPixelX) + 1;
-                            //maxframe_Data_number = this.minFrame_Chromatogram + (this._mouseMovePoint.X * this.chromatogram_valuesPerPixelX) + 1;
+                            minFrameDataNumber = chromatogramMinFrame + (mouseDownPoint.X * (chromatogramMaxFrame - chromatogramMinFrame) / pnl_2DMap.Width);
+                            maxFrameDataNumber = chromatogramMinFrame + (mouseMovePoint.X * (chromatogramMaxFrame - chromatogramMinFrame) / pnl_2DMap.Width);
+                            //minFrameDataNumber = minFrame_Chromatogram + (_mouseDownPoint.X * chromatogram_valuesPerPixelX) + 1;
+                            //maxFrameDataNumber = minFrame_Chromatogram + (_mouseMovePoint.X * chromatogram_valuesPerPixelX) + 1;
                         }
                     }
 
-                    //  MessageBox.Show("wfd: " + maxframe_Data_number.ToString() + " - " + minframe_Data_number.ToString() + " + 1");
-                    if (minframe_Data_number < 1)
-                        minframe_Data_number = 1;
-                    if (maxframe_Data_number > this.uimfReader.UimfGlobalParams.NumFrames)
-                        maxframe_Data_number = this.uimfReader.UimfGlobalParams.NumFrames;
+                    if (minFrameDataNumber < 1)
+                        minFrameDataNumber = 1;
+                    if (maxFrameDataNumber > uimfReader.UimfGlobalParams.NumFrames)
+                        maxFrameDataNumber = uimfReader.UimfGlobalParams.NumFrames;
 
-                    this.frameControlView.Dispatcher.Invoke(() => {
-                        this.frameControlVm.CurrentFrameNumber = maxframe_Data_number;
+                    frameControlView.Dispatcher.Invoke(() => {
+                        frameControlVm.CurrentFrameNumber = maxFrameDataNumber;
                     });
 
-                    this.plot_Mobility.StopAnnotating(false);
+                    plot_Mobility.StopAnnotating(false);
 
                     // select the mobility highlight
                     // select the range of frames
-                    //MessageBox.Show(this.chromatogram_valuesPerPixelY.ToString());
-                    if (this.current_valuesPerPixelY < 0)
+                    int minSelectMobility;
+                    int maxSelectMobility;
+                    if (currentValuesPerPixelY < 0)
                     {
-                        if (this._mouseDownPoint.Y > this._mouseMovePoint.Y)
+                        if (mouseDownPoint.Y > mouseMovePoint.Y)
                         {
-                            min_select_mobility = this.minMobility_Chromatogram + ((this.pnl_2DMap.Height - this._mouseMovePoint.Y) / -this.chromatogram_valuesPerPixelY);
-                            max_select_mobility = this.minMobility_Chromatogram + ((this.pnl_2DMap.Height - this._mouseDownPoint.Y) / -this.chromatogram_valuesPerPixelY);
+                            minSelectMobility = chromatogramMinMobility + ((pnl_2DMap.Height - mouseMovePoint.Y) / -chromatogramValuesPerPixelY);
+                            maxSelectMobility = chromatogramMinMobility + ((pnl_2DMap.Height - mouseDownPoint.Y) / -chromatogramValuesPerPixelY);
 
-                            this.selection_min_drift = min_select_mobility;
-                            this.selection_max_drift = max_select_mobility;
+                            mobilitySelectionMinimum = minSelectMobility;
+                            mobilitySelectionMaximum = maxSelectMobility;
                         }
                         else
                         {
-                            min_select_mobility = this.minMobility_Chromatogram + ((this.pnl_2DMap.Height - this._mouseDownPoint.Y) / -this.chromatogram_valuesPerPixelY);
-                            max_select_mobility = this.minMobility_Chromatogram + ((this.pnl_2DMap.Height - this._mouseMovePoint.Y) / -this.chromatogram_valuesPerPixelY);
+                            minSelectMobility = chromatogramMinMobility + ((pnl_2DMap.Height - mouseDownPoint.Y) / -chromatogramValuesPerPixelY);
+                            maxSelectMobility = chromatogramMinMobility + ((pnl_2DMap.Height - mouseMovePoint.Y) / -chromatogramValuesPerPixelY);
 
-                            this.selection_min_drift = max_select_mobility;
-                            this.selection_max_drift = min_select_mobility;
+                            mobilitySelectionMinimum = maxSelectMobility;
+                            mobilitySelectionMaximum = minSelectMobility;
                         }
                     }
                     else
                     {
-                        if (this._mouseDownPoint.Y > this._mouseMovePoint.Y)
+                        if (mouseDownPoint.Y > mouseMovePoint.Y)
                         {
-                            min_select_mobility = this.minMobility_Chromatogram + ((this.pnl_2DMap.Height - this._mouseMovePoint.Y) * this.chromatogram_valuesPerPixelY);
-                            max_select_mobility = this.minMobility_Chromatogram + ((this.pnl_2DMap.Height - this._mouseDownPoint.Y) * this.chromatogram_valuesPerPixelY);
+                            minSelectMobility = chromatogramMinMobility + ((pnl_2DMap.Height - mouseMovePoint.Y) * chromatogramValuesPerPixelY);
+                            maxSelectMobility = chromatogramMinMobility + ((pnl_2DMap.Height - mouseDownPoint.Y) * chromatogramValuesPerPixelY);
 
-                            this.selection_min_drift = min_select_mobility;
-                            this.selection_max_drift = max_select_mobility;
+                            mobilitySelectionMinimum = minSelectMobility;
+                            mobilitySelectionMaximum = maxSelectMobility;
                         }
                         else
                         {
-                            min_select_mobility = this.minMobility_Chromatogram + ((this.pnl_2DMap.Height - this._mouseDownPoint.Y) * this.chromatogram_valuesPerPixelY);
-                            max_select_mobility = this.minMobility_Chromatogram + ((this.pnl_2DMap.Height - this._mouseMovePoint.Y) * this.chromatogram_valuesPerPixelY);
+                            minSelectMobility = chromatogramMinMobility + ((pnl_2DMap.Height - mouseDownPoint.Y) * chromatogramValuesPerPixelY);
+                            maxSelectMobility = chromatogramMinMobility + ((pnl_2DMap.Height - mouseMovePoint.Y) * chromatogramValuesPerPixelY);
 
-                            this.selection_min_drift = max_select_mobility;
-                            this.selection_max_drift = min_select_mobility;
+                            mobilitySelectionMinimum = maxSelectMobility;
+                            mobilitySelectionMaximum = minSelectMobility;
                         }
                     }
 
-                    this.flag_selection_drift = true;
-                    //this.plot_Mobility.SetRange(min_select_mobility, max_select_mobility);
+                    selectingMobilityRange = true;
+                    //plot_Mobility.SetRange(min_select_mobility, max_select_mobility);
 
-                    this.chromatogramControlVm.PartialPeakChromatogramChecked = false;
-                    this.chromatogramControlVm.CompletePeakChromatogramChecked = false;
+                    chromatogramControlVm.PartialPeakChromatogramChecked = false;
+                    chromatogramControlVm.CompletePeakChromatogramChecked = false;
 
-                    this.new_minBin = 0;
-                    this.new_minMobility = 0;
-                    this.new_maxBin = this.maximum_Bins;
-                    this.new_maxMobility = this.maximum_Mobility;
+                    newMinTofBin = 0;
+                    newMinMobility = 0;
+                    newMaxTofBin = frameMaximumTofBins;
+                    newMaxMobility = frameMaximumMobility;
 
-                    this.AutoScrollPosition = new Point(0, 0);
-                    this.hsb_2DMap.Value = 0;
-                    this.uimfReader.CurrentFrameIndex = (int) this.frameControlVm.CurrentFrameNumber;
+                    AutoScrollPosition = new Point(0, 0);
+                    hsb_2DMap.Value = 0;
+                    uimfReader.CurrentFrameIndex = frameControlVm.CurrentFrameNumber;
 
-                    this.Chromatogram_CheckedChanged();
+                    ChromatogramCheckedChanged();
                 }
-                else if (this._mouseDragging)
+                else if (mouseDragging)
                 {
-                    this.Zoom(_mouseMovePoint, _mouseDownPoint);
+                    Zoom(mouseMovePoint, mouseDownPoint);
                 }
             }
 
             // This will erase the rectangle
-            _mouseMovePoint = _mouseDownPoint;
-            _mouseDragging = false;
-
-            //   this._selecting_oblong_region = false;
-
-            this.flag_update2DGraph = true;
+            mouseMovePoint = mouseDownPoint;
+            mouseDragging = false;
+            needToUpdate2DPlot = true;
         }
 
-        private bool flag_Painting = false;
-        protected virtual void pnl_2DMap_Paint(object sender, System.Windows.Forms.PaintEventArgs e)
+        private bool isCurrentlyPainting;
+        private void Plot2DPaint(object sender, PaintEventArgs e)
         {
-            int w;
-            int xl;
-            int xwidth;
-            int min_mobility;
-
-            if (this.pnl_2DMap.BackgroundImage == null)
+            if (pnl_2DMap.BackgroundImage == null)
                 return;
 
-            if (this.flag_Painting)
+            if (isCurrentlyPainting)
                 return;
-            this.flag_Painting = true;
+            isCurrentlyPainting = true;
 
             // DrawImage seems to make the selection box more responsive.
-            if (!this.chromatogramControlVm.CompletePeakChromatogramChecked && !this.chromatogramControlVm.PartialPeakChromatogramChecked)
-                e.Graphics.DrawImage(this.pnl_2DMap.BackgroundImage, 0, 0);
+            if (!chromatogramControlVm.CompletePeakChromatogramChecked && !chromatogramControlVm.PartialPeakChromatogramChecked)
+                e.Graphics.DrawImage(pnl_2DMap.BackgroundImage, 0, 0);
 
-            if (_mouseDragging) //&& !toolBar1.Buttons[0].Pushed)
-                this.DrawRectangle(e.Graphics, _mouseDownPoint, _mouseMovePoint);
-
-            //   this.plot_Height = this.data_2D[0].Length;
-            //   this.plot_Width = this.data_2D.Length;
+            if (mouseDragging)
+                DrawRectangle(e.Graphics, mouseDownPoint, mouseMovePoint);
 
             // this section draws the highlight on the plot.
-            if (this.flag_selection_drift)
+            if (selectingMobilityRange)
             {
-                if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
+                int xl;
+                int xWidth;
+                if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
                 {
-                    w = this.pnl_2DMap.Width / this.uimfReader.UimfGlobalParams.NumFrames;
-                    xl = (this.selection_min_drift * w);
+                    var w = pnl_2DMap.Width / uimfReader.UimfGlobalParams.NumFrames;
+                    xl = (mobilitySelectionMinimum * w);
 
-                    // if (this.current_valuesPerPixelX < 0)
-                    //     xl += this.current_valuesPerPixelX;
-                    xwidth = (this.selection_max_drift - this.selection_min_drift + 1) * w;
+                    // if (current_valuesPerPixelX < 0)
+                    //     xl += current_valuesPerPixelX;
+                    xWidth = (mobilitySelectionMaximum - mobilitySelectionMinimum + 1) * w;
                 }
                 else
                 {
-                    if (this.flag_viewMobility)
-                        min_mobility = this.new_minMobility;
+                    int minMobility;
+                    if (showMobilityScanNumber)
+                        minMobility = newMinMobility;
                     else
-                        min_mobility = (int)(((double)this.new_minMobility) * (this.mean_TOFScanTime / 1000000));
+                        minMobility = (int)(newMinMobility * (averageDriftScanDuration / 1000000));
 
-                    w = this.pnl_2DMap.Width / (this.current_maxMobility - this.current_minMobility + 1);
-                    xl = ((this.selection_min_drift - min_mobility) * w);
+                    var w = pnl_2DMap.Width / (currentMaxMobility - currentMinMobility + 1);
+                    xl = ((mobilitySelectionMinimum - minMobility) * w);
 
-                    //MessageBox.Show("here");
-                    // if (this.current_valuesPerPixelX < 0)
-                    //     xl += this.current_valuesPerPixelX;
-                    xwidth = (this.selection_max_drift - this.selection_min_drift + 1) * w;
-                    // e.Graphics.DrawString("(" + this.selection_min_drift.ToString() + " - " + min_mobility.ToString() + ") * " + w.ToString() + " = " + xl.ToString(), new Font(FontFamily.GenericSerif, 12, FontStyle.Bold), new SolidBrush(Color.White), 10, 10);
-                    //e.Graphics.DrawString((this.mean_TOFScanTime / 1000000).ToString() + " ... " + min_mobility.ToString() + "    (" + this.selection_max_drift.ToString() + " - " + this.selection_min_drift.ToString() + " + 1) * " + w.ToString() + " = " + xwidth.ToString() + " ... " + new_minMobility.ToString() + ", " + new_maxMobility.ToString(), new Font(FontFamily.GenericSerif, 12, FontStyle.Bold), new SolidBrush(Color.White), 10, 50);
+                    // if (current_valuesPerPixelX < 0)
+                    //     xl += current_valuesPerPixelX;
+                    xWidth = (mobilitySelectionMaximum - mobilitySelectionMinimum + 1) * w;
+                    //e.Graphics.DrawString("(" + selection_min_drift.ToString() + " - " + min_mobility.ToString() + ") * " + w.ToString() + " = " + xl.ToString(), new Font(FontFamily.GenericSerif, 12, FontStyle.Bold), new SolidBrush(Color.White), 10, 10);
+                    //e.Graphics.DrawString((mean_TOFScanTime / 1000000).ToString() + " ... " + min_mobility.ToString() + "    (" + selection_max_drift.ToString() + " - " + selection_min_drift.ToString() + " + 1) * " + w.ToString() + " = " + xWidth.ToString() + " ... " + new_minMobility.ToString() + ", " + new_maxMobility.ToString(), new Font(FontFamily.GenericSerif, 12, FontStyle.Bold), new SolidBrush(Color.White), 10, 50);
                 }
-                e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(145, 111, 111, 126)), xl, 0, xwidth, this.pnl_2DMap.Height);
+                e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(145, 111, 111, 126)), xl, 0, xWidth, pnl_2DMap.Height);
             }
 
-            if (!this.flag_CinemaPlot)
+            if (!playingCinemaPlot)
             {
-                if (this.flag_isFullscreen)
-                    e.Graphics.DrawImage(this.pb_Shrink.BackgroundImage, this.pnl_2DMap.Width - 17, 2);
+                if (is2DPlotFullScreen)
+                    e.Graphics.DrawImage(pb_Shrink.BackgroundImage, pnl_2DMap.Width - 17, 2);
                 else
-                    e.Graphics.DrawImage(this.pb_Expand.BackgroundImage, this.pnl_2DMap.Width - 17, 2);
+                    e.Graphics.DrawImage(pb_Expand.BackgroundImage, pnl_2DMap.Width - 17, 2);
             }
 
-            this.draw_Corners(e.Graphics);
+            DrawSelectionCorners(e.Graphics);
 
-            this.flag_Painting = false;
+            isCurrentlyPainting = false;
         }
 
-        public void draw_Corners(Graphics g)
+        private void Plot2DDoubleClick(object sender, EventArgs e)
         {
-            if (!this.menuItem_SelectionCorners.Checked)
-                return;
-
-            // shade the outside of the selected polygon
-            Point[][] points = new Point[4][];
-            for (int i = 0; i < 4; i++)
-                points[i] = new Point[4];
-
-            points[0][0] = points[3][0] = this.corner_2DMap[0]; // top left
-            points[0][1] = points[1][0] = this.corner_2DMap[1]; // top right
-            points[2][0] = points[1][1] = this.corner_2DMap[2]; // bot right
-            points[2][1] = points[3][1] = this.corner_2DMap[3]; // bot left
-
-            points[0][3] = points[3][3] = new Point(0, 0); // top left
-            points[0][2] = points[1][3] = new Point(this.pnl_2DMap.Width, 0); // top right
-            points[2][3] = points[1][2] = new Point(this.pnl_2DMap.Width, this.pnl_2DMap.Height); // bot right
-            points[2][2] = points[3][2] = new Point(0, this.pnl_2DMap.Height); // bot left
-
-            for (int i = 0; i < 4; i++)
-                g.FillPolygon(new SolidBrush(Color.FromArgb(144, 111, 11, 111)), points[i]);
-
-            g.DrawLine(thick_pen, this.corner_2DMap[0].X, this.corner_2DMap[0].Y, this.corner_2DMap[1].X, this.corner_2DMap[1].Y);
-            g.DrawLine(thick_pen, this.corner_2DMap[1].X, this.corner_2DMap[1].Y, this.corner_2DMap[2].X, this.corner_2DMap[2].Y);
-            g.DrawLine(thick_pen, this.corner_2DMap[2].X, this.corner_2DMap[2].Y, this.corner_2DMap[3].X, this.corner_2DMap[3].Y);
-            g.DrawLine(thick_pen, this.corner_2DMap[3].X, this.corner_2DMap[3].Y, this.corner_2DMap[0].X, this.corner_2DMap[0].Y);
-
-            g.FillRectangle(new SolidBrush(Color.FromArgb(145, 200, 200, 200)), this.corner_2DMap[0].X - 2, this.corner_2DMap[0].Y - 2, 8, 8);
-            g.FillRectangle(new SolidBrush(Color.FromArgb(145, 200, 200, 200)), this.corner_2DMap[1].X - 5, this.corner_2DMap[1].Y - 2, 8, 8);
-            g.FillRectangle(new SolidBrush(Color.FromArgb(145, 200, 200, 200)), this.corner_2DMap[2].X - 5, this.corner_2DMap[2].Y - 5, 8, 8);
-            g.FillRectangle(new SolidBrush(Color.FromArgb(145, 200, 200, 200)), this.corner_2DMap[3].X - 2, this.corner_2DMap[3].Y - 5, 8, 8);
-        }
-
-        public void reset_Corners()
-        {
-            if (this.menuItem_SelectionCorners.Checked)
+            if (playingCinemaPlot)
             {
-                this.corner_2DMap[0] = new Point((int)(this.pnl_2DMap.Width * .15), (int)(this.pnl_2DMap.Height * .15));
-                this.corner_2DMap[1] = new Point((int)(this.pnl_2DMap.Width * .85), (int)(this.pnl_2DMap.Height * .15));
-                this.corner_2DMap[2] = new Point((int)(this.pnl_2DMap.Width * .85), (int)(this.pnl_2DMap.Height * .85));
-                this.corner_2DMap[3] = new Point((int)(this.pnl_2DMap.Width * .15), (int)(this.pnl_2DMap.Height * .85));
-            }
-        }
-
-        private void pnl_2DMap_MouseLeave(object sender, System.EventArgs e)
-        {
-        }
-
-        protected virtual void pnl_2DMap_DblClick(object sender, System.EventArgs e)
-        {
-            int frame_number;
-
-            if (this.flag_CinemaPlot)
-            {
-                this.StopCinema();
+                StopCinema();
                 return;
             }
 
-            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
+            if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
             {
-                this.Width = this.pnl_2DMap.Left + this.uimfReader.UimfFrameParams.Scans + 170;
+                Width = pnl_2DMap.Left + uimfReader.UimfFrameParams.Scans + 170;
 
-                this.chromatogramControlVm.PartialPeakChromatogramChecked = false;
-                this.chromatogramControlVm.CompletePeakChromatogramChecked = false;
+                chromatogramControlVm.PartialPeakChromatogramChecked = false;
+                chromatogramControlVm.CompletePeakChromatogramChecked = false;
 
-                this.plot_Mobility.StopAnnotating(false);
+                plot_Mobility.StopAnnotating(false);
 
-                this.Chromatogram_CheckedChanged();
+                ChromatogramCheckedChanged();
 
-                // MessageBox.Show(this.chromatogram_valuesPerPixelX.ToString());
-                //if (this.chromatogram_valuesPerPixelX < 0)
-                frame_number = this.minFrame_Chromatogram + (this.prev_cursorX * (this.maxFrame_Chromatogram - this.minFrame_Chromatogram) / this.pnl_2DMap.Width);
-                //MessageBox.Show(frame_number.ToString());
+                var frameNumber = chromatogramMinFrame + (prevCursorX * (chromatogramMaxFrame - chromatogramMinFrame) / pnl_2DMap.Width);
 
-#if false
-                    frame_number = this.minFrame_Chromatogram + (this.prev_cursorX * Convert.ToInt32(this.num_FrameCompression.Value) / (-this.chromatogram_valuesPerPixelX)) + 1;
-                else
-                    frame_number = this.minFrame_Chromatogram + (this.prev_cursorX * Convert.ToInt32(this.num_FrameCompression.Value)) + 1;
-#endif
-                // MessageBox.Show(frame_number.ToString()+"="+this.minFrame_Chromatogram.ToString() + "  " + this.prev_cursorX.ToString() + "  " + this.current_valuesPerPixelX.ToString());
+                if (frameNumber < 1)
+                    frameNumber = 1;
+                if (frameNumber > uimfReader.GetNumberOfFrames(currentFrameType))
+                    frameNumber = uimfReader.GetNumberOfFrames(currentFrameType) - 1;
 
-                if (frame_number < 1)
-                    frame_number = 1;
-                if (frame_number > this.uimfReader.GetNumberOfFrames(this.current_frame_type))
-                    frame_number = this.uimfReader.GetNumberOfFrames(this.current_frame_type) - 1;
+                frameControlView.Dispatcher.Invoke(() => frameControlVm.CurrentFrameNumber = frameNumber);
 
-                this.frameControlView.Dispatcher.Invoke(() => this.frameControlVm.CurrentFrameNumber = frame_number);
+                uimfReader.CurrentFrameIndex = frameControlVm.CurrentFrameNumber;
+                plot_Mobility.ClearRange();
 
-                this.uimfReader.CurrentFrameIndex = (int)this.frameControlVm.CurrentFrameNumber;
-                this.plot_Mobility.ClearRange();
+                vsb_2DMap.Show();  // gets hidden with Chromatogram
+                hsb_2DMap.Show();
 
-                this.vsb_2DMap.Show();  // gets hidden with Chromatogram
-                this.hsb_2DMap.Show();
-
-                // this.imf_ReadFrame(this.new_frame_index, out frame_Data);
-                this.max_plot_width = this.uimfReader.UimfFrameParams.Scans;
-                this.flag_update2DGraph = true;
+                // imf_ReadFrame(new_frame_index, out frame_Data);
+                max2DPlotWidth = uimfReader.UimfFrameParams.Scans;
+                needToUpdate2DPlot = true;
             }
             else
             {
                 // Reinitialize
-                _zoom.Clear();
+                zoomHistory.Clear();
 
-                this.new_minBin = 0;
-                this.new_minMobility = 0;
-                this.new_maxBin = this.maximum_Bins;
-                this.new_maxMobility = this.maximum_Mobility;
+                newMinTofBin = 0;
+                newMinMobility = 0;
+                newMaxTofBin = frameMaximumTofBins;
+                newMaxMobility = frameMaximumMobility;
 
-                this.num_minMobility.Value = 0;
-                this.num_maxMobility.Value = this.maximum_Mobility;
+                num_minMobility.Value = 0;
+                num_maxMobility.Value = frameMaximumMobility;
 
-                this.flag_selection_drift = false;
-                this.plot_Mobility.ClearRange();
-                this.flag_update2DGraph = true;
-                this.hsb_2DMap.Value = 0;
+                selectingMobilityRange = false;
+                plot_Mobility.ClearRange();
+                needToUpdate2DPlot = true;
+                hsb_2DMap.Value = 0;
 
-                this.AutoScrollPosition = new Point(0, 0);
-                // this.ResizeThis();
+                AutoScrollPosition = new Point(0, 0);
+                // ResizeThis();
             }
         }
 
@@ -665,15 +576,13 @@ namespace UIMF_File
         /* Taken from Robert Sedgewick, Algorithms in C++ */
         /*  returns whether, in traveling from the first to the second
     	to the third point, we turn counterclockwise (+1) or not (-1) */
-        int ccw(Point p0, Point p1, Point p2)
+        private static int GetTurnDirection(Point p0, Point p1, Point p2)
         {
-            int dx1, dx2, dy1, dy2;
+            var dx1 = p1.X - p0.X;
+            var dy1 = p1.Y - p0.Y;
 
-            dx1 = p1.X - p0.X;
-            dy1 = p1.Y - p0.Y;
-
-            dx2 = p2.X - p0.X;
-            dy2 = p2.Y - p0.Y;
+            var dx2 = p2.X - p0.X;
+            var dy2 = p2.Y - p0.Y;
 
             if (dx1 * dy2 > dy1 * dx2)
                 return +1;
@@ -686,64 +595,61 @@ namespace UIMF_File
             return 0;
         }
 
-        public bool inside_Polygon(int scan, int bin)
+        private bool InsidePolygon(int scan, int bin)
         {
-            int x_pixel;
-            int y_pixel;
-
-            if (this.current_valuesPerPixelX == 1)
-                x_pixel = scan;
+            int xPixel;
+            if (currentValuesPerPixelX == 1)
+                xPixel = scan;
             else
-                x_pixel = (scan - this.current_minMobility) * -this.current_valuesPerPixelX;
+                xPixel = (scan - currentMinMobility) * -currentValuesPerPixelX;
 
-            if (current_valuesPerPixelY > 0)
-                y_pixel = ((bin - this.current_minBin) / current_valuesPerPixelY);
+            int yPixel;
+            if (currentValuesPerPixelY > 0)
+                yPixel = ((bin - currentMinTofBin) / currentValuesPerPixelY);
             else
-                y_pixel = ((bin - this.current_minBin) * -current_valuesPerPixelY);
-            return this.inside_Polygon_Pixel(x_pixel, y_pixel);
+                yPixel = ((bin - currentMinTofBin) * -currentValuesPerPixelY);
+            return InsidePolygonPixel(xPixel, yPixel);
         }
 
-        public bool inside_Polygon(int scan, double mz)
+        private bool InsidePolygon(int scan, double mz)
         {
-            int x_pixel;
-            int y_pixel;
-
-            if (this.current_valuesPerPixelX == 1)
-                x_pixel = scan;
+            int xPixel;
+            if (currentValuesPerPixelX == 1)
+                xPixel = scan;
             else
-                x_pixel = (scan - this.current_minMobility) * -this.current_valuesPerPixelX;
+                xPixel = (scan - currentMinMobility) * -currentValuesPerPixelX;
 
             // to find the y_pixel, the mz is linearized vertically.
-            double height = this.pnl_2DMap.Height;
-            double mzMax = this.uimfReader.MzCalibration.TOFtoMZ(this.current_maxBin * this.uimfReader.TenthsOfNanoSecondsPerBin);
-            double mzMin = this.uimfReader.MzCalibration.TOFtoMZ(this.current_minBin * this.uimfReader.TenthsOfNanoSecondsPerBin);
-            y_pixel = (int)(height * (mz - mzMin) / (mzMax - mzMin));
+            var height = pnl_2DMap.Height;
+            var mzMax = uimfReader.MzCalibration.TOFtoMZ(currentMaxTofBin * uimfReader.TenthsOfNanoSecondsPerBin);
+            var mzMin = uimfReader.MzCalibration.TOFtoMZ(currentMinTofBin * uimfReader.TenthsOfNanoSecondsPerBin);
+            var yPixel = (int)(height * (mz - mzMin) / (mzMax - mzMin));
 
-            return this.inside_Polygon_Pixel(x_pixel, y_pixel);
+            return InsidePolygonPixel(xPixel, yPixel);
         }
 
-        public bool inside_Polygon_Pixel(int x_pixel, int y_pixel)
+        private bool InsidePolygonPixel(int xPixel, int yPixel)
         {
-            if (this.menuItem_SelectionCorners.Checked)
+            if (menuItem_SelectionCorners.Checked)
             {
                 // in situations where you are zoomed in to where the points are larger than a pixel, you need to compensate.
-                if (this.current_valuesPerPixelX < 0)
-                    x_pixel *= -this.current_valuesPerPixelX;
-                if (this.current_valuesPerPixelY < 0)
-                    y_pixel *= -this.current_valuesPerPixelY;
+                if (currentValuesPerPixelX < 0)
+                    xPixel *= -currentValuesPerPixelX;
+                if (currentValuesPerPixelY < 0)
+                    yPixel *= -currentValuesPerPixelY;
 
-                y_pixel = this.pnl_2DMap.Height - y_pixel;
+                yPixel = pnl_2DMap.Height - yPixel;
 
                 // due to strange shapes, I have to split this into triangles for results to be correct.
-                Point pt = new Point(x_pixel, y_pixel);
-                if ((ccw(this.corner_2DMap[0], this.corner_2DMap[1], pt) > 0) &&
-                    (ccw(this.corner_2DMap[1], this.corner_2DMap[2], pt) > 0) &&
-                    (ccw(this.corner_2DMap[2], this.corner_2DMap[0], pt) > 0))
+                var pt = new Point(xPixel, yPixel);
+                if ((GetTurnDirection(plot2DSelectionCorners[0], plot2DSelectionCorners[1], pt) > 0) &&
+                    (GetTurnDirection(plot2DSelectionCorners[1], plot2DSelectionCorners[2], pt) > 0) &&
+                    (GetTurnDirection(plot2DSelectionCorners[2], plot2DSelectionCorners[0], pt) > 0))
                     return true;
 
-                if ((ccw(this.corner_2DMap[2], this.corner_2DMap[3], pt) > 0) &&
-                    (ccw(this.corner_2DMap[3], this.corner_2DMap[0], pt) > 0) &&
-                    (ccw(this.corner_2DMap[0], this.corner_2DMap[2], pt) > 0)) // counter clockwise
+                if ((GetTurnDirection(plot2DSelectionCorners[2], plot2DSelectionCorners[3], pt) > 0) &&
+                    (GetTurnDirection(plot2DSelectionCorners[3], plot2DSelectionCorners[0], pt) > 0) &&
+                    (GetTurnDirection(plot2DSelectionCorners[0], plot2DSelectionCorners[2], pt) > 0)) // counter clockwise
                     return true;
 
                 return false;
@@ -752,48 +658,44 @@ namespace UIMF_File
                 return true;
         }
 
-        void swap_corners(int index1, int index2)
+        private void SwapCorners(int index1, int index2)
         {
-            //MessageBox.Show("swap corners:  "+index1.ToString()+"   "+index2.ToString());
-
-            Point tmp_point = this.corner_2DMap[index1];
-            this.corner_2DMap[index1] = this.corner_2DMap[index2];
-            this.corner_2DMap[index2] = tmp_point;
+            var tmpPoint = plot2DSelectionCorners[index1];
+            plot2DSelectionCorners[index1] = plot2DSelectionCorners[index2];
+            plot2DSelectionCorners[index2] = tmpPoint;
         }
 
-        // make the points for the most outter points starting in the upper left corner
-        private void convex_Polygon()
+        // make the points for the most outer points starting in the upper left corner
+        private void ConvexPolygon()
         {
-            //MessageBox.Show("convex Polygon:  ");
-            if (ccw(this.corner_2DMap[0], this.corner_2DMap[1], this.corner_2DMap[2]) < 0) // counter clockwise
-                this.swap_corners(1, 2);
-            if (ccw(this.corner_2DMap[1], this.corner_2DMap[2], this.corner_2DMap[3]) < 0) // counter clockwise
-                this.swap_corners(2, 3);
-            if (ccw(this.corner_2DMap[2], this.corner_2DMap[3], this.corner_2DMap[0]) < 0) // counter clockwise
-                this.swap_corners(3, 0);
-            if (ccw(this.corner_2DMap[3], this.corner_2DMap[0], this.corner_2DMap[1]) < 0) // counter clockwise
-                this.swap_corners(0, 1);
+            if (GetTurnDirection(plot2DSelectionCorners[0], plot2DSelectionCorners[1], plot2DSelectionCorners[2]) < 0) // counter clockwise
+                SwapCorners(1, 2);
+            if (GetTurnDirection(plot2DSelectionCorners[1], plot2DSelectionCorners[2], plot2DSelectionCorners[3]) < 0) // counter clockwise
+                SwapCorners(2, 3);
+            if (GetTurnDirection(plot2DSelectionCorners[2], plot2DSelectionCorners[3], plot2DSelectionCorners[0]) < 0) // counter clockwise
+                SwapCorners(3, 0);
+            if (GetTurnDirection(plot2DSelectionCorners[3], plot2DSelectionCorners[0], plot2DSelectionCorners[1]) < 0) // counter clockwise
+                SwapCorners(0, 1);
 
-            int upper_left = 0;
-            int smallest_dist = 1000000000;
-            int dist;
-            for (int i = 0; i < 4; i++)
+            var upperLeft = 0;
+            var smallestDist = 1000000000;
+            for (var i = 0; i < 4; i++)
             {
-                dist = (this.corner_2DMap[i].Y ^ 2) + (this.corner_2DMap[i].X ^ 2);
-                if (dist < smallest_dist)
+                var dist = (plot2DSelectionCorners[i].Y ^ 2) + (plot2DSelectionCorners[i].X ^ 2);
+                if (dist < smallestDist)
                 {
-                    upper_left = i;
-                    smallest_dist = dist;
+                    upperLeft = i;
+                    smallestDist = dist;
                 }
             }
 
-            for (int i = 0; i < upper_left; i++) // if upper left is 0, then we are good to go
+            for (var i = 0; i < upperLeft; i++) // if upper left is 0, then we are good to go
             {
-                Point tmp_point = this.corner_2DMap[0];
-                this.corner_2DMap[0] = this.corner_2DMap[1];
-                this.corner_2DMap[1] = this.corner_2DMap[2];
-                this.corner_2DMap[2] = this.corner_2DMap[3];
-                this.corner_2DMap[3] = tmp_point;
+                var tmpPoint = plot2DSelectionCorners[0];
+                plot2DSelectionCorners[0] = plot2DSelectionCorners[1];
+                plot2DSelectionCorners[1] = plot2DSelectionCorners[2];
+                plot2DSelectionCorners[2] = plot2DSelectionCorners[3];
+                plot2DSelectionCorners[3] = tmpPoint;
             }
         }
 
@@ -802,246 +704,227 @@ namespace UIMF_File
         #region Context Menu Events
 
         // Handler for the pb_2DMap's ContextMenu
-        protected virtual void ZoomContextMenu(object sender, System.EventArgs e)
+        private void ZoomContextMenu(object sender, EventArgs e)
         {
             // Who sent you?
-            if (sender == this.menuItemZoomFull)
+            if (sender == menuItemZoomFull)
             {
                 // Reinitialize
-                _zoom.Clear();
+                zoomHistory.Clear();
 
-                this.new_minBin = 0;
-                this.new_minMobility = 0;
-                this.new_maxBin = this.maximum_Bins;
-                this.new_maxMobility = this.maximum_Mobility;
+                newMinTofBin = 0;
+                newMinMobility = 0;
+                newMaxTofBin = frameMaximumTofBins;
+                newMaxMobility = frameMaximumMobility;
 
-                this.flag_selection_drift = false;
-                this.plot_Mobility.ClearRange();
+                selectingMobilityRange = false;
+                plot_Mobility.ClearRange();
 
-                this.AutoScrollPosition = new Point(0, 0);
-                this.hsb_2DMap.Value = 0;
+                AutoScrollPosition = new Point(0, 0);
+                hsb_2DMap.Value = 0;
 
-                this.flag_update2DGraph = true;
+                needToUpdate2DPlot = true;
             }
-            else if (sender == this.menuItemZoomPrevious)
+            else if (sender == menuItemZoomPrevious)
             {
-                if (_zoom.Count < 2)
+                if (zoomHistory.Count < 2)
                 {
-                    this.pnl_2DMap_DblClick((object)null, (System.EventArgs)null);
+                    Plot2DDoubleClick(this, EventArgs.Empty);
                     return;
                 }
 
-                var newZoom = _zoom[_zoom.Count - 2];
-                new_minMobility = newZoom.XMin;
-                new_maxMobility = newZoom.XMax;
+                var newZoom = zoomHistory[zoomHistory.Count - 2];
+                newMinMobility = newZoom.XMin;
+                newMaxMobility = newZoom.XMax;
 
-                new_minBin = newZoom.YMin;
-                new_maxBin = newZoom.YMax;
+                newMinTofBin = newZoom.YMin;
+                newMaxTofBin = newZoom.YMax;
 
-                _zoom.RemoveAt(_zoom.Count - 1);
+                zoomHistory.RemoveAt(zoomHistory.Count - 1);
 
-                this.flag_update2DGraph = true;
+                needToUpdate2DPlot = true;
             }
-            else if (sender == this.menuItemZoomOut) // double the view window
+            else if (sender == menuItemZoomOut) // double the view window
             {
-                int temp = this.current_maxMobility - this.current_minMobility + 1;
-                new_minMobility = this.current_minMobility - (temp / 3) - 1;
-                if (new_minMobility < 0)
-                    this.new_minMobility = 0;
-                new_maxMobility = this.current_maxMobility + (temp / 3) + 1;
-                if (this.new_maxMobility > this.maximum_Mobility)
-                    this.new_maxMobility = this.maximum_Mobility - 1;
+                int temp = currentMaxMobility - currentMinMobility + 1;
+                newMinMobility = currentMinMobility - (temp / 3) - 1;
+                if (newMinMobility < 0)
+                    newMinMobility = 0;
+                newMaxMobility = currentMaxMobility + (temp / 3) + 1;
+                if (newMaxMobility > frameMaximumMobility)
+                    newMaxMobility = frameMaximumMobility - 1;
 
-                temp = this.current_maxBin - this.current_minBin + 1;
-                new_minBin = this.current_minBin - temp - 1;
-                if (new_minBin < 0)
-                    new_minBin = 0;
-                new_maxBin = this.current_maxBin + temp + 1;
-                if (new_maxBin > this.maximum_Bins)
-                    new_maxBin = this.maximum_Bins - 1;
+                temp = currentMaxTofBin - currentMinTofBin + 1;
+                newMinTofBin = currentMinTofBin - temp - 1;
+                if (newMinTofBin < 0)
+                    newMinTofBin = 0;
+                newMaxTofBin = currentMaxTofBin + temp + 1;
+                if (newMaxTofBin > frameMaximumTofBins)
+                    newMaxTofBin = frameMaximumTofBins - 1;
 
-                SaveZoom(new_minMobility, new_maxMobility, new_minBin, new_maxBin);
+                SaveZoom(newMinMobility, newMaxMobility, newMinTofBin, newMaxTofBin);
 
-                this.flag_update2DGraph = true;
+                needToUpdate2DPlot = true;
 
-                //this.Zoom(new System.Drawing.Point(new_minMobility, new_maxBin), new System.Drawing.Point(new_maxMobility, new_minBin));
+                //Zoom(new System.Drawing.Point(new_minMobility, new_maxBin), new System.Drawing.Point(new_maxMobility, new_minBin));
             }
         }
 
-        private void Mobility_ContextMenu(object sender, System.EventArgs e)
+        private void MobilityShowScanNumberClick(object sender, EventArgs e)
         {
-            this.flag_viewMobility = true;
+            showMobilityScanNumber = true;
 
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
 
-            this.menuItem_Mobility.Checked = true;
-            this.menuItem_ScanTime.Checked = false;
+            menuItem_Mobility.Checked = true;
+            menuItem_ScanTime.Checked = false;
         }
 
-        private void ScanTime_ContextMenu(object sender, System.EventArgs e)
+        private void MobilityShowScanTimeClick(object sender, EventArgs e)
         {
-            if (this.mean_TOFScanTime == -1.0)
+            if (averageDriftScanDuration.Equals(-1.0))
             {
                 MessageBox.Show(this, "The mean scan time is not available for this frame.");
                 return;
             }
-            this.flag_viewMobility = false;
+            showMobilityScanNumber = false;
 
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
 
-            this.menuItem_Mobility.Checked = false;
-            this.menuItem_ScanTime.Checked = true;
+            menuItem_Mobility.Checked = false;
+            menuItem_ScanTime.Checked = true;
         }
 
-        private void ConvertContextMenu(object sender, System.EventArgs e)
+        private void ConvertContextMenu(object sender, EventArgs e)
         {
             if (sender == menuItemConvertToMZ)
             {
                 menuItemConvertToMZ.Checked = true;
                 menuItemConvertToTOF.Checked = false;
 
-                if (!this.chromatogramControlVm.CompletePeakChromatogramChecked && !this.chromatogramControlVm.PartialPeakChromatogramChecked)
+                if (!chromatogramControlVm.CompletePeakChromatogramChecked && !chromatogramControlVm.PartialPeakChromatogramChecked)
                 {
-                    this.flag_display_as_TOF = false;
-                    this.flag_update2DGraph = true;
+                    displayTofValues = false;
+                    needToUpdate2DPlot = true;
                 }
             }
             else if (sender == menuItemConvertToTOF)
             {
-                flag_display_as_TOF = true;
+                displayTofValues = true;
                 menuItemConvertToMZ.Checked = false;
                 menuItemConvertToTOF.Checked = true;
 
-                if (!this.chromatogramControlVm.CompletePeakChromatogramChecked && !this.chromatogramControlVm.PartialPeakChromatogramChecked)
-                    this.flag_update2DGraph = true;
+                if (!chromatogramControlVm.CompletePeakChromatogramChecked && !chromatogramControlVm.PartialPeakChromatogramChecked)
+                    needToUpdate2DPlot = true;
             }
         }
 
-        private const Int32 SRCCOPY = 0xCC0020;
-        private void menuItem_CaptureExperimentFrame_Click(object sender, System.EventArgs e)
+        private void SaveExperimentGuiClick(object sender, EventArgs e)
         {
-            string folder = Path.GetDirectoryName(this.uimfReader.UimfDataFile);
-            string exp_name = Path.GetFileNameWithoutExtension(this.uimfReader.UimfDataFile);
-            string filename = folder + "\\" + exp_name + ".Accum_" + this.uimfReader.CurrentFrameIndex.ToString("0000") + ".BMP";
-            this.SaveExperimentGUI(filename);
+            var folder = Path.GetDirectoryName(uimfReader.UimfDataFile);
+            var expName = Path.GetFileNameWithoutExtension(uimfReader.UimfDataFile);
+            var filename = folder + "\\" + expName + ".Frame_" + uimfReader.CurrentFrameIndex.ToString("0000") + ".BMP";
+            SaveExperimentGui(filename);
 
             MessageBox.Show(this, "Image capture for Frame saved to Desktop in file: \n" + filename);
         }
 
-        public void SaveExperimentGUI(string thumbnail_path)
+        public void SaveExperimentGui(string thumbnailPath)
         {
-            int save_width = this.tabpages_Main.Width;
-            int save_height = this.tabpages_Main.Height;
+            var saveWidth = tabpages_Main.Width;
+            var saveHeight = tabpages_Main.Height;
 
-            this.Update();
-            using (Graphics g1 = CreateGraphics())
+            Update();
+            using (var g1 = CreateGraphics())
             {
-                Image experiment_image = new Bitmap(save_width, save_height, g1);
-                using (Graphics g2 = Graphics.FromImage(experiment_image))
+                Image experimentImage = new Bitmap(saveWidth, saveHeight, g1);
+                using (var g2 = Graphics.FromImage(experimentImage))
                 {
-                    IntPtr dc1 = g1.GetHdc();
-                    IntPtr dc2 = g2.GetHdc();
-                    BitBlt(dc2, 0, 0, save_width, save_height, dc1, 0, 0, SRCCOPY);
+                    var dc1 = g1.GetHdc();
+                    var dc2 = g2.GetHdc();
+                    const int rasterOpSourceCopy = 0xCC0020;
+                    BitBlt(dc2, 0, 0, saveWidth, saveHeight, dc1, 0, 0, rasterOpSourceCopy);
                     g2.ReleaseHdc(dc2);
                     g1.ReleaseHdc(dc1);
                 }
 
-                experiment_image.Save(thumbnail_path, ImageFormat.Bmp);
+                experimentImage.Save(thumbnailPath, ImageFormat.Bmp);
             }
         }
 
-        private void btn_Export_Click(object sender, System.EventArgs e)
+        private void MobilityChromatogramPlotShowFrameClick(object sender, EventArgs e)
         {
-            MessageBox.Show("btn_Export_Click   IonMobilityDataView");
-#if false
-            int[] tof;
-            int[] intensities;
-            int tic;
+            menuItem_Time_driftTIC.Checked = false;
+            menuItem_Frame_driftTIC.Checked = true;
 
-            frame_Data.GetSpectra(export_Spectra, out tof, out intensities, out tic);
-            System.IO.StreamWriter w = new System.IO.StreamWriter("c:\\spectra" + export_Spectra.ToString() + ".csv");
+            showMobilityChromatogramFrameNumber = true;
+        }
 
-            for (int i = 0; i < tof.Length; i++)
+        private void MobilityChromatogramPlotShowTimeClick(object sender, EventArgs e)
+        {
+            menuItem_Time_driftTIC.Checked = true;
+            menuItem_Frame_driftTIC.Checked = false;
+
+            showMobilityChromatogramFrameNumber = false;
+        }
+
+        private void ExportDriftTicClick(object sender, EventArgs e)
+        {
+            var saveDialog = new SaveFileDialog
             {
-                if (i == 0)
-                    w.WriteLine("{0},{1},{2}", tof[i], intensities[i], tic);
-                else
-                    w.WriteLine("{0},{1}", tof[i], intensities[i]);
-            }
-            w.Close();
-#endif
-        }
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                Title = "Select a file to export data to...",
+                Filter = "Comma-separated variables (*.csv)|*.csv",
+                FilterIndex = 1
+            };
 
-        private void menuItem_Frame_driftTIC_Click(object sender, System.EventArgs e)
-        {
-            this.menuItem_Time_driftTIC.Checked = false;
-            this.menuItem_Frame_driftTIC.Checked = true;
-
-            this.flag_Chromatogram_Frames = true;
-        }
-
-        private void menuItem_Time_driftTIC_Click(object sender, System.EventArgs e)
-        {
-            this.menuItem_Time_driftTIC.Checked = true;
-            this.menuItem_Frame_driftTIC.Checked = false;
-
-            this.flag_Chromatogram_Frames = false;
-        }
-
-        private void menuItem_ExportDriftTIC_Click(object sender, System.EventArgs e)
-        {
-            SaveFileDialog save_dialog = new SaveFileDialog();
-            save_dialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
-            save_dialog.Title = "Select a file to export data to...";
-            save_dialog.Filter = "Comma-separated variables (*.csv)|*.csv";
-            save_dialog.FilterIndex = 1;
-
-            //this.plot_Mobility.PlotY(tic_Mobility, (double)this.minFrame_Chromatogram * increment_MobilityValue, increment_MobilityValue);
-
-            if (save_dialog.ShowDialog(this) == DialogResult.OK)
+            if (saveDialog.ShowDialog(this) == DialogResult.OK)
             {
-                System.IO.StreamWriter w = new System.IO.StreamWriter(save_dialog.FileName);
-                if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
+                using (var writer = new StreamWriter(saveDialog.FileName))
                 {
-                    double increment_MobilityValue = this.mean_TOFScanTime * (this.maximum_Mobility + 1) * this.uimfReader.UimfFrameParams.GetValueInt32(FrameParamKeyType.Accumulations) / 1000000.0 / 1000.0;
-                    for (int i = 0; i < tic_Mobility.Length; i++)
+                    if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
                     {
-                        w.WriteLine("{0},{1}", (i * increment_MobilityValue) + this.minFrame_Chromatogram, tic_Mobility[i]);
+                        var incrementMobilityValue = averageDriftScanDuration * (frameMaximumMobility + 1) * uimfReader.UimfFrameParams.GetValueInt32(FrameParamKeyType.Accumulations) / 1000000.0 / 1000.0;
+                        for (var i = 0; i < mobilityPlotData.Length; i++)
+                        {
+                            writer.WriteLine("{0},{1}", (i * incrementMobilityValue) + chromatogramMinFrame, mobilityPlotData[i]);
+                        }
                     }
-                }
-                else
-                {
-                    double increment_MobilityValue = mean_TOFScanTime / 1000000.0;
-                    double min_MobilityValue = this.current_minMobility * this.mean_TOFScanTime / 1000000.0;
-                    int xCompressionMultiplier = current_valuesPerPixelX > 1 ? current_valuesPerPixelX : 1;
-                    // TODO: Maybe just use waveform_mobilityPlot points for output?
-                    for (int i = 0; i < tic_Mobility.Length; i++)
+                    else
                     {
-                        w.WriteLine("{0},{1}", (i * increment_MobilityValue * xCompressionMultiplier) + min_MobilityValue, tic_Mobility[i]);
+                        var incrementMobilityValue = averageDriftScanDuration / 1000000.0;
+                        var minMobilityValue = currentMinMobility * averageDriftScanDuration / 1000000.0;
+                        var xCompressionMultiplier = currentValuesPerPixelX > 1 ? currentValuesPerPixelX : 1;
+                        // TODO: Maybe just use waveform_mobilityPlot points for output?
+                        for (var i = 0; i < mobilityPlotData.Length; i++)
+                        {
+                            writer.WriteLine("{0},{1}", (i * incrementMobilityValue * xCompressionMultiplier) + minMobilityValue, mobilityPlotData[i]);
+                        }
                     }
+                    writer.Close();
                 }
-                w.Close();
             }
         }
 
-        private void menuItem_ExportCompressed_Click(object sender, System.EventArgs e)
+        private void ExportCompressedIntensityMatrixClick(object sender, EventArgs e)
         {
             try
             {
-                SaveFileDialog save_dialog = new SaveFileDialog();
-                save_dialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
-                save_dialog.Title = "Select a file to export data to...";
-                save_dialog.Filter = "Comma-separated values (*.csv)|*.csv|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                save_dialog.FilterIndex = 1;
-
-                if (save_dialog.ShowDialog(this) == DialogResult.OK)
+                var saveDialog = new SaveFileDialog
                 {
-                    if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
-                        this.export_ChromatogramIntensityMatrix(save_dialog.FileName);
+                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                    Title = "Select a file to export data to...",
+                    Filter = "Comma-separated values (*.csv)|*.csv|Text files (*.txt)|*.txt|All files (*.*)|*.*",
+                    FilterIndex = 1
+                };
+
+
+                if (saveDialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
+                        ExportChromatogramIntensityMatrix(saveDialog.FileName);
                     else
-                        this.export_IntensityMatrix(save_dialog.FileName);
+                        ExportCurrentIntensityMatrix(saveDialog.FileName);
                 }
             }
             catch (Exception ex)
@@ -1050,9 +933,9 @@ namespace UIMF_File
             }
         }
 
-        private void menuItem_ExportComplete_Click(object sender, System.EventArgs e)
+        private void ExportCompleteIntensityMatrixClick(object sender, EventArgs e)
         {
-            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
+            if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
             {
                 MessageBox.Show(this, "This viewer is not prepared to export the chromatogram.  Please request it.");
                 return;
@@ -1060,16 +943,18 @@ namespace UIMF_File
 
             try
             {
-                SaveFileDialog save_dialog = new SaveFileDialog();
-                save_dialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
-                save_dialog.Title = "Select a file to export data to...";
-                save_dialog.Filter = "Comma-separated values (*.csv)|*.csv|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-                save_dialog.FilterIndex = 1;
-
-                if (save_dialog.ShowDialog(this) == DialogResult.OK)
+                var saveDialog = new SaveFileDialog
                 {
-                    this.export_CompleteIntensityMatrix(save_dialog.FileName);
+                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                    Title = "Select a file to export data to...",
+                    Filter = "Comma-separated values (*.csv)|*.csv|Text files (*.txt)|*.txt|All files (*.*)|*.*",
+                    FilterIndex = 1
+                };
+
+
+                if (saveDialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    ExportCompleteIntensityMatrix(saveDialog.FileName);
                 }
             }
             catch (Exception ex)
@@ -1079,385 +964,302 @@ namespace UIMF_File
         }
 
         // mike wants complete dump.
-        private void export_ChromatogramIntensityMatrix(string filename)
+        private void ExportChromatogramIntensityMatrix(string filename)
         {
-            int frames_width = this.uimfReader.GetNumberOfFrames(this.uimfReader.CurrentFrameType);
-            double[] frames_axis = new double[frames_width];
-            int mob_height = this.uimfReader.UimfFrameParams.Scans;
-            double[] drift_axis = new double[mob_height];
+            var framesWidth = uimfReader.GetNumberOfFrames(uimfReader.CurrentFrameType);
+            var framesAxis = new double[framesWidth];
+            var mobHeight = uimfReader.UimfFrameParams.Scans;
+            var driftAxis = new double[mobHeight];
 
-            int[][] dump_chromatogram = new int[frames_width][];
-            for (int i = 0; i < frames_width; i++)
+            var dumpChromatogram = new int[framesWidth][];
+            for (var i = 0; i < framesWidth; i++)
             {
-                dump_chromatogram[i] = this.uimfReader.GetDriftChromatogram(i);
+                dumpChromatogram[i] = uimfReader.GetDriftChromatogram(i);
             }
 
-            for (int i = 1; i < frames_width; i++)
-                frames_axis[i] = i;
-            for (int i = 1; i < mob_height; i++)
-                drift_axis[i] = i;
+            for (var i = 1; i < framesWidth; i++)
+                framesAxis[i] = i;
+            for (var i = 1; i < mobHeight; i++)
+                driftAxis[i] = i;
 
-            Utilities.TextExport tex = new Utilities.TextExport();
-            tex.Export(filename, "scans\frame", dump_chromatogram, frames_axis, drift_axis);
+            var tex = new Utilities.TextExport();
+            tex.Export(filename, "scans/frame", dumpChromatogram, framesAxis, driftAxis);
         }
 
-        protected virtual void export_IntensityMatrix(string filename)
+        private void ExportCurrentIntensityMatrix(string filename)
         {
-            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
+            if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
             {
-                MessageBox.Show("export_IntensityMatrix needs work chromatogram");
+                MessageBox.Show("ExportCurrentIntensityMatrix needs work chromatogram");
                 return;
             }
 
-            int i;
             Generate2DIntensityArray();
 
-            double mob_width = this.data_2D.Length;
-            double[] drift_axis = new double[(int)mob_width];
+            var mobWidth = data_2D.Length;
+            var driftAxis = new double[mobWidth];
 
-            double tof_height = this.data_2D[0].Length;
-            double[] tof_axis = new double[(int)tof_height];
+            var tofHeight = data_2D[0].Length;
+            var tofAxis = new double[tofHeight];
 
-            double increment = mean_TOFScanTime / 1000000.0;
-            int bin_value;
+            var increment = averageDriftScanDuration / 1000000.0;
 
-            //increment = (((double)(this.current_maxMobility - this.current_minMobility)) * this.mean_TOFScanTime) / mob_width / 1000000.0;
-            //drift_axis[0] = this.current_minMobility * this.mean_TOFScanTime / mob_width / 1000000.0;
-            int xCompressionMultiplier = current_valuesPerPixelX > 1 ? current_valuesPerPixelX : 1;
-            drift_axis[0] = this.current_minMobility * this.mean_TOFScanTime / 1000000.0;
-            for (i = 1; i < mob_width; i++)
-                drift_axis[i] = (drift_axis[i - 1] + (double)increment * xCompressionMultiplier);
+            //increment = (((double)(current_maxMobility - current_minMobility)) * mean_TOFScanTime) / mob_width / 1000000.0;
+            //drift_axis[0] = current_minMobility * mean_TOFScanTime / mob_width / 1000000.0;
+            var xCompressionMultiplier = currentValuesPerPixelX > 1 ? currentValuesPerPixelX : 1;
+            driftAxis[0] = currentMinMobility * averageDriftScanDuration / 1000000.0;
+            for (var i = 1; i < mobWidth; i++)
+                driftAxis[i] = (driftAxis[i - 1] + increment * xCompressionMultiplier);
 
-            if (flag_display_as_TOF)
+            if (displayTofValues)
             {
-                double min_TOF = (this.current_minBin * this.uimfReader.TenthsOfNanoSecondsPerBin * 1e-4);
-                double max_TOF = (this.current_maxBin * this.uimfReader.TenthsOfNanoSecondsPerBin * 1e-4);
-                double increment_TOF = (max_TOF - min_TOF) / ((double)this.pnl_2DMap.Height);
-                for (i = 0; i < tof_height; i++)
+                var minTof = (currentMinTofBin * uimfReader.TenthsOfNanoSecondsPerBin * 1e-4);
+                var maxTof = (currentMaxTofBin * uimfReader.TenthsOfNanoSecondsPerBin * 1e-4);
+                var incrementTof = (maxTof - minTof) / pnl_2DMap.Height;
+                for (var i = 0; i < tofHeight; i++)
                 {
-                    tof_axis[i] = ((double)i * increment_TOF) + min_TOF;
+                    tofAxis[i] = i * incrementTof + minTof;
                 }
             }
             else
             {
                 // linearize the mz and find the bin.
                 // calculate the mz, then convert to TOF for all the values.
-                double mzMax = Convert.ToDouble(this.num_maxBin.Value);
-                double mzMin = Convert.ToDouble(this.num_minBin.Value);
+                var mzMax = Convert.ToDouble(num_maxBin.Value);
+                var mzMin = Convert.ToDouble(num_minBin.Value);
 
-                increment = (mzMax - mzMin) / (tof_height - 1.0);
+                increment = (mzMax - mzMin) / (tofHeight - 1.0);
 
-                tof_axis[0] = mzMin;
-                for (i = 1; i < tof_height; i++)
+                tofAxis[0] = mzMin;
+                for (var i = 1; i < tofHeight; i++)
                 {
-                    tof_axis[i] = (tof_axis[i - 1] + increment);
+                    tofAxis[i] = (tofAxis[i - 1] + increment);
                 }
             }
-            Utilities.TextExport tex = new Utilities.TextExport();
-            if (flag_display_as_TOF)
-                tex.Export(filename, "bin", this.data_2D, drift_axis, tof_axis);
+
+            var tex = new Utilities.TextExport();
+            if (displayTofValues)
+                tex.Export(filename, "bin", data_2D, driftAxis, tofAxis);
             else
-                tex.Export(filename, "m/z", this.data_2D, drift_axis, tof_axis);
+                tex.Export(filename, "m/z", data_2D, driftAxis, tofAxis);
         }
 
-        protected virtual void export_CompleteIntensityMatrix(string filename)
+        private void ExportCompleteIntensityMatrix(string filename)
         {
-            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
+            if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
             {
-                MessageBox.Show("export_IntensityMatrix needs work chromatogram");
+                MessageBox.Show("ExportCompleteIntensityMatrix needs work chromatogram");
                 return;
             }
 
             //string points = "";
-            int i, j;
-            int minbin = this.current_minBin;
-            int maxbin = this.current_maxBin;
-            int minmobility = this.current_minMobility;
-            int maxmobility = this.current_maxMobility;
-            int xpos, ypos;
+            var minTofBin = currentMinTofBin;
+            var maxTofBin = currentMaxTofBin;
+            var minMobility = currentMinMobility;
+            var maxMobility = currentMaxMobility;
 
             Generate2DIntensityArray();
-            if (this.menuItem_SelectionCorners.Checked)
+            if (menuItem_SelectionCorners.Checked)
             {
-                int largest_x = this.corner_2DMap[0].X;
-                int largest_y = this.pnl_2DMap.Height - this.corner_2DMap[0].Y;
-                int smallest_x = this.corner_2DMap[0].X;
-                int smallest_y = this.pnl_2DMap.Height - this.corner_2DMap[0].Y;
-                for (i = 1; i < 4; i++)
+                var largestX = plot2DSelectionCorners[0].X;
+                var largestY = pnl_2DMap.Height - plot2DSelectionCorners[0].Y;
+                var smallestX = plot2DSelectionCorners[0].X;
+                var smallestY = pnl_2DMap.Height - plot2DSelectionCorners[0].Y;
+                for (var i = 1; i < 4; i++)
                 {
-                    if (largest_x < this.corner_2DMap[i].X)
-                        largest_x = this.corner_2DMap[i].X;
-                    if (largest_y < this.pnl_2DMap.Height - this.corner_2DMap[i].Y)
-                        largest_y = this.pnl_2DMap.Height - this.corner_2DMap[i].Y;
+                    if (largestX < plot2DSelectionCorners[i].X)
+                        largestX = plot2DSelectionCorners[i].X;
+                    if (largestY < pnl_2DMap.Height - plot2DSelectionCorners[i].Y)
+                        largestY = pnl_2DMap.Height - plot2DSelectionCorners[i].Y;
 
-                    if (smallest_x > this.corner_2DMap[i].X)
-                        smallest_x = this.corner_2DMap[i].X;
-                    if (smallest_y > this.pnl_2DMap.Height - this.corner_2DMap[i].Y)
-                        smallest_y = this.pnl_2DMap.Height - this.corner_2DMap[i].Y;
+                    if (smallestX > plot2DSelectionCorners[i].X)
+                        smallestX = plot2DSelectionCorners[i].X;
+                    if (smallestY > pnl_2DMap.Height - plot2DSelectionCorners[i].Y)
+                        smallestY = pnl_2DMap.Height - plot2DSelectionCorners[i].Y;
                 }
 
-                xpos = this.current_minMobility + (largest_x * (this.current_maxMobility - this.current_minMobility) / this.pnl_2DMap.Width) + 1;
-                ypos = this.current_minBin + (largest_y * (this.current_maxBin - this.current_minBin) / this.pnl_2DMap.Height);
-                if (xpos < maxmobility)
-                    maxmobility = xpos;
-                if (ypos < maxbin)
-                    maxbin = ypos;
+                var xPos = currentMinMobility + (largestX * (currentMaxMobility - currentMinMobility) / pnl_2DMap.Width) + 1;
+                var yPos = currentMinTofBin + (largestY * (currentMaxTofBin - currentMinTofBin) / pnl_2DMap.Height);
+                if (xPos < maxMobility)
+                    maxMobility = xPos;
+                if (yPos < maxTofBin)
+                    maxTofBin = yPos;
 
-                //  points += xpos.ToString() + ", " + ypos.ToString() + "\n";
-
-                xpos = this.current_minMobility + (smallest_x * (this.current_maxMobility - this.current_minMobility) / this.pnl_2DMap.Width) + 1;
-                ypos = this.current_minBin + (smallest_y * (this.current_maxBin - this.current_minBin) / this.pnl_2DMap.Height);
-                if (xpos > minmobility)
-                    minmobility = xpos;
-                if (ypos > minbin)
-                    minbin = ypos;
-
-                //  points += xpos.ToString() + ", " + ypos.ToString() + "\n\n";
+                xPos = currentMinMobility + (smallestX * (currentMaxMobility - currentMinMobility) / pnl_2DMap.Width) + 1;
+                yPos = currentMinTofBin + (smallestY * (currentMaxTofBin - currentMinTofBin) / pnl_2DMap.Height);
+                if (xPos > minMobility)
+                    minMobility = xPos;
+                if (yPos > minTofBin)
+                    minTofBin = yPos;
             }
 
-            int total_scans = maxmobility - minmobility + 1;
-            int total_bins = maxbin - minbin + 1;
+            var totalScans = maxMobility - minMobility + 1;
+            var totalBins = maxTofBin - minTofBin + 1;
+            var driftAxis = new double[totalScans];
+            var tofAxis = new double[totalBins];
 
-            //points += maxmobility.ToString() + " - "+minmobility.ToString() + " = "+total_scans.ToString() + "\n ";
-            //points += maxbin.ToString()+ " - " + minbin.ToString()+ " = " + total_bins.ToString();
-            // MessageBox.Show(points);
+            var increment = (uimfReader.UimfFrameParams.Scans * averageDriftScanDuration) / uimfReader.UimfFrameParams.Scans / 1000000.0;
 
-            //double mob_width = this.uimfReader.UIMF_FrameParams.Scans;
-            double[] drift_axis = new double[total_scans];
+            driftAxis[0] = minMobility * increment;
 
-            //double tof_height = this.uimfReader.UIMF_GlobalParams.Bins;
-            double[] tof_axis = new double[total_bins];
+            for (var i = 1; i < totalScans; i++)
+                driftAxis[i] = (driftAxis[i - 1] + increment);
 
-            double increment;
-            //int bin_value;
-
-            increment = (((double)(this.uimfReader.UimfFrameParams.Scans)) * this.mean_TOFScanTime) / this.uimfReader.UimfFrameParams.Scans / 1000000.0;
-
-            drift_axis[0] = ((double)minmobility) * increment;
-
-            for (i = 1; i < total_scans; i++)
-                drift_axis[i] = (drift_axis[i - 1] + (double)increment);
-
-            if (flag_display_as_TOF)
+            if (displayTofValues)
             {
-                for (i = minbin; i <= maxbin; i++)
+                for (var i = minTofBin; i <= maxTofBin; i++)
                 {
-                    tof_axis[i - minbin] = ((double)i) * this.uimfReader.TenthsOfNanoSecondsPerBin * 1.0e-4;
+                    tofAxis[i - minTofBin] = i * uimfReader.TenthsOfNanoSecondsPerBin * 1.0e-4;
                 }
             }
             else
             {
                 // linearize the mz and find the bin.
                 // calculate the mz, then convert to TOF for all the values.
-                for (i = minbin; i <= maxbin; i++)
+                for (var i = minTofBin; i <= maxTofBin; i++)
                 {
-                    tof_axis[i - minbin] = this.uimfReader.MzCalibration.TOFtoMZ(((double)i) * this.uimfReader.TenthsOfNanoSecondsPerBin);
+                    tofAxis[i - minTofBin] = uimfReader.MzCalibration.TOFtoMZ(i * uimfReader.TenthsOfNanoSecondsPerBin);
                 }
             }
 
-            // MessageBox.Show(minbin.ToString() + "  mz " + this.uimfReader.mzCalibration.TOFtoMZ(((double)i) * this.uimfReader.TenthsOfNanoSecondsPerBin).ToString());
-            var export_data = this.uimfReader.AccumulateFrameData(this.uimfReader.CurrentFrameNum, this.uimfReader.CurrentFrameNum,
-                this.flag_display_as_TOF, minmobility, maxmobility, minbin, maxbin);
-#if false // TODO: OLD
-            int[][] export_data = new int[total_scans][];
-            for (i = 0; i < total_scans; i++)
-            {
-                export_data[i] = new int[total_bins];
-            }
-            export_data = this.uimfReader.AccumulateFrameDataUncompressed(this.uimfReader.CurrentFrameIndex, this.flag_display_as_TOF, minmobility, minbin, export_data);
-#endif
+            var exportData = uimfReader.AccumulateFrameData(uimfReader.CurrentFrameNum, uimfReader.CurrentFrameNum, displayTofValues, minMobility, maxMobility, minTofBin, maxTofBin);
 
             // if masking, clear everything outside of mask to zero.
-            if (this.menuItem_SelectionCorners.Checked)
+            if (menuItem_SelectionCorners.Checked)
             {
-                int tics = 0;
-                for (i = 0; i < total_scans; i++)
-                    for (j = 0; j < total_bins; j++)
+                var tic = 0;
+                for (var i = 0; i < totalScans; i++)
+                {
+                    for (var j = 0; j < totalBins; j++)
                     {
-                        tics += export_data[i][j];
-                        //if (!this.inside_Polygon((minmobility + i) * this.pnl_2DMap.Width / (this.current_maxMobility - this.current_minMobility), (minbin + j) * this.pnl_2DMap.Height / (this.current_maxBin - this.current_minBin)))
-                        //    export_data[i][j] = 0;
-                        // MessageBox.Show(tics.ToString());
+                        tic += exportData[i][j];
+                        //if (!inside_Polygon((minMobility + i) * pnl_2DMap.Width / (current_maxMobility - current_minMobility), (minTofBin + j) * pnl_2DMap.Height / (current_maxBin - current_minBin)))
+                        //    exportData[i][j] = 0;
                     }
+                }
             }
 
-            Utilities.TextExport tex = new Utilities.TextExport();
-            if (flag_display_as_TOF)
-                tex.Export(filename, "bin", export_data, drift_axis, tof_axis);
+            var tex = new Utilities.TextExport();
+            if (displayTofValues)
+                tex.Export(filename, "bin", exportData, driftAxis, tofAxis);
             else
-                tex.Export(filename, "m/z", export_data, drift_axis, tof_axis);
+                tex.Export(filename, "m/z", exportData, driftAxis, tofAxis);
         }
 
-        private void menuItem_ExportAll_Click(object sender, System.EventArgs e)
+        private void CopyImageToClipboard(object sender, EventArgs e)
         {
-            MessageBox.Show(this, "menuItem_ExportAll_Click ionmobilitydataview does nothing");
-#if false
-            if (this.flag_display_as_TOF)
+            Clipboard.SetDataObject(pnl_2DMap.BackgroundImage);
+        }
+
+        private void TofExportDataClick(object sender, EventArgs e)
+        {
+            SaveFileDialog saveDialog = new SaveFileDialog
             {
-                MessageBox.Show("Exporting requires data to be shown in MZ mode.");
-                return;
-            }
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                Title = "Select a file to export data to...",
+                Filter = "Comma-separated variables (*.csv)|*.csv",
+                FilterIndex = 1
+            };
 
-            SaveFileDialog save_dialog = new SaveFileDialog();
-            save_dialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
-            save_dialog.Title = "Select a file to export data to...";
-            save_dialog.Filter = "Comma-separated values (*.csv)|*.csv|Text files (*.txt)|*.txt|All files (*.*)|*.*";
-            save_dialog.FilterIndex = 1;
-
-            if (save_dialog.ShowDialog(this) == DialogResult.OK)
+            if (saveDialog.ShowDialog(this) == DialogResult.OK)
             {
-                for (int i = 1; i <= this.slide_FrameSelect.Range.Maximum; i++)
+                using (var writer = new StreamWriter(saveDialog.FileName))
                 {
-                    this.slide_FrameSelect.Value = i;
-                    this.flag_update2DGraph = false;
-
-                    this.imf_ReadFrame(i, out frame_Data);
-                   // this.Graph_2DPlot();
-                    this.pnl_2DMap.Update();
-                    this.slide_FrameSelect.Update();
-
-                    export_IntensityMatrix(save_dialog.FileName.Split('.')[0] + i.ToString("0000") + ".csv");
-                }
-            }
-#endif
-        }
-
-        private void menuItem_CopyToClipboard_Click(object sender, System.EventArgs e)
-        {
-            Clipboard.SetDataObject(this.pnl_2DMap.BackgroundImage);
-        }
-
-        private void menuItem_TOFExport_Click(object sender, System.EventArgs e)
-        {
-            SaveFileDialog save_dialog = new SaveFileDialog();
-            save_dialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
-            save_dialog.Title = "Select a file to export data to...";
-            save_dialog.Filter = "Comma-separated variables (*.csv)|*.csv";
-            save_dialog.FilterIndex = 1;
-
-            if (save_dialog.ShowDialog(this) == DialogResult.OK)
-            {
-                System.IO.StreamWriter sw_TOF = new System.IO.StreamWriter(save_dialog.FileName);
-
-                if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
-                {
-                    double increment_TOFValue = 1.0;
-                    for (int i = 0; i < this.tic_TOF.Length; i++)
+                    if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
                     {
-                        sw_TOF.WriteLine("{0},{1}", (i * increment_TOFValue) + this.minMobility_Chromatogram, tic_TOF[i]);
-                    }
-                }
-                else
-                {
-                    if (flag_display_as_TOF)
-                    {
-                        double min_TOF = (this.current_minBin * this.uimfReader.TenthsOfNanoSecondsPerBin * 1e-4);
-                        double max_TOF = (this.current_maxBin * this.uimfReader.TenthsOfNanoSecondsPerBin * 1e-4);
-                        double increment_TOF = (max_TOF - min_TOF) / (double)(this.pnl_2DMap.Height);
-                        for (int i = 0; i < this.tic_TOF.Length; i++)
+                        const double incrementTofValue = 1.0;
+                        for (var i = 0; i < tofMzPlotData.Length; i++)
                         {
-                            sw_TOF.WriteLine("{0},{1}", ((double)i * increment_TOF) + min_TOF, tic_TOF[i]);
+                            writer.WriteLine("{0},{1}", (i * incrementTofValue) + chromatogramMinMobility, tofMzPlotData[i]);
                         }
                     }
                     else
                     {
-                        int[] saved_intensities = new int[this.uimfReader.UimfGlobalParams.Bins];
-                        int[] frame_intensities;
-                        double mz = 0.0;
-
-                        for (int i = this.uimfReader.CurrentFrameIndex - this.uimfReader.FrameWidth + 1; i <= this.uimfReader.CurrentFrameIndex; i++)
+                        if (displayTofValues)
                         {
-                            frame_intensities = this.uimfReader.GetSumScans(i, this.current_minMobility, this.current_maxMobility);
-
-                            for (int j = 0; j < this.uimfReader.UimfGlobalParams.Bins; j++)
-                                saved_intensities[j] += frame_intensities[j];
+                            var minTof = (currentMinTofBin * uimfReader.TenthsOfNanoSecondsPerBin * 1e-4);
+                            var maxTof = (currentMaxTofBin * uimfReader.TenthsOfNanoSecondsPerBin * 1e-4);
+                            var incrementTof = (maxTof - minTof) / pnl_2DMap.Height;
+                            for (var i = 0; i < tofMzPlotData.Length; i++)
+                            {
+                                writer.WriteLine("{0},{1}", (i * incrementTof) + minTof, tofMzPlotData[i]);
+                            }
                         }
-
-                        double mzMax = this.uimfReader.MzCalibration.TOFtoMZ(this.current_maxBin * this.uimfReader.TenthsOfNanoSecondsPerBin);
-                        double mzMin = this.uimfReader.MzCalibration.TOFtoMZ(this.current_minBin * this.uimfReader.TenthsOfNanoSecondsPerBin);
-                        for (int i = 0; i < saved_intensities.Length; i++)
+                        else
                         {
-                            mz = this.uimfReader.MzCalibration.TOFtoMZ((double)i * this.uimfReader.TenthsOfNanoSecondsPerBin);
-                            if ((mz >= mzMin) && (mz <= mzMax))
-                                sw_TOF.WriteLine("{0},{1}", mz, saved_intensities[i]);
+                            var savedIntensities = new int[uimfReader.UimfGlobalParams.Bins];
+
+                            for (var i = uimfReader.CurrentFrameIndex - uimfReader.FrameWidth + 1; i <= uimfReader.CurrentFrameIndex; i++)
+                            {
+                                var frameIntensities = uimfReader.GetSumScans(i, currentMinMobility, currentMaxMobility);
+
+                                for (var j = 0; j < uimfReader.UimfGlobalParams.Bins; j++)
+                                    savedIntensities[j] += frameIntensities[j];
+                            }
+
+                            var mzMax = uimfReader.MzCalibration.TOFtoMZ(currentMaxTofBin * uimfReader.TenthsOfNanoSecondsPerBin);
+                            var mzMin = uimfReader.MzCalibration.TOFtoMZ(currentMinTofBin * uimfReader.TenthsOfNanoSecondsPerBin);
+                            for (var i = 0; i < savedIntensities.Length; i++)
+                            {
+                                var mz = uimfReader.MzCalibration.TOFtoMZ(i * uimfReader.TenthsOfNanoSecondsPerBin);
+                                if ((mz >= mzMin) && (mz <= mzMax))
+                                    writer.WriteLine("{0},{1}", mz, savedIntensities[i]);
+                            }
                         }
                     }
+
+                    writer.Close();
                 }
-                sw_TOF.Close();
             }
         }
 
-        private void menuitem_WriteUIMF_Click(object sender, EventArgs e)
+        private void WriteUimfClick(object sender, EventArgs e)
         {
-            UIMFLibrary.GlobalParams Global_Params;
-            UIMFLibrary.DataWriter UIMF_Writer;
-            DateTime dt_StartExperiment;
-            SaveFileDialog save_dialog = new SaveFileDialog();
-            save_dialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
-            save_dialog.CheckFileExists = false;
-            save_dialog.Title = "Save merged frame to UIMF file...";
-            save_dialog.Filter = "Comma-separated variables (*.uimf)|*.uimf";
-            save_dialog.FilterIndex = 1;
-
-            if (save_dialog.ShowDialog(this) == DialogResult.OK)
+            var saveDialog = new SaveFileDialog
             {
-                if (File.Exists(save_dialog.FileName))
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                CheckFileExists = false,
+                Title = "Save merged frame to UIMF file...",
+                Filter = "Comma-separated variables (*.uimf)|*.uimf",
+                FilterIndex = 1
+            };
+
+            if (saveDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                using (var uimfWriter = new DataWriter(saveDialog.FileName))
                 {
-                    UIMF_Writer = new UIMFLibrary.DataWriter(save_dialog.FileName);
-                    Global_Params = UIMF_Writer.GetGlobalParams().Clone();
+                    GlobalParams globalParams;
+                    if (File.Exists(saveDialog.FileName))
+                    {
+                        globalParams = uimfWriter.GetGlobalParams().Clone();
 
-                    Global_Params.AddUpdateValue(GlobalParamKeyType.NumFrames, Global_Params.NumFrames + 1);
+                        globalParams.AddUpdateValue(GlobalParamKeyType.NumFrames, globalParams.NumFrames + 1);
+                    }
+                    else
+                    {
+                        uimfWriter.CreateTables(null);
 
-                    UIMF_Writer.InsertGlobal(Global_Params);
+                        globalParams = uimfReader.GetGlobalParams().Clone();
+
+                        var experimentStartDate = new DateTime(1970, 1, 1);
+                        globalParams.AddUpdateValue(GlobalParamKeyType.DateStarted, experimentStartDate.ToLocalTime().ToShortDateString() + " " + experimentStartDate.ToLocalTime().ToLongTimeString());
+                        globalParams.AddUpdateValue(GlobalParamKeyType.NumFrames, 1);
+                        globalParams.AddUpdateValue(GlobalParamKeyType.TimeOffset, 0);
+                        globalParams.AddUpdateValue(GlobalParamKeyType.InstrumentName, "MergeFrames");
+                    }
+
+                    uimfWriter.InsertGlobal(globalParams);
+
+                    AppendUimfFrame(uimfWriter, globalParams.NumFrames - 1);
                 }
-                else
-                {
-                    UIMF_Writer = new UIMFLibrary.DataWriter(save_dialog.FileName);
-                    UIMF_Writer.CreateTables(null);
-
-                    Global_Params = this.uimfReader.GetGlobalParams().Clone();
-
-                    dt_StartExperiment = new DateTime(1970, 1, 1);
-                    Global_Params.AddUpdateValue(GlobalParamKeyType.DateStarted, dt_StartExperiment.ToLocalTime().ToShortDateString() + " " + dt_StartExperiment.ToLocalTime().ToLongTimeString());
-                    Global_Params.AddUpdateValue(GlobalParamKeyType.NumFrames, 1);
-                    Global_Params.AddUpdateValue(GlobalParamKeyType.TimeOffset, 0);
-                    Global_Params.AddUpdateValue(GlobalParamKeyType.InstrumentName, "MergeFrames");
-
-                    UIMF_Writer.InsertGlobal(Global_Params);
-                }
-
-                AppendUIMFFrame(UIMF_Writer, Global_Params.NumFrames - 1);
-
-                UIMF_Writer.Dispose();
             }
         }
 
-        public void AppendUIMFFrame(UIMFLibrary.DataWriter UIMF_Writer, int frame_number)
+        public void AppendUimfFrame(DataWriter uimfWriter, int frameNumber)
         {
-            int nonzero_bins;
-            int i;
-            int time_offset = 0;
-            int b;
-            int[] mapped_bins;
-            int total_bins;
-            int scan;
-            FrameParams fp;
-            int[] scan_data;
-            int exp_index;
-            int start_index;
-            int end_index;
-            int frames;
-            double mapped_intercept;
-            double mapped_slope;
-            double mz;
-            int new_bin;
-            double new_mz;
-
-            fp = this.uimfReader.UimfFrameParams.Clone();
-            total_bins = this.uimfReader.UimfGlobalParams.Bins;
+            var fp = uimfReader.UimfFrameParams.Clone();
+            var totalBins = uimfReader.UimfGlobalParams.Bins;
 
             fp.Values.Remove(FrameParamKeyType.Accumulations);
             fp.Values.Remove(FrameParamKeyType.DurationSeconds);
@@ -1489,156 +1291,193 @@ namespace UIMF_File
             fp.Values.Remove(FrameParamKeyType.RearIonFunnelPressure);
             fp.Values.Remove(FrameParamKeyType.QuadrupolePressure);
 
-            UIMF_Writer.InsertFrame(frame_number, fp);
+            uimfWriter.InsertFrame(frameNumber, fp);
 
-            //MessageBox.Show(this.current_valuesPerPixelX.ToString() + ", " + this.current_valuesPerPixelY.ToString());
+            //MessageBox.Show(current_valuesPerPixelX.ToString() + ", " + current_valuesPerPixelY.ToString());
 
-            mapped_bins = new int[total_bins];
-            mapped_intercept = this.uimfReader.UimfFrameParams.CalibrationIntercept;
-            mapped_slope = this.uimfReader.UimfFrameParams.CalibrationSlope;
+            var mappedBins = new int[totalBins];
+            var mappedIntercept = uimfReader.UimfFrameParams.CalibrationIntercept;
+            var mappedSlope = uimfReader.UimfFrameParams.CalibrationSlope;
+            int scan;
             for (scan = 0; scan < fp.Scans; scan++)
             {
                 // zero out the mapped bins
-                for (i = 0; i < total_bins; i++)
-                    mapped_bins[i] = 0;
+                for (var i = 0; i < totalBins; i++)
+                    mappedBins[i] = 0;
 
                 // we need to do a scan at a time, map and sum bins.
-                start_index = this.uimfReader.CurrentFrameIndex - (this.uimfReader.FrameWidth - 1);
-                end_index = this.uimfReader.CurrentFrameIndex;
+                var startIndex = uimfReader.CurrentFrameIndex - (uimfReader.FrameWidth - 1);
+                var endIndex = uimfReader.CurrentFrameIndex;
 
                 // collect the data
-                for (frames = start_index; (frames <= end_index) && !this.flag_Closing; frames++)
+                for (var frames = startIndex; (frames <= endIndex) && !viewerIsClosing; frames++)
                 {
                     // this is in bin resolution.
-                    scan_data = this.uimfReader.GetSumScans(frames, scan, scan);
+                    var scanData = uimfReader.GetSumScans(frames, scan, scan);
 
                     // convert to mz resolution then map into bin resolution - sum into mapped_bins[]
-                    for (i = 0; i < scan_data.Length; i++)
+                    for (var i = 0; i < scanData.Length; i++)
                     {
-                        new_bin = this.uimfReader.MapBinCalibration(i, mapped_slope, mapped_intercept);
+                        var newTofBin = uimfReader.MapBinCalibration(i, mappedSlope, mappedIntercept);
 
-                        if (new_bin < mapped_bins.Length)
+                        if (newTofBin < mappedBins.Length)
                         {
-                            if (flag_display_as_TOF)
+                            if (displayTofValues)
                             {
-                                if (this.inside_Polygon(scan, new_bin))
-                                    mapped_bins[new_bin] += scan_data[i];
+                                if (InsidePolygon(scan, newTofBin))
+                                    mappedBins[newTofBin] += scanData[i];
                             }
                             else
                             {
-                                new_mz = this.uimfReader.MzCalibration.TOFtoMZ((double)i * this.uimfReader.TenthsOfNanoSecondsPerBin);
-                                if (this.inside_Polygon(scan, new_mz))
-                                    mapped_bins[new_bin] += scan_data[i];
+                                var newMz = uimfReader.MzCalibration.TOFtoMZ(i * uimfReader.TenthsOfNanoSecondsPerBin);
+                                if (InsidePolygon(scan, newMz))
+                                    mappedBins[newTofBin] += scanData[i];
                             }
                         }
                     }
                 }
 
-                nonzero_bins = 0;
-                for (i = 0; i < mapped_bins.Length; i++)
-                {
-                    if (mapped_bins[i] != 0)
-                        nonzero_bins++;
-                }
-
-                var nzVals = new Tuple<int, int>[nonzero_bins];
+                var nonZeroBins = mappedBins.Count(bin => bin != 0);
+                var nzValues = new Tuple<int, int>[nonZeroBins];
 
                 // collect the data
-                b = 0;
-                for (i = time_offset; (i < total_bins) && (b < nonzero_bins); i++)
-                    if (mapped_bins[i] != 0)
+                var b = 0;
+                const int timeOffset = 0;
+                for (var i = timeOffset; (i < totalBins) && (b < nonZeroBins); i++)
+                    if (mappedBins[i] != 0)
                     {
-                        nzVals[b] = new Tuple<int, int>(i - time_offset, mapped_bins[i]);
+                        nzValues[b] = new Tuple<int, int>(i - timeOffset, mappedBins[i]);
 
                         b++;
                     }
 
-                UIMF_Writer.InsertScan(frame_number, fp, scan, nzVals, this.uimfReader.UimfGlobalParams.BinWidth, 0);
+                uimfWriter.InsertScan(frameNumber, fp, scan, nzValues, uimfReader.UimfGlobalParams.BinWidth, 0);
             }
         }
 
         // ////////////////////////////////////////////////////////////////
         //
         //
-        private void menuItem_SelectionCorners_Click(object sender, EventArgs e)
+        private void SelectionCornersClick(object sender, EventArgs e)
         {
-            this.menuItem_SelectionCorners.Checked = !this.menuItem_SelectionCorners.Checked;
+            menuItem_SelectionCorners.Checked = !menuItem_SelectionCorners.Checked;
 
-            if (this.menuItem_SelectionCorners.Checked)
-                this.reset_Corners();
+            if (menuItem_SelectionCorners.Checked)
+                ResetSelectionCorners();
 
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
+        }
+
+        public void ResetSelectionCorners()
+        {
+            if (menuItem_SelectionCorners.Checked)
+            {
+                plot2DSelectionCorners[0] = new Point((int)(pnl_2DMap.Width * .15), (int)(pnl_2DMap.Height * .15));
+                plot2DSelectionCorners[1] = new Point((int)(pnl_2DMap.Width * .85), (int)(pnl_2DMap.Height * .15));
+                plot2DSelectionCorners[2] = new Point((int)(pnl_2DMap.Width * .85), (int)(pnl_2DMap.Height * .85));
+                plot2DSelectionCorners[3] = new Point((int)(pnl_2DMap.Width * .15), (int)(pnl_2DMap.Height * .85));
+            }
+        }
+
+        public void DrawSelectionCorners(Graphics g)
+        {
+            if (!menuItem_SelectionCorners.Checked)
+                return;
+
+            // shade the outside of the selected polygon
+            var points = new Point[4][];
+            for (var i = 0; i < 4; i++)
+                points[i] = new Point[4];
+
+            points[0][0] = points[3][0] = plot2DSelectionCorners[0]; // top left
+            points[0][1] = points[1][0] = plot2DSelectionCorners[1]; // top right
+            points[2][0] = points[1][1] = plot2DSelectionCorners[2]; // bot right
+            points[2][1] = points[3][1] = plot2DSelectionCorners[3]; // bot left
+
+            points[0][3] = points[3][3] = new Point(0, 0); // top left
+            points[0][2] = points[1][3] = new Point(pnl_2DMap.Width, 0); // top right
+            points[2][3] = points[1][2] = new Point(pnl_2DMap.Width, pnl_2DMap.Height); // bot right
+            points[2][2] = points[3][2] = new Point(0, pnl_2DMap.Height); // bot left
+
+            for (var i = 0; i < 4; i++)
+                g.FillPolygon(new SolidBrush(Color.FromArgb(144, 111, 11, 111)), points[i]);
+
+            g.DrawLine(thick_pen, plot2DSelectionCorners[0].X, plot2DSelectionCorners[0].Y, plot2DSelectionCorners[1].X, plot2DSelectionCorners[1].Y);
+            g.DrawLine(thick_pen, plot2DSelectionCorners[1].X, plot2DSelectionCorners[1].Y, plot2DSelectionCorners[2].X, plot2DSelectionCorners[2].Y);
+            g.DrawLine(thick_pen, plot2DSelectionCorners[2].X, plot2DSelectionCorners[2].Y, plot2DSelectionCorners[3].X, plot2DSelectionCorners[3].Y);
+            g.DrawLine(thick_pen, plot2DSelectionCorners[3].X, plot2DSelectionCorners[3].Y, plot2DSelectionCorners[0].X, plot2DSelectionCorners[0].Y);
+
+            g.FillRectangle(new SolidBrush(Color.FromArgb(145, 200, 200, 200)), plot2DSelectionCorners[0].X - 2, plot2DSelectionCorners[0].Y - 2, 8, 8);
+            g.FillRectangle(new SolidBrush(Color.FromArgb(145, 200, 200, 200)), plot2DSelectionCorners[1].X - 5, plot2DSelectionCorners[1].Y - 2, 8, 8);
+            g.FillRectangle(new SolidBrush(Color.FromArgb(145, 200, 200, 200)), plot2DSelectionCorners[2].X - 5, plot2DSelectionCorners[2].Y - 5, 8, 8);
+            g.FillRectangle(new SolidBrush(Color.FromArgb(145, 200, 200, 200)), plot2DSelectionCorners[3].X - 2, plot2DSelectionCorners[3].Y - 5, 8, 8);
         }
 
         // ////////////////////////////////////////////////////////////////
         // Show only the maximum values - do not sum bins.
         //
-        private void menuItem_TOFMaximum_Click(object sender, EventArgs e)
+        private void OnlyShowMaximumIntensitiesClick(object sender, EventArgs e)
         {
-            this.menuItem_TOFMaximum.Checked = !this.menuItem_TOFMaximum.Checked;
-            this.menuItem_MaxIntensities.Checked = this.menuItem_TOFMaximum.Checked;
+            menuItem_TOFMaximum.Checked = !menuItem_TOFMaximum.Checked;
+            menuItem_MaxIntensities.Checked = menuItem_TOFMaximum.Checked;
 
-            if (this.menuItem_TOFMaximum.Checked)
-                this.plot_TOF.BackColor = Color.AntiqueWhite;
+            if (menuItem_TOFMaximum.Checked)
+                plot_TOF.BackColor = Color.AntiqueWhite;
             else
-                this.plot_TOF.BackColor = Color.White;
+                plot_TOF.BackColor = Color.White;
 
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
         }
 
         #endregion
 
         #region Mobility Plot and Controls
 
-        private void OnPlotTICRangeChanged(object sender, UIMF_File.Utilities.RangeEventArgs e)
+        private void MobilityPlotSelectionRangeChanged(object sender, Utilities.RangeEventArgs e)
         {
-            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
+            if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
                 return;
 
-            Graphics g = this.pnl_2DMap.CreateGraphics();
+            mobilitySelectionMinimum = e.Min;
+            mobilitySelectionMaximum = e.Max;
 
-            this.selection_min_drift = e.Min;
-            this.selection_max_drift = e.Max;
+            selectingMobilityRange = e.Selecting;
 
-            this.flag_selection_drift = e.Selecting;
-
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
         }
 
-        protected virtual void num_Mobility_ValueChanged(object sender, System.EventArgs e)
+        private void MobilityLimitsChanged(object sender, EventArgs e)
         {
-            int min, max;
-
-            if (this.flag_enterMobilityRange)
+            if (applyingMobilityRangeChange)
                 return;
-            this.flag_enterMobilityRange = true;
+            applyingMobilityRangeChange = true;
 
-            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
+            if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
             {
-                this.minFrame_Chromatogram = Convert.ToInt32(this.num_minMobility.Value);
-                this.maxFrame_Chromatogram = Convert.ToInt32(this.num_maxMobility.Value);
+                chromatogramMinFrame = Convert.ToInt32(num_minMobility.Value);
+                chromatogramMaxFrame = Convert.ToInt32(num_maxMobility.Value);
 
-                this.flag_chromatograph_collected_COMPLETE = false;
-                this.flag_chromatograph_collected_PARTIAL = false;
+                completeChromatogramCollected = false;
+                partialChromatogramCollected = false;
 
-                this.flag_update2DGraph = true;
-                this.flag_enterMobilityRange = false;
+                needToUpdate2DPlot = true;
+                applyingMobilityRangeChange = false;
                 return;
             }
 
-            min = Convert.ToInt32(this.num_minMobility.Value);
-            max = Convert.ToInt32(this.num_maxMobility.Value);
+            var min = Convert.ToInt32(num_minMobility.Value);
+            var max = Convert.ToInt32(num_maxMobility.Value);
 
-            this.num_minMobility.Increment = this.num_maxMobility.Increment = Convert.ToDecimal((Convert.ToDouble(this.num_maxMobility.Value) - Convert.ToDouble(this.num_minMobility.Value)) / 4.0);
+            num_minMobility.Increment = num_maxMobility.Increment = Convert.ToDecimal((Convert.ToDouble(num_maxMobility.Value) - Convert.ToDouble(num_minMobility.Value)) / 4.0);
 
-            new_maxMobility = max;
-            new_minMobility = min;
+            newMaxMobility = max;
+            newMinMobility = min;
 
-            SaveZoom(new_minMobility, new_maxMobility, new_minBin, new_maxBin);
+            SaveZoom(newMinMobility, newMaxMobility, newMinTofBin, newMaxTofBin);
 
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
 
-            this.flag_enterMobilityRange = false;
+            applyingMobilityRangeChange = false;
         }
 
         #endregion
@@ -1648,146 +1487,144 @@ namespace UIMF_File
         // ////////////////////////////////////////////////////////////////////////////////
         // This needs some more work.
         //
-        protected virtual void num_minBin_ValueChanged(object sender, System.EventArgs e)
+        private void MinTofBinChanged(object sender, EventArgs e)
         {
-            double bin_diff;
-            double min, max;
-
-            if (this.flag_enterBinRange)
+            if (applyingTofBinRangeChange)
                 return;
-            this.flag_enterBinRange = true;
+            applyingTofBinRangeChange = true;
 
-            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
+            if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
             {
-                this.minMobility_Chromatogram = Convert.ToInt32(this.num_minBin.Value);
+                chromatogramMinMobility = Convert.ToInt32(num_minBin.Value);
 
-                if (this.maxMobility_Chromatogram - this.minMobility_Chromatogram < 10)
+                if (chromatogramMaxMobility - chromatogramMinMobility < 10)
                 {
-                    this.maxMobility_Chromatogram = this.minMobility_Chromatogram + 10;
-                    this.num_maxBin.Value = this.maxMobility_Chromatogram;
+                    chromatogramMaxMobility = chromatogramMinMobility + 10;
+                    num_maxBin.Value = chromatogramMaxMobility;
                 }
-                if (this.maxMobility_Chromatogram > this.uimfReader.UimfFrameParams.Scans - 1)
+                if (chromatogramMaxMobility > uimfReader.UimfFrameParams.Scans - 1)
                 {
-                    this.maxMobility_Chromatogram = this.uimfReader.UimfFrameParams.Scans - 1;
-                    this.minMobility_Chromatogram = this.maxMobility_Chromatogram - 10;
+                    chromatogramMaxMobility = uimfReader.UimfFrameParams.Scans - 1;
+                    chromatogramMinMobility = chromatogramMaxMobility - 10;
 
-                    this.num_minBin.Value = this.minMobility_Chromatogram;
-                    this.num_maxBin.Value = this.maxMobility_Chromatogram;
+                    num_minBin.Value = chromatogramMinMobility;
+                    num_maxBin.Value = chromatogramMaxMobility;
                 }
 
-                this.flag_update2DGraph = true;
-                this.flag_enterBinRange = false;
+                needToUpdate2DPlot = true;
+                applyingTofBinRangeChange = false;
                 return;
             }
 
-            if (this.num_minBin.Value >= this.num_maxBin.Value)
-                this.num_maxBin.Value = Convert.ToDecimal(Convert.ToDouble(this.num_minBin.Value) + 1.0);
+            if (num_minBin.Value >= num_maxBin.Value)
+                num_maxBin.Value = Convert.ToDecimal(Convert.ToDouble(num_minBin.Value) + 1.0);
 
             try
             {
-                if (this.flag_display_as_TOF)
+                double min;
+                double max;
+                if (displayTofValues)
                 {
-                    min = (Convert.ToDouble(this.num_minBin.Value) / (this.uimfReader.TenthsOfNanoSecondsPerBin * 1e-4));
-                    max = (Convert.ToDouble(this.num_maxBin.Value) / (this.uimfReader.TenthsOfNanoSecondsPerBin * 1e-4));
+                    min = (Convert.ToDouble(num_minBin.Value) / (uimfReader.TenthsOfNanoSecondsPerBin * 1e-4));
+                    max = (Convert.ToDouble(num_maxBin.Value) / (uimfReader.TenthsOfNanoSecondsPerBin * 1e-4));
                 }
                 else
                 {
-                    min = this.uimfReader.MzCalibration.MZtoTOF(Convert.ToDouble(this.num_minBin.Value)) / this.uimfReader.TenthsOfNanoSecondsPerBin;
-                    max = this.uimfReader.MzCalibration.MZtoTOF(Convert.ToDouble(this.num_maxBin.Value)) / this.uimfReader.TenthsOfNanoSecondsPerBin;
+                    min = uimfReader.MzCalibration.MZtoTOF(Convert.ToDouble(num_minBin.Value)) / uimfReader.TenthsOfNanoSecondsPerBin;
+                    max = uimfReader.MzCalibration.MZtoTOF(Convert.ToDouble(num_maxBin.Value)) / uimfReader.TenthsOfNanoSecondsPerBin;
                 }
 
-                bin_diff = ((max - min + 1.0) / this.pnl_2DMap.Height);
-                new_minBin = (int)min + 1;
-                if (bin_diff > 0.0)
-                    this.new_maxBin = this.new_minBin + (int)(bin_diff * this.pnl_2DMap.Height);
+                var binDiff = ((max - min + 1.0) / pnl_2DMap.Height);
+                newMinTofBin = (int)min + 1;
+                if (binDiff > 0.0)
+                    newMaxTofBin = newMinTofBin + (int)(binDiff * pnl_2DMap.Height);
                 else
-                    this.new_maxBin = (int)max;
+                    newMaxTofBin = (int)max;
 
-                SaveZoom(new_minMobility, new_maxMobility, new_minBin, new_maxBin);
+                SaveZoom(newMinMobility, newMaxMobility, newMinTofBin, newMaxTofBin);
 
-                // this.lbl_ExperimentDate.Text = (new_maxBin * (TenthsOfNanoSecondsPerBin * 1e-4)).ToString() + " < " + new_maxBin.ToString();
-                this.flag_update2DGraph = true;
+                // lbl_ExperimentDate.Text = (new_maxBin * (TenthsOfNanoSecondsPerBin * 1e-4)).ToString() + " < " + new_maxBin.ToString();
+                needToUpdate2DPlot = true;
 
-                this.num_minBin.Increment = this.num_maxBin.Increment = Convert.ToDecimal((Convert.ToDouble(this.num_maxBin.Value) - Convert.ToDouble(this.num_minBin.Value)) / 4.0);
+                num_minBin.Increment = num_maxBin.Increment = Convert.ToDecimal((Convert.ToDouble(num_maxBin.Value) - Convert.ToDouble(num_minBin.Value)) / 4.0);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("TRAPPED:  " + ex.ToString());
+                MessageBox.Show("TRAPPED:  " + ex);
             }
 
-            this.flag_enterBinRange = false;
+            applyingTofBinRangeChange = false;
         }
 
-        protected virtual void num_maxBin_ValueChanged(object sender, System.EventArgs e)
+        private void NaxTofBinChanged(object sender, EventArgs e)
         {
-            double min, max;
-            int bin_diff;
-
-            if (this.flag_enterBinRange)
+            if (applyingTofBinRangeChange)
                 return;
-            this.flag_enterBinRange = true;
+            applyingTofBinRangeChange = true;
 
-            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
+            if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
             {
-                this.maxMobility_Chromatogram = Convert.ToInt32(this.num_maxBin.Value);
-                if (this.maxMobility_Chromatogram > this.uimfReader.UimfFrameParams.Scans - 1)
-                    this.maxMobility_Chromatogram = this.uimfReader.UimfFrameParams.Scans - 1;
+                chromatogramMaxMobility = Convert.ToInt32(num_maxBin.Value);
+                if (chromatogramMaxMobility > uimfReader.UimfFrameParams.Scans - 1)
+                    chromatogramMaxMobility = uimfReader.UimfFrameParams.Scans - 1;
 
-                if (this.maxMobility_Chromatogram - this.minMobility_Chromatogram < 10)
+                if (chromatogramMaxMobility - chromatogramMinMobility < 10)
                 {
-                    this.minMobility_Chromatogram = this.maxMobility_Chromatogram - 10;
-                    this.num_minBin.Value = this.minMobility_Chromatogram;
+                    chromatogramMinMobility = chromatogramMaxMobility - 10;
+                    num_minBin.Value = chromatogramMinMobility;
                 }
-                if (this.minMobility_Chromatogram < 0)
+                if (chromatogramMinMobility < 0)
                 {
-                    this.minMobility_Chromatogram = 0;
-                    this.maxMobility_Chromatogram = 10;
+                    chromatogramMinMobility = 0;
+                    chromatogramMaxMobility = 10;
 
-                    this.num_minBin.Value = this.minMobility_Chromatogram;
-                    this.num_maxBin.Value = this.maxMobility_Chromatogram;
+                    num_minBin.Value = chromatogramMinMobility;
+                    num_maxBin.Value = chromatogramMaxMobility;
                 }
 
-                this.flag_update2DGraph = true;
-                this.flag_enterBinRange = false;
+                needToUpdate2DPlot = true;
+                applyingTofBinRangeChange = false;
                 return;
             }
 
-            if (this.num_minBin.Value >= this.num_maxBin.Value)
-                this.num_minBin.Value = Convert.ToDecimal(Convert.ToDouble(this.num_maxBin.Value) - 1.0);
+            if (num_minBin.Value >= num_maxBin.Value)
+                num_minBin.Value = Convert.ToDecimal(Convert.ToDouble(num_maxBin.Value) - 1.0);
 
             try
             {
-                if (this.flag_display_as_TOF)
+                double min;
+                double max;
+                if (displayTofValues)
                 {
-                    min = (Convert.ToDouble(this.num_minBin.Value) / (this.uimfReader.TenthsOfNanoSecondsPerBin * 1e-4));
-                    max = (Convert.ToDouble(this.num_maxBin.Value) / (this.uimfReader.TenthsOfNanoSecondsPerBin * 1e-4));
+                    min = (Convert.ToDouble(num_minBin.Value) / (uimfReader.TenthsOfNanoSecondsPerBin * 1e-4));
+                    max = (Convert.ToDouble(num_maxBin.Value) / (uimfReader.TenthsOfNanoSecondsPerBin * 1e-4));
                 }
                 else
                 {
-                    min = this.uimfReader.MzCalibration.MZtoTOF(Convert.ToDouble(this.num_minBin.Value)) / this.uimfReader.TenthsOfNanoSecondsPerBin;
-                    max = this.uimfReader.MzCalibration.MZtoTOF(Convert.ToDouble(this.num_maxBin.Value)) / this.uimfReader.TenthsOfNanoSecondsPerBin;
+                    min = uimfReader.MzCalibration.MZtoTOF(Convert.ToDouble(num_minBin.Value)) / uimfReader.TenthsOfNanoSecondsPerBin;
+                    max = uimfReader.MzCalibration.MZtoTOF(Convert.ToDouble(num_maxBin.Value)) / uimfReader.TenthsOfNanoSecondsPerBin;
                 }
 
-                bin_diff = (int)((max - min + 1) / this.pnl_2DMap.Height);
-                new_maxBin = (int)max + 1;
-                if (bin_diff > 0)
-                    this.new_minBin = new_maxBin - (bin_diff * this.pnl_2DMap.Height);
+                var binDiff = ((max - min + 1.0) / pnl_2DMap.Height);
+                newMaxTofBin = (int)max + 1;
+                if (binDiff > 0)
+                    newMinTofBin = newMaxTofBin - (int)(binDiff * pnl_2DMap.Height);
                 else
-                    this.new_minBin = (int)min;
+                    newMinTofBin = (int)min;
 
-                SaveZoom(new_minMobility, new_maxMobility, new_minBin, new_maxBin);
+                SaveZoom(newMinMobility, newMaxMobility, newMinTofBin, newMaxTofBin);
 
-                // this.lbl_ExperimentDate.Text = (new_maxBin * (TenthsOfNanoSecondsPerBin * 1e-4)).ToString() + " < " + new_maxBin.ToString();
-                this.flag_update2DGraph = true;
+                // lbl_ExperimentDate.Text = (new_maxBin * (TenthsOfNanoSecondsPerBin * 1e-4)).ToString() + " < " + new_maxBin.ToString();
+                needToUpdate2DPlot = true;
 
-                this.num_minBin.Increment = this.num_maxBin.Increment = Convert.ToDecimal((Convert.ToDouble(this.num_maxBin.Value) - Convert.ToDouble(this.num_minBin.Value)) / 4.0);
+                num_minBin.Increment = num_maxBin.Increment = Convert.ToDecimal((Convert.ToDouble(num_maxBin.Value) - Convert.ToDouble(num_minBin.Value)) / 4.0);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("TRAPPED:  " + ex.ToString());
+                MessageBox.Show("TRAPPED:  " + ex);
             }
 
-            this.flag_enterBinRange = false;
+            applyingTofBinRangeChange = false;
         }
 
         #endregion
@@ -1798,129 +1635,145 @@ namespace UIMF_File
         {
             if (e.PropertyName.Equals(nameof(FrameControlViewModel.CurrentFrameNumber)))
             {
-                slide_FrameSelect_ValueChanged();
+                SelectedFrameChanged();
             }
             else if (e.PropertyName.Equals(nameof(FrameControlViewModel.SummedFrames)))
             {
-                num_FrameRange_ValueChanged();
+                FrameSumRangeChanged();
             }
             else if (e.PropertyName.Equals(nameof(FrameControlViewModel.SelectedFrameType)))
             {
-                cb_FrameType_SelectedIndexChanged();
+                SelectedFrameTypeChanged();
             }
-        }
-
-        // //////////////////////////////////////////////////////////////////////////////
-        // Frame Selection
-        //
-        private void slide_FrameSelect_MouseDown(object obj, MouseEventArgs e)
-        {
-            // TODO: Wire this up somehow, or at least an alternative. Use "repeaterButtons" to only play while the mouse is held down?
-            this.StopCinema();
         }
 
         // ////////////////////////////////////////////////////////////////////
         // Select Frame Range
         //
-        private void num_FrameRange_ValueChanged()
+        private void FrameSumRangeChanged()
         {
-            if ((double)this.frameControlVm.SummedFrames > this.frameControlVm.MaximumFrameNumber + 1)
+            if ((double)frameControlVm.SummedFrames > frameControlVm.MaximumFrameNumber + 1)
             {
-                this.frameControlVm.SummedFrames = (int)Convert.ToDecimal(this.frameControlVm.MaximumFrameNumber + 1);
+                frameControlVm.SummedFrames = (int)Convert.ToDecimal(frameControlVm.MaximumFrameNumber + 1);
                 return;
             }
-            this.uimfReader.FrameWidth = Convert.ToInt32(this.frameControlVm.SummedFrames);
+            uimfReader.FrameWidth = Convert.ToInt32(frameControlVm.SummedFrames);
 
-            if (this.frameControlVm.CurrentFrameNumber < Convert.ToDouble(this.frameControlVm.SummedFrames))
+            if (frameControlVm.CurrentFrameNumber < Convert.ToDouble(frameControlVm.SummedFrames))
             {
-                this.frameControlVm.CurrentFrameNumber = (int)(Convert.ToDouble(this.frameControlVm.SummedFrames) - 1);
+                frameControlVm.CurrentFrameNumber = (int)(Convert.ToDouble(frameControlVm.SummedFrames) - 1);
             }
 
-            if (this.frameControlVm.SummedFrames > 1)
+            if (frameControlVm.SummedFrames > 1)
             {
-                if (this.Cinemaframe_DataChange > 0)
-                    this.Cinemaframe_DataChange = Convert.ToInt32(this.frameControlVm.SummedFrames / 3) + 1;
+                if (frameCinemaDataInterval > 0)
+                    frameCinemaDataInterval = Convert.ToInt32(frameControlVm.SummedFrames / 3) + 1;
                 else
-                    this.Cinemaframe_DataChange = -(Convert.ToInt32(this.frameControlVm.SummedFrames / 3) + 1);
+                    frameCinemaDataInterval = -(Convert.ToInt32(frameControlVm.SummedFrames / 3) + 1);
             }
 
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
         }
 
-        private void slide_FrameSelect_ValueChanged()
+        private void SelectedFrameChanged()
         {
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
         }
 
         // ///////////////////////////////////////////////////////////////
         // Select FrameType
         //
-        private void cb_FrameType_SelectedIndexChanged()
+        private void SelectedFrameTypeChanged()
         {
-            this.flag_CinemaPlot = false;
+            playingCinemaPlot = false;
 
-            var frameTypeEnum = this.frameControlVm.SelectedFrameType;
-            this.Filter_FrameType(frameTypeEnum);
+            var frameTypeEnum = frameControlVm.SelectedFrameType;
+            FilterFramesByType(frameTypeEnum);
 
-            this.flag_FrameTypeChanged = true;
-            this.flag_update2DGraph = true;
+            frameTypeChanged = true;
+            needToUpdate2DPlot = true;
 
         }
 
-        private void Filter_FrameType(UIMFDataWrapper.ReadFrameType frame_type)
+        private void FilterFramesByType(UIMFDataWrapper.ReadFrameType frameType)
         {
-            if (this.current_frame_type == frame_type)
+            if (currentFrameType == frameType)
                 return;
 
-            int frame_count = 0;
-            object[] read_values = new object[0];
+            var frameCount = uimfReader.SetCurrentFrameType(frameType);
+            currentFrameType = frameType;
+            uimfReader.CurrentFrameIndex = -1;
 
-            frame_count = this.uimfReader.SetCurrentFrameType(frame_type);
-            this.current_frame_type = frame_type;
-            this.uimfReader.CurrentFrameIndex = -1;
+            Invoke(new MethodInvoker(() =>
+            {
+                var frameCount2 = uimfReader.GetNumberOfFrames(currentFrameType);
 
-            Invoke(new ThreadStart(format_Screen));
+                if (frameCount2 == 0)
+                {
+                    pnl_2DMap.Visible = false;
+                    hsb_2DMap.Visible = vsb_2DMap.Visible = false;
+
+                    waveform_TOFPlot.Points = new BasicArrayPointList(new double[0], new double[0]);
+                    waveform_MobilityPlot.Points = new BasicArrayPointList(new double[0], new double[0]);
+
+                    frameControlVm.MinimumFrameNumber = 0;
+                    frameControlVm.MaximumFrameNumber = 0;
+                }
+                else
+                {
+                    pnl_2DMap.Visible = true;
+                    hsb_2DMap.Visible = vsb_2DMap.Visible = true;
+
+                    pnl_2DMap.Visible = true;
+
+                    frameControlVm.CurrentFrameNumber = 0;
+                    frameControlVm.MinimumFrameNumber = 0;
+                    frameControlVm.MaximumFrameNumber = frameCount2 - 1;
+
+                    elementHost_FrameControl.Refresh();
+                }
+            }));
 
             // Reinitialize
-            _zoom.Clear();
+            zoomHistory.Clear();
 
-            this.new_minBin = 0;
-            this.new_minMobility = 0;
+            newMinTofBin = 0;
+            newMinMobility = 0;
 
-            this.new_maxBin = this.maximum_Bins = this.uimfReader.UimfGlobalParams.Bins - 1;
-            this.new_maxMobility = this.maximum_Mobility = this.uimfReader.UimfFrameParams.Scans - 1;
+            newMaxTofBin = frameMaximumTofBins = uimfReader.UimfGlobalParams.Bins - 1;
+            newMaxMobility = frameMaximumMobility = uimfReader.UimfFrameParams.Scans - 1;
 
-            if (frame_count == 0)
+            if (frameCount == 0)
                 return;
 
-            if (this.uimfReader.GetNumberOfFrames(frame_type) > DESIRED_WIDTH_CHROMATOGRAM)
-                this.chromatogramControlVm.FrameCompression = this.uimfReader.GetNumberOfFrames(frame_type) / DESIRED_WIDTH_CHROMATOGRAM;
+            if (uimfReader.GetNumberOfFrames(frameType) > DesiredChromatogramWidth)
+                chromatogramControlVm.FrameCompression = uimfReader.GetNumberOfFrames(frameType) / DesiredChromatogramWidth;
             else
             {
-                this.chromatogramControlVm.CanCreatePartialChromatogram = false;
-                this.chromatogramControlVm.FrameCompression = 1;
+                chromatogramControlVm.CanCreatePartialChromatogram = false;
+                chromatogramControlVm.FrameCompression = 1;
             }
-            this.current_frame_compression = this.chromatogramControlVm.FrameCompression;
+            currentFrameCompression = chromatogramControlVm.FrameCompression;
 
-            this.flag_selection_drift = false;
-            this.plot_Mobility.ClearRange();
+            selectingMobilityRange = false;
+            plot_Mobility.ClearRange();
 
-            this.frameControlVm.SummedFrames = 1;
-            this.frameControlVm.MaximumFrameNumber = frame_count - 1;
-            this.frameControlVm.CurrentFrameNumber = 0;
+            frameControlVm.SummedFrames = 1;
+            frameControlVm.MaximumFrameNumber = frameCount - 1;
+            frameControlVm.CurrentFrameNumber = 0;
 
-            // MessageBox.Show(this.array_FrameNum.Length.ToString());
+            // MessageBox.Show(array_FrameNum.Length.ToString());
 
-            if (frame_count < 2)
+            if (frameCount < 2)
             {
-                this.chromatogramControlVm.ChromatogramAllowed = false;
+                chromatogramControlVm.ChromatogramAllowed = false;
             }
             else
             {
-                this.chromatogramControlVm.ChromatogramAllowed = true;
+                chromatogramControlVm.ChromatogramAllowed = true;
             }
 
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
         }
 
         #endregion
@@ -1932,33 +1785,30 @@ namespace UIMF_File
         //
         private void BackgroundSliderValueChanged()
         {
-            if (this.pnl_2DMap != null)
+            if (pnl_2DMap != null)
             {
-                //this.elementHost_PlotAreaFormatting.Update(); // TODO: This shouldn't be needed.
-                this.flag_update2DGraph = true;
+                needToUpdate2DPlot = true;
 
-                if (this.plotAreaFormattingVm.BackgroundGrayValue >= 250)
+                if (plotAreaFormattingVm.BackgroundGrayValue >= 250)
                 {
-                    this.Opacity = .75;
-                    this.TopMost = true;
+                    Opacity = .75;
+                    TopMost = true;
                 }
-                else if (this.Opacity != 1.0)
+                else if (!Opacity.Equals(1.0))
                 {
-                    this.Opacity = 1.0;
-                    this.TopMost = false;
+                    Opacity = 1.0;
+                    TopMost = false;
                 }
             }
         }
 
-
-
         private void PlotAreaFormattingVmOnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName.Equals(nameof(this.plotAreaFormattingVm.ThresholdSliderValue)))
+            if (e.PropertyName.Equals(nameof(plotAreaFormattingVm.ThresholdSliderValue)))
             {
-                this.flag_update2DGraph = true;
+                needToUpdate2DPlot = true;
             }
-            else if (e.PropertyName.Equals(nameof(this.plotAreaFormattingVm.BackgroundGrayValue)))
+            else if (e.PropertyName.Equals(nameof(plotAreaFormattingVm.BackgroundGrayValue)))
             {
                 BackgroundSliderValueChanged();
             }
@@ -1966,21 +1816,21 @@ namespace UIMF_File
 
         private void ColorMapOnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName.Equals(nameof(this.plotAreaFormattingVm.ColorMap.ShowMaxIntensity)))
+            if (e.PropertyName.Equals(nameof(plotAreaFormattingVm.ColorMap.ShowMaxIntensity)))
             {
-                ShowMaxIntensity(this.plotAreaFormattingVm.ColorMap.ShowMaxIntensity);
+                ShowMaxIntensity(plotAreaFormattingVm.ColorMap.ShowMaxIntensity);
             }
         }
 
         // //////////////////////////////////////////////////////////////////////////
         // Display Settings
         //
-        private void ColorSelector_Change(object sender, EventArgs e)
+        private void ColorSelectorChanged(object sender, EventArgs e)
         {
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
         }
 
-        protected virtual void ShowMaxIntensity(bool show)
+        private void ShowMaxIntensity(bool show)
         {
             if (show)
             {
@@ -1988,50 +1838,50 @@ namespace UIMF_File
             }
             else
             {
-                this.flag_update2DGraph = true;
+                needToUpdate2DPlot = true;
             }
         }
 
-        protected virtual void ShowMaxIntensity()
+        private void ShowMaxIntensity()
         {
             int topX;
             int topY;
             int widthX;
             int widthY;
 
-            if (this.current_valuesPerPixelX < 0)
+            if (currentValuesPerPixelX < 0)
             {
-                topX = (this.posX_MaxIntensity * (-this.current_valuesPerPixelX)) - 15;
-                widthX = (-this.current_valuesPerPixelX) + 30;
+                topX = (plot2DMaxIntensityX * (-currentValuesPerPixelX)) - 15;
+                widthX = (-currentValuesPerPixelX) + 30;
             }
             else
             {
-                topX = this.posX_MaxIntensity - 15;
+                topX = plot2DMaxIntensityX - 15;
                 widthX = 30;
             }
 
-            if (this.current_valuesPerPixelY < 0)
+            if (currentValuesPerPixelY < 0)
             {
-                topY = this.pnl_2DMap.Height - 15 - ((this.posY_MaxIntensity + 1) * (-this.current_valuesPerPixelY));
-                widthY = (-this.current_valuesPerPixelY) + 30;
+                topY = pnl_2DMap.Height - 15 - ((plot2DMaxIntensityY + 1) * (-currentValuesPerPixelY));
+                widthY = (-currentValuesPerPixelY) + 30;
             }
             else
             {
-                topY = this.pnl_2DMap.Height - 15 - this.posY_MaxIntensity;
+                topY = pnl_2DMap.Height - 15 - plot2DMaxIntensityY;
                 widthY = 30;
             }
 
-            Graphics g = this.pnl_2DMap.CreateGraphics();
-            Pen p1 = new Pen(new SolidBrush(Color.Black), 3);
+            var g = pnl_2DMap.CreateGraphics();
+            var p1 = new Pen(new SolidBrush(Color.Black), 3);
             g.DrawEllipse(p1, topX, topY, widthX, widthY);
-            Pen p2 = new Pen(new SolidBrush(Color.White), 1);
+            var p2 = new Pen(new SolidBrush(Color.White), 1);
             g.DrawEllipse(p2, topX, topY, widthX, widthY);
         }
 
-        private void PlotAreaFormattingReset(object sender, System.EventArgs e)
+        private void PlotAreaFormattingReset(object sender, EventArgs e)
         {
             // redraw everything.
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
         }
 
         #endregion
@@ -2039,36 +1889,36 @@ namespace UIMF_File
         // /////////////////////////////////////////////////////////////////////
         // UpdateCursorReading()
         //
-        protected virtual void UpdateCursorReading(System.Windows.Forms.MouseEventArgs e)
+        private void UpdateCursorReading(MouseEventArgs e)
         {
-            if ((this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked) || !this.frameInfoVm.CursorTabSelected)
+            if ((chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked) || !frameInfoVm.CursorTabSelected)
                 return;
 
-            double mobility = (current_valuesPerPixelX >= 1 ? e.X * current_valuesPerPixelX : this.current_minMobility + (e.X / -this.current_valuesPerPixelX));
+            double mobility = (currentValuesPerPixelX >= 1 ? e.X * currentValuesPerPixelX : currentMinMobility + (e.X / -currentValuesPerPixelX));
 
-            this.frameInfoVm.CursorMobilityScanNumber = mobility;
-            if (this.mean_TOFScanTime != -1.0)
-                this.frameInfoVm.CursorMobilityScanTime = (mobility * this.mean_TOFScanTime);
+            frameInfoVm.CursorMobilityScanNumber = mobility;
+            if (!averageDriftScanDuration.Equals(-1.0))
+                frameInfoVm.CursorMobilityScanTime = (mobility * averageDriftScanDuration);
             else
-                this.frameInfoVm.CursorMobilityScanTime = -1;
+                frameInfoVm.CursorMobilityScanTime = -1;
 
-            if (this.data_2D == null)
+            if (data_2D == null)
                 return;
-            // time_offset = this.imfReader.Experiment_Properties.TimeOffset;
+            // time_offset = imfReader.Experiment_Properties.TimeOffset;
 
             try
             {
-                if (this.flag_display_as_TOF)
+                if (displayTofValues)
                 {
                     // TOF is quite easy.  Using the current_valuesPerPixelY which is TOF related.
-                    int tof_bin = ((current_valuesPerPixelY > 0) ? this.current_minBin + ((this.pnl_2DMap.Height - e.Y - 1) * current_valuesPerPixelY) : this.current_minBin + ((this.pnl_2DMap.Height - e.Y - 1) / -current_valuesPerPixelY));
+                    var tofBin = ((currentValuesPerPixelY > 0) ? currentMinTofBin + ((pnl_2DMap.Height - e.Y - 1) * currentValuesPerPixelY) : currentMinTofBin + ((pnl_2DMap.Height - e.Y - 1) / -currentValuesPerPixelY));
 
                     // this is required to match with the MZ values
                     // TODO: Is this really required?
-                    tof_bin--;   // wfd:  This is a Cheat!!! not sure what side of this belongs MZ or TOF
+                    tofBin--;   // wfd:  This is a Cheat!!! not sure what side of this belongs MZ or TOF
 
-                    this.frameInfoVm.CursorTOFValue = tof_bin * this.uimfReader.TenthsOfNanoSecondsPerBin * 1e-4; // convert to usec
-                    this.frameInfoVm.CursorMz = this.uimfReader.MzCalibration.TOFtoMZ((float) (tof_bin * this.uimfReader.TenthsOfNanoSecondsPerBin));
+                    frameInfoVm.CursorTOFValue = tofBin * uimfReader.TenthsOfNanoSecondsPerBin * 1e-4; // convert to usec
+                    frameInfoVm.CursorMz = uimfReader.MzCalibration.TOFtoMZ((float) (tofBin * uimfReader.TenthsOfNanoSecondsPerBin));
                 }
                 else
                 {
@@ -2076,377 +1926,318 @@ namespace UIMF_File
                     //
                     // linearize the mz and find the cursor.
                     // calculate the mz, then convert to TOF for all the values.
-                    double mzMax = this.uimfReader.MzCalibration.TOFtoMZ(this.current_maxBin * this.uimfReader.TenthsOfNanoSecondsPerBin);
-                    double mzMin = this.uimfReader.MzCalibration.TOFtoMZ(this.current_minBin * this.uimfReader.TenthsOfNanoSecondsPerBin);
+                    var mzMax = uimfReader.MzCalibration.TOFtoMZ(currentMaxTofBin * uimfReader.TenthsOfNanoSecondsPerBin);
+                    var mzMin = uimfReader.MzCalibration.TOFtoMZ(currentMinTofBin * uimfReader.TenthsOfNanoSecondsPerBin);
 
-                    double diffMZ = mzMax - mzMin;
-                    double rangeTOF = this.current_maxBin - this.current_minBin;
-                    double indexY = (current_valuesPerPixelY > 0) ? (this.pnl_2DMap.Height - e.Y - 1) * current_valuesPerPixelY : (this.pnl_2DMap.Height - e.Y - 1) / (-current_valuesPerPixelY);
-                    double mz = (indexY / rangeTOF) * diffMZ + mzMin;
-                    double tof_value = this.uimfReader.MzCalibration.MZtoTOF(mz);
+                    var diffMz = mzMax - mzMin;
+                    var rangeTof = currentMaxTofBin - currentMinTofBin;
+                    var indexY = (currentValuesPerPixelY > 0) ? (pnl_2DMap.Height - e.Y - 1) * currentValuesPerPixelY : (pnl_2DMap.Height - e.Y - 1) / (-currentValuesPerPixelY);
+                    var mz = ((double)indexY / rangeTof) * diffMz + mzMin;
+                    var tofValue = uimfReader.MzCalibration.MZtoTOF(mz);
 
-                    this.frameInfoVm.CursorMz = mz;
-                    this.frameInfoVm.CursorTOFValue = tof_value * 1e-4; // convert to usec
+                    frameInfoVm.CursorMz = mz;
+                    frameInfoVm.CursorTOFValue = tofValue * 1e-4; // convert to microseconds
                 }
 
-                this.frameInfoVm.TimeOffsetNs = this.uimfReader.UimfGlobalParams.GetValue(GlobalParamKeyType.TimeOffset, 0);
+                frameInfoVm.TimeOffsetNs = uimfReader.UimfGlobalParams.GetValue(GlobalParamKeyType.TimeOffset, 0);
 
-                if (current_valuesPerPixelY < 0)
+                if (currentValuesPerPixelY < 0)
                 {
-                    this.plot_TOF.Refresh();
+                    plot_TOF.Refresh();
 
-                    Graphics g = this.plot_TOF.CreateGraphics();
-                    int y_step = ((e.Y / current_valuesPerPixelY) * current_valuesPerPixelY) + (int)this.plot_TOF.GraphPane.Chart.Rect.Top;
-                    Pen dp = new Pen(new SolidBrush(Color.Red), 1);
-                    dp.DashStyle = DashStyle.Dot;
-                    g.DrawLine(dp, this.plot_TOF.GraphPane.Chart.Rect.Left, y_step, this.plot_TOF.GraphPane.Chart.Rect.Left + this.plot_TOF.GraphPane.Chart.Rect.Width, y_step);
-                    int amp_index = (this.pnl_2DMap.Height - e.Y - 1) / (-current_valuesPerPixelY);
-                    string amplitude = this.data_tofTIC[amp_index].ToString();
-                    Font amp_font = new Font("lucida", 8, FontStyle.Regular);
-                    int left_str = (int)this.plot_TOF.GraphPane.Chart.Rect.Left - (int)g.MeasureString(amplitude, amp_font).Width - 10;
+                    // TODO: This is where the intensity is drawn on the TOF plot with a red line.
+                    var g = plot_TOF.CreateGraphics();
+                    var yStep = ((e.Y / currentValuesPerPixelY) * currentValuesPerPixelY) + (int)plot_TOF.GraphPane.Chart.Rect.Top;
+                    var dp = new Pen(new SolidBrush(Color.Red), 1) { DashStyle = DashStyle.Dot };
+                    g.DrawLine(dp, plot_TOF.GraphPane.Chart.Rect.Left, yStep, plot_TOF.GraphPane.Chart.Rect.Left + plot_TOF.GraphPane.Chart.Rect.Width, yStep);
+                    var ampIndex = (pnl_2DMap.Height - e.Y - 1) / (-currentValuesPerPixelY);
+                    var amplitude = tofTicData[ampIndex].ToString();
+                    var ampFont = new Font("Lucida", 8, FontStyle.Regular);
+                    var leftStr = (int)plot_TOF.GraphPane.Chart.Rect.Left - (int)g.MeasureString(amplitude, ampFont).Width - 10;
 
-                    g.DrawLine(new Pen(new SolidBrush(Color.DimGray), 1), left_str, y_step - 7, this.plot_TOF.GraphPane.Chart.Rect.Left - 1, y_step - 7);
-                    g.DrawLine(new Pen(new SolidBrush(Color.DimGray), 1), left_str, y_step - 7, left_str, y_step + 6);
-                    g.FillRectangle(new SolidBrush(Color.GhostWhite), left_str + 1, y_step - 6, this.plot_TOF.GraphPane.Chart.Rect.Left - left_str - 1, 13);
-                    g.DrawLine(new Pen(new SolidBrush(Color.White), 1), left_str + 1, y_step + 7, this.plot_TOF.GraphPane.Chart.Rect.Left - 1, y_step + 7);
+                    g.DrawLine(new Pen(new SolidBrush(Color.DimGray), 1), leftStr, yStep - 7, plot_TOF.GraphPane.Chart.Rect.Left - 1, yStep - 7);
+                    g.DrawLine(new Pen(new SolidBrush(Color.DimGray), 1), leftStr, yStep - 7, leftStr, yStep + 6);
+                    g.FillRectangle(new SolidBrush(Color.GhostWhite), leftStr + 1, yStep - 6, plot_TOF.GraphPane.Chart.Rect.Left - leftStr - 1, 13);
+                    g.DrawLine(new Pen(new SolidBrush(Color.White), 1), leftStr + 1, yStep + 7, plot_TOF.GraphPane.Chart.Rect.Left - 1, yStep + 7);
 
-                    g.DrawString(amplitude, amp_font, new SolidBrush(Color.Red), left_str + 5, y_step - 6);
+                    g.DrawString(amplitude, ampFont, new SolidBrush(Color.Red), leftStr + 5, yStep - 6);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // This occurs when you are zooming into the plot and go off the edge to the
                 // top.  Try it...  perfect place to ignore an error
-
-                // MessageBox.Show("UpdateCursorReading:  " + ex.ToString());
-                // Console.WriteLine(ex.ToString());
             }
         }
 
         #region Play through frames
 
-        private bool flag_CinemaPlot = false;
-        private int Cinemaframe_DataChange = 0;
+        private bool playingCinemaPlot;
+        private int frameCinemaDataInterval;
 
-        private void pb_StopPlaying_Click(object sender, EventArgs e)
+        private void FramesStopPlayingClick(object sender, EventArgs e)
         {
-            this.StopCinema();
+            StopCinema();
         }
 
-        private void pb_PlayLeftOut_Click(object sender, EventArgs e)
+        private void FramesPlayLeftClick(object sender, EventArgs e)
         {
-            if (this.frameControlVm.CurrentFrameNumber <= this.frameControlVm.MinimumFrameNumber) // frame index starts at 0
+            if (frameControlVm.CurrentFrameNumber <= frameControlVm.MinimumFrameNumber) // frame index starts at 0
                 return;
 
-            this.flag_CinemaPlot = true;
-            this.Cinemaframe_DataChange = -(Convert.ToInt32(this.frameControlVm.SummedFrames) / 3) - 1;
-            this.frameControlVm.CurrentFrameNumber += this.Cinemaframe_DataChange;
+            playingCinemaPlot = true;
+            frameCinemaDataInterval = -(Convert.ToInt32(frameControlVm.SummedFrames) / 3) - 1;
+            frameControlVm.CurrentFrameNumber += frameCinemaDataInterval;
         }
 
-        private void pb_PlayRightOut_Click(object sender, EventArgs e)
+        private void FramesPlayRightClick(object sender, EventArgs e)
         {
-            if (this.frameControlVm.CurrentFrameNumber >= this.frameControlVm.MaximumFrameNumber)
+            if (frameControlVm.CurrentFrameNumber >= frameControlVm.MaximumFrameNumber)
                 return;
 
-            this.flag_CinemaPlot = true;
-            this.Cinemaframe_DataChange = (Convert.ToInt32(this.frameControlVm.SummedFrames) / 3) + 1;
-            if (this.frameControlVm.CurrentFrameNumber + this.Cinemaframe_DataChange > Convert.ToInt32(this.frameControlVm.MaximumFrameNumber))
-                this.frameControlVm.CurrentFrameNumber = this.frameControlVm.MaximumFrameNumber - Convert.ToInt32(this.frameControlVm.SummedFrames);
+            playingCinemaPlot = true;
+            frameCinemaDataInterval = (Convert.ToInt32(frameControlVm.SummedFrames) / 3) + 1;
+            if (frameControlVm.CurrentFrameNumber + frameCinemaDataInterval > Convert.ToInt32(frameControlVm.MaximumFrameNumber))
+                frameControlVm.CurrentFrameNumber = frameControlVm.MaximumFrameNumber - Convert.ToInt32(frameControlVm.SummedFrames);
             else
             {
-                if (this.frameControlVm.CurrentFrameNumber + this.Cinemaframe_DataChange > this.frameControlVm.MaximumFrameNumber)
-                    this.frameControlVm.CurrentFrameNumber = this.frameControlVm.MaximumFrameNumber - this.Cinemaframe_DataChange;
+                if (frameControlVm.CurrentFrameNumber + frameCinemaDataInterval > frameControlVm.MaximumFrameNumber)
+                    frameControlVm.CurrentFrameNumber = frameControlVm.MaximumFrameNumber - frameCinemaDataInterval;
                 else
-                    this.frameControlVm.CurrentFrameNumber += this.Cinemaframe_DataChange;
+                    frameControlVm.CurrentFrameNumber += frameCinemaDataInterval;
 
             }
         }
 
         private void StopCinema()
         {
-            this.frameControlView.Dispatcher.Invoke(() =>
+            frameControlView.Dispatcher.Invoke(() =>
             {
-                this.frameControlVm.PlayingFramesBackward = false;
-                this.frameControlVm.PlayingFramesForward = false;
+                frameControlVm.PlayingFramesBackward = false;
+                frameControlVm.PlayingFramesForward = false;
             });
 
-            this.flag_CinemaPlot = false;
-            this.Cinemaframe_DataChange = 0;
+            playingCinemaPlot = false;
+            frameCinemaDataInterval = 0;
 
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
         }
 
         #endregion
 
         #region 2DMap Scrollbar
 
-        protected virtual void hsb_2DMap_Scroll(object sender, ScrollEventArgs e)
+        private void Map2DHorizontalScroll(object sender, ScrollEventArgs e)
         {
-            int diff = this.maximum_Mobility - this.hsb_2DMap.Maximum;
-            if (_zoom.Count > 0)
+            int diff = frameMaximumMobility - hsb_2DMap.Maximum;
+            if (zoomHistory.Count > 0)
             {
-                diff = _zoom[_zoom.Count - 1].XDiff;
+                diff = zoomHistory[zoomHistory.Count - 1].XDiff;
             }
 
-            this.new_minMobility = Math.Min(this.hsb_2DMap.Value, this.hsb_2DMap.Maximum);
-            this.new_maxMobility = this.new_minMobility + diff;
+            newMinMobility = Math.Min(hsb_2DMap.Value, hsb_2DMap.Maximum);
+            newMaxMobility = newMinMobility + diff;
 
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
         }
 
-        protected virtual void vsb_2DMap_Scroll(object sender, ScrollEventArgs e)
+        private void Map2DVerticalScroll(object sender, ScrollEventArgs e)
         {
-            int diff = this.maximum_Bins - this.vsb_2DMap.Maximum;
-            if (_zoom.Count > 0)
+            int diff = frameMaximumTofBins - vsb_2DMap.Maximum;
+            if (zoomHistory.Count > 0)
             {
-                diff = _zoom[_zoom.Count - 1].YDiff;
+                diff = zoomHistory[zoomHistory.Count - 1].YDiff;
             }
 
-            this.new_minBin = this.vsb_2DMap.Maximum - this.vsb_2DMap.Value;
-            this.new_maxBin = this.new_minBin + diff;
+            newMinTofBin = vsb_2DMap.Maximum - vsb_2DMap.Value;
+            newMaxTofBin = newMinTofBin + diff;
 
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
         }
 
         #endregion
 
-        private void btn_Refresh_Click(object sender, EventArgs e)
+        private void RefreshClick(object sender, EventArgs e)
         {
-            this.tab_DataViewer.Font = new System.Drawing.Font("Verdana", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0)));
+            tab_DataViewer.Font = new Font("Verdana", 8.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
 
-            this.plot_Mobility.Dispose();
-            this.plot_TOF.Dispose();
+            plot_Mobility.Dispose();
+            plot_TOF.Dispose();
 
             SetupPlots();
 
-            this.plot_axisMobility(this.data_driftTIC);
-            this.plot_axisTOF(this.data_tofTIC);
+            SetMobilityPlotData(mobilityTicData);
+            SetTofMzPlotData(tofTicData);
 
             // MessageBox.Show("refresh");
-            //this.IonMobilityDataView_Resize((object)null, (EventArgs)null);
-            this.flag_ResizeThis = true;
-            this.btn_Refresh.Enabled = true;
+            //IonMobilityDataView_Resize((object)null, (EventArgs)null);
+            viewerNeedsResizing = true;
+            btn_Refresh.Enabled = true;
         }
 
         #region Chromatogram
-
-        // TODO: Was not wired up before removal of NI Libraries.
-        private void btn_ShowChromatogram_Click(object sender, EventArgs e)
-        {
-            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
-            {
-                this.Chromatogram_GUI_Settings();
-            }
-
-            this.plotAreaFormattingVm.SafeReset();
-
-            GC.Collect();
-            if (this.flag_chromatograph_collected_COMPLETE)
-            {
-                // TODO: this.rb_CompleteChromatogram.BackColor = Color.LawnGreen;
-                // TODO: this.rb_PartialChromatogram.BackColor = Color.Transparent;
-            }
-            else
-            {
-                // TODO: this.rb_CompleteChromatogram.BackColor = Color.Transparent;
-                // TODO: this.rb_PartialChromatogram.BackColor = Color.LawnGreen;
-            }
-            //  this.flag_update2DGraph = true;
-        }
-
-        public void Chromatogram_GUI_Settings()
-        {
-            if (this.chromatogramControlVm.CompletePeakChromatogramChecked)
-                this.flag_chromatograph_collected_PARTIAL = false;
-            else
-                this.flag_chromatograph_collected_COMPLETE = false;
-
-            // this.flag_update2DGraph = true;
-
-            this.uimfReader.CurrentFrameIndex = (int)this.frameControlVm.CurrentFrameNumber;
-            this.plot_Mobility.StopAnnotating(true);
-
-            this.flag_selection_drift = false;
-            this.plot_Mobility.ClearRange();
-
-            this.vsb_2DMap.Hide();
-            this.hsb_2DMap.Hide();
-
-            //this.cb_Chromatogram.Enabled = false;
-            this.flag_display_as_TOF = false;
-
-            this.num_minBin.DecimalPlaces = 0;
-            this.num_minBin.Increment = 1;
-            this.num_maxBin.DecimalPlaces = 0;
-            this.num_maxBin.Increment = 1;
-
-            this.num_minMobility.DecimalPlaces = 0;
-            this.num_minMobility.Increment = 1;
-            this.num_maxMobility.DecimalPlaces = 0;
-            this.num_maxMobility.Increment = 1;
-        }
 
         private void ChromatogramControlVmOnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName.Equals(nameof(ChromatogramControlViewModel.PartialPeakChromatogramChecked)))
             {
-                rb_PartialChromatogram_CheckedChanged(sender, e);
+                PartialChromatogramCheckedChanged();
             }
             else if (e.PropertyName.Equals(nameof(ChromatogramControlViewModel.CompletePeakChromatogramChecked)))
             {
-                rb_CompleteChromatogram_CheckedChanged(sender, e);
+                CompleteChromatogramCheckedChanged();
             }
             else if (e.PropertyName.Equals(nameof(ChromatogramControlViewModel.FrameCompression)))
             {
-                num_FrameCompression_ValueChanged(sender, e);
+                FrameCompressionChanged();
             }
         }
 
-        private void rb_PartialChromatogram_CheckedChanged(object sender, EventArgs e)
+        private void PartialChromatogramCheckedChanged()
         {
-            if (this.chromatogramControlVm.PartialPeakChromatogramChecked)
+            if (chromatogramControlVm.PartialPeakChromatogramChecked)
             {
-                if (this.chromatogramControlVm.FrameCompression == 1)
+                if (chromatogramControlVm.FrameCompression == 1)
                 {
-                    this.chromatogramControlVm.CompletePeakChromatogramChecked = true;
+                    chromatogramControlVm.CompletePeakChromatogramChecked = true;
                     return;
                 }
 
-                this.Chromatogram_CheckedChanged();
+                ChromatogramCheckedChanged();
 
-                this.pnl_2DMap.BackgroundImageLayout = ImageLayout.Stretch;
+                pnl_2DMap.BackgroundImageLayout = ImageLayout.Stretch;
             }
             else
             {
-                this.pnl_2DMap.BackgroundImageLayout = ImageLayout.None;
+                pnl_2DMap.BackgroundImageLayout = ImageLayout.None;
             }
         }
 
-        private void rb_CompleteChromatogram_CheckedChanged(object sender, EventArgs e)
+        private void CompleteChromatogramCheckedChanged()
         {
-            if (this.chromatogramControlVm.CompletePeakChromatogramChecked)
+            if (chromatogramControlVm.CompletePeakChromatogramChecked)
             {
-                this.Chromatogram_CheckedChanged();
+                ChromatogramCheckedChanged();
 
-                this.pnl_2DMap.BackgroundImageLayout = ImageLayout.Stretch;
+                pnl_2DMap.BackgroundImageLayout = ImageLayout.Stretch;
             }
             else
             {
-                this.pnl_2DMap.BackgroundImageLayout = ImageLayout.None;
+                pnl_2DMap.BackgroundImageLayout = ImageLayout.None;
             }
         }
 
-        private void num_FrameCompression_ValueChanged(object sender, EventArgs e)
+        private void FrameCompressionChanged()
         {
-            if (this.chromatogramControlVm.FrameCompression != this.current_frame_compression)
+            if (chromatogramControlVm.FrameCompression != currentFrameCompression)
             {
-                this.chromatogramControlVm.NoChromatogramChecked = true;
+                chromatogramControlVm.NoChromatogramChecked = true;
 
-                this.flag_chromatograph_collected_COMPLETE = false;
-                this.flag_chromatograph_collected_PARTIAL = false;
+                completeChromatogramCollected = false;
+                partialChromatogramCollected = false;
             }
             else
             {
-                if (this.flag_chromatograph_collected_COMPLETE)
+                if (completeChromatogramCollected)
                 {
-                    this.chromatogramControlVm.CompletePeakChromatogramChecked = true;
+                    chromatogramControlVm.CompletePeakChromatogramChecked = true;
 
-                    this.flag_chromatograph_collected_COMPLETE = true;
-                    this.flag_chromatograph_collected_PARTIAL = false;
+                    completeChromatogramCollected = true;
+                    partialChromatogramCollected = false;
                 }
-                else if (this.flag_chromatograph_collected_PARTIAL)
+                else if (partialChromatogramCollected)
                 {
-                    this.chromatogramControlVm.PartialPeakChromatogramChecked = true;
+                    chromatogramControlVm.PartialPeakChromatogramChecked = true;
 
-                    this.flag_chromatograph_collected_PARTIAL = true;
-                    this.flag_chromatograph_collected_COMPLETE = false;
+                    partialChromatogramCollected = true;
+                    completeChromatogramCollected = false;
                 }
                 else
                 {
-                    this.flag_chromatograph_collected_COMPLETE = false;
-                    this.flag_chromatograph_collected_PARTIAL = false;
+                    completeChromatogramCollected = false;
+                    partialChromatogramCollected = false;
                 }
             }
         }
 
-        public void Chromatogram_CheckedChanged()
+        public void ChromatogramCheckedChanged()
         {
-            if (this.uimfReader.UimfGlobalParams.NumFrames < 2)
+            if (uimfReader.UimfGlobalParams.NumFrames < 2)
             {
-                if (!this.chromatogramControlVm.CompletePeakChromatogramChecked && !this.chromatogramControlVm.PartialPeakChromatogramChecked)
+                if (!chromatogramControlVm.CompletePeakChromatogramChecked && !chromatogramControlVm.PartialPeakChromatogramChecked)
                     return;
 
-                MessageBox.Show("Chromatogram's are not available with less than 2 frames");
+                MessageBox.Show("Chromatograms are not available with less than 2 frames");
 
-                this.chromatogramControlVm.CompletePeakChromatogramChecked = false;
-                this.chromatogramControlVm.PartialPeakChromatogramChecked = false;
-                this.chromatogramControlVm.NoChromatogramChecked = true;
-                this.chromatogramControlVm.ChromatogramAllowed = false;
+                chromatogramControlVm.CompletePeakChromatogramChecked = false;
+                chromatogramControlVm.PartialPeakChromatogramChecked = false;
+                chromatogramControlVm.NoChromatogramChecked = true;
+                chromatogramControlVm.ChromatogramAllowed = false;
 
                 return;
             }
 
-            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
+            if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
             {
-                if (this.chromatogramControlVm.CompletePeakChromatogramChecked)
-                    this.flag_chromatograph_collected_PARTIAL = false;
+                if (chromatogramControlVm.CompletePeakChromatogramChecked)
+                    partialChromatogramCollected = false;
                 else
-                    this.flag_chromatograph_collected_COMPLETE = false;
+                    completeChromatogramCollected = false;
 
-                this.hsb_2DMap.Value = 0;
+                hsb_2DMap.Value = 0;
 
-                this.uimfReader.CurrentFrameIndex = (int)this.frameControlVm.CurrentFrameNumber;
-                this.plot_Mobility.StopAnnotating(true);
+                uimfReader.CurrentFrameIndex = frameControlVm.CurrentFrameNumber;
+                plot_Mobility.StopAnnotating(true);
 
-                this.flag_selection_drift = false;
-                this.plot_Mobility.ClearRange();
+                selectingMobilityRange = false;
+                plot_Mobility.ClearRange();
 
-                this.frameControlVm.ShowChromatogramLabel = true;
+                frameControlVm.ShowChromatogramLabel = true;
 
-                this.vsb_2DMap.Hide();
-                // this.hsb_2DMap.Hide();
+                vsb_2DMap.Hide();
+                // hsb_2DMap.Hide();
 
-                this.flag_display_as_TOF = false;
+                displayTofValues = false;
 
-                this.num_minBin.DecimalPlaces = 0;
-                this.num_maxBin.DecimalPlaces = 0;
-                this.num_minBin.Increment = 1;
-                this.num_maxBin.Increment = 1;
+                num_minBin.DecimalPlaces = 0;
+                num_maxBin.DecimalPlaces = 0;
+                num_minBin.Increment = 1;
+                num_maxBin.Increment = 1;
 
-                this.num_minMobility.DecimalPlaces = 0;
-                this.num_minMobility.Increment = 1;
-                this.num_maxMobility.DecimalPlaces = 0;
-                this.num_maxMobility.Increment = 1;
+                num_minMobility.DecimalPlaces = 0;
+                num_minMobility.Increment = 1;
+                num_maxMobility.DecimalPlaces = 0;
+                num_maxMobility.Increment = 1;
             }
             else
             {
-                if (this.menuItemConvertToTOF.Checked)
-                    this.flag_display_as_TOF = true;
+                if (menuItemConvertToTOF.Checked)
+                    displayTofValues = true;
                 else
-                    this.flag_display_as_TOF = false;
+                    displayTofValues = false;
 
-                this.vsb_2DMap.Show();
-                this.hsb_2DMap.Show();
+                vsb_2DMap.Show();
+                hsb_2DMap.Show();
 
-                this.frameControlVm.ShowChromatogramLabel = false;
+                frameControlVm.ShowChromatogramLabel = false;
 
-                this.Update();
+                Update();
 
-                this.num_minBin.DecimalPlaces = 4;
-                this.num_maxBin.DecimalPlaces = 4;
-                this.num_minBin.Increment = 20;
-                this.num_maxBin.Increment = 20;
+                num_minBin.DecimalPlaces = 4;
+                num_maxBin.DecimalPlaces = 4;
+                num_minBin.Increment = 20;
+                num_maxBin.Increment = 20;
 
-                this.num_minMobility.DecimalPlaces = 2;
-                this.num_minMobility.Increment = 20;
-                this.num_maxMobility.DecimalPlaces = 2;
-                this.num_maxMobility.Increment = 20;
+                num_minMobility.DecimalPlaces = 2;
+                num_minMobility.Increment = 20;
+                num_maxMobility.DecimalPlaces = 2;
+                num_maxMobility.Increment = 20;
             }
 
-            this.plotAreaFormattingVm.SafeReset();
+            plotAreaFormattingVm.SafeReset();
             GC.Collect();
 
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
         }
 
         #endregion
@@ -2459,251 +2250,153 @@ namespace UIMF_File
         // the trick here is to mess with the settings without messing with the file until
         // it is requested.
         //
-        public void set_Calibration(float K, float T0)
-        {
-            MessageBox.Show("set_Calibration needs work, IonMobilityDataView");
-
-#if false
-            if (this.frame_Data == null)
-                return;
-
-            this.mz_Calibration = cal;
-
-            this.imfReader.Experiment_Properties.cal_a = this.mz_Calibration.A;
-            this.imfReader.Experiment_Properties.cal_t0 = this.mz_Calibration.B;
-            this.imfReader.Experiment_Properties.cal_Type = this.mz_Calibration.Type;
-
-            this.tb_CalA.Text = this.imfReader.Experiment_Properties.text_CalA();
-            this.tb_CalT0.Text = this.imfReader.Experiment_Properties.text_CalT0();
-
-            this.lbl_CalibratorType.Text = this.mz_Calibration.Description;
-#endif
-        }
 
         private void FrameInfoVmOnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName.Equals(nameof(FrameInfoViewModel.CalibrationK)))
             {
-                CalibratorA_Changed();
+                CalibratorAChanged();
             }
             else if (e.PropertyName.Equals(nameof(FrameInfoViewModel.CalibrationT0)))
             {
-                CalibratorT0_Changed();
+                CalibratorT0Changed();
             }
         }
 
-        private void CalibratorA_Changed()
+        private void CalibratorAChanged()
         {
             // modify the view; but not the file.
             try
             {
-                this.uimfReader.MzCalibration.K = this.frameInfoVm.CalibrationK;
-                Calibrator_Changed();
-                this.frameInfoVm.ChangeCalibrationKFailed = false;
+                uimfReader.MzCalibration.K = frameInfoVm.CalibrationK;
+                CalibratorChanged();
+                frameInfoVm.ChangeCalibrationKFailed = false;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                this.frameInfoVm.ChangeCalibrationKFailed = true;
-                this.frameInfoVm.CanRevertCalDefaults = true;
+                frameInfoVm.ChangeCalibrationKFailed = true;
+                frameInfoVm.CanRevertCalDefaults = true;
             }
         }
 
-        private void CalibratorT0_Changed()
+        private void CalibratorT0Changed()
         {
             try
             {
-                this.uimfReader.MzCalibration.T0 = this.frameInfoVm.CalibrationT0;
-                Calibrator_Changed();
-                this.frameInfoVm.ChangeCalibrationT0Failed = false;
+                uimfReader.MzCalibration.T0 = frameInfoVm.CalibrationT0;
+                CalibratorChanged();
+                frameInfoVm.ChangeCalibrationT0Failed = false;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                this.frameInfoVm.ChangeCalibrationT0Failed = true;
-                this.frameInfoVm.CanRevertCalDefaults = true;
+                frameInfoVm.ChangeCalibrationT0Failed = true;
+                frameInfoVm.CanRevertCalDefaults = true;
             }
         }
 
-        public void Calibrator_Changed()
+        public void CalibratorChanged()
         {
-            if (!this.frameInfoVm.CalibrationK.Equals(this.uimfReader.MzCalibration.K) ||
-                !this.frameInfoVm.CalibrationT0.Equals(this.uimfReader.MzCalibration.T0))
+            if (!frameInfoVm.CalibrationK.Equals(uimfReader.MzCalibration.K) ||
+                !frameInfoVm.CalibrationT0.Equals(uimfReader.MzCalibration.T0))
             {
-                // this.m_frameParameters.CalibrationSlope = this.frameInfoVm.CalibrationK; //this.UIMF_DataReader.mz_Calibration.k * 10000.0;
-                //  this.m_frameParameters.CalibrationIntercept = this.frameInfoVm.CalibrationT0; // this.UIMF_DataReader.mz_Calibration.t0 / 10000.0;
-                // this.ReloadCalibrationCoefficients();
+                // m_frameParameters.CalibrationSlope = frameInfoVm.CalibrationK; //UIMF_DataReader.mz_Calibration.k * 10000.0;
+                // m_frameParameters.CalibrationIntercept = frameInfoVm.CalibrationT0; // UIMF_DataReader.mz_Calibration.t0 / 10000.0;
+                // ReloadCalibrationCoefficients();
 
-                this.frameInfoVm.CalibrationDate = DateTime.Now;
+                frameInfoVm.CalibrationDate = DateTime.Now;
 
                 // TODO: Does this switch the tabs, as desired?
-                this.frameInfoVm.CalibrationTabSelected = true;
+                frameInfoVm.CalibrationTabSelected = true;
 
-                this.frameInfoVm.ShowCalibrationButtons();
+                frameInfoVm.ShowCalibrationButtons();
             }
 
             // Redraw
             // Save old scroll value to move there after conversion
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
         }
 
-        private void pnl_postProcessing_CalibrationChanged(object sender, EventArgs e)
+        private void PostProcessingCalibrationChanged(object sender, EventArgs e)
         {
-            this.ReloadCalibrationCoefficients();
-            this.flag_update2DGraph = true;
+            ReloadCalibrationCoefficients();
+            needToUpdate2DPlot = true;
         }
 
         private void ReloadCalibrationCoefficients()
         {
-            this.frameInfoVm.CalibrationK = this.uimfReader.MzCalibration.K;
-            this.frameInfoVm.CalibrationT0 = this.uimfReader.MzCalibration.T0;
-            this.frameInfoVm.CalibratorType = this.uimfReader.MzCalibration.Description;
+            frameInfoVm.CalibrationK = uimfReader.MzCalibration.K;
+            frameInfoVm.CalibrationT0 = uimfReader.MzCalibration.T0;
+            frameInfoVm.CalibratorType = uimfReader.MzCalibration.Description;
 
-            this.frameInfoVm.ChangeCalibrationKFailed = false;
-            this.frameInfoVm.ChangeCalibrationT0Failed = false;
-            this.frameInfoVm.HideCalibrationButtons();
+            frameInfoVm.ChangeCalibrationKFailed = false;
+            frameInfoVm.ChangeCalibrationT0Failed = false;
+            frameInfoVm.HideCalibrationButtons();
 
-            this.pnl_postProcessing.SetExperimentalCoefficients(this.uimfReader.MzCalibration.K * 10000.0, this.uimfReader.MzCalibration.T0 / 10000.0);
+            postProcessingVm.SetExperimentalCoefficients(uimfReader.MzCalibration.K * 10000.0, uimfReader.MzCalibration.T0 / 10000.0);
         }
 
-        private void btn_setCalDefaults_Click(object sender, System.EventArgs e)
+        private void SetCalDefaultsClick(object sender, EventArgs e)
         {
 
-            this.Enabled = false;
+            Enabled = false;
 
-            this.uimfReader.UpdateAllCalibrationCoefficients(this.frameInfoVm.CalibrationK * 10000.0, this.frameInfoVm.CalibrationT0 / 10000.0);
+            uimfReader.UpdateAllCalibrationCoefficients(frameInfoVm.CalibrationK * 10000.0, frameInfoVm.CalibrationT0 / 10000.0);
 
-            this.ReloadCalibrationCoefficients();
+            ReloadCalibrationCoefficients();
 
-            this.Enabled = true;
-            this.flag_update2DGraph = true;
+            Enabled = true;
+            needToUpdate2DPlot = true;
 
-            this.frameInfoVm.HideCalibrationButtons();
-            this.frameInfoVm.ChangeCalibrationKFailed = false;
-            this.frameInfoVm.ChangeCalibrationT0Failed = false;
+            frameInfoVm.HideCalibrationButtons();
+            frameInfoVm.ChangeCalibrationKFailed = false;
+            frameInfoVm.ChangeCalibrationT0Failed = false;
         }
 
-        private void btn_revertCalDefaults_Click(object sender, System.EventArgs e)
+        private void RevertCalDefaultsClick(object sender, EventArgs e)
         {
-            this.uimfReader.ReloadFrameParameters();
+            uimfReader.ReloadFrameParameters();
 
-            this.ReloadCalibrationCoefficients();
+            ReloadCalibrationCoefficients();
 
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
 
-            this.frameInfoVm.HideCalibrationButtons();
-            this.frameInfoVm.ChangeCalibrationKFailed = false;
-            this.frameInfoVm.ChangeCalibrationT0Failed = false;
+            frameInfoVm.HideCalibrationButtons();
+            frameInfoVm.ChangeCalibrationKFailed = false;
+            frameInfoVm.ChangeCalibrationT0Failed = false;
         }
 
         #endregion
 
-        private void btn_Clean_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("not sure what this does.  Needs work.  wfd 02/22/11");
-
-            string filename = "c:\\IonMobilityData\\Gordon\\Calibration\\QC\\8pep_10fr_600scans_01_0000\\" + Path.GetFileNameWithoutExtension(this.uimfReader.UimfDataFile) + "_clean.UIMF";
-
-            if (File.Exists(filename))
-                File.Delete(filename);
-
-            DataWriter uimf_writer = new DataWriter(filename);
-            FrameParams fp = new FrameParams();
-            GlobalParams gp = new GlobalParams();
-            int uimf_bins;
-
-            uimf_writer.CreateTables("int");
-
-            gp = this.uimfReader.GetGlobalParams();
-            MessageBox.Show("gp: " + gp.NumFrames.ToString());
-
-            for (int i = 1; i <= gp.NumFrames; i++)
-            {
-                fp = this.uimfReader.GetFrameParams(i);
-
-                uimf_writer.InsertFrame(i, fp);
-
-                for (int j = 0; j < this.uimfReader.UimfFrameParams.Scans; j++)
-                {
-                    double[] binList = new double[410000];
-                    int[] intensityList = new int[410000];
-
-                    uimf_bins = this.uimfReader.GetSpectrum(this.uimfReader.ArrayFrameNum[i], this.uimfReader.FrameTypeDict[this.uimfReader.ArrayFrameNum[i]], j, out binList, out intensityList);
-                    var nzVals = new Tuple<int, int>[uimf_bins];
-
-                    for (int k = 0; k < uimf_bins; k++)
-                    {
-                        nzVals[k] = new Tuple<int, int>((int)binList[k] - 10000, intensityList[k]);
-                    }
-
-                    uimf_writer.InsertScan(i, fp, j, nzVals, this.uimfReader.UimfGlobalParams.BinWidth, 0);
-                }
-            }
-
-            uimf_writer.Dispose();
-            MessageBox.Show("created " + filename);
-        }
-
-        private void format_Screen()
-        {
-            int frame_count = this.uimfReader.GetNumberOfFrames(this.current_frame_type);
-
-            if (frame_count == 0)
-            {
-                this.pnl_2DMap.Visible = false;
-                this.hsb_2DMap.Visible = this.vsb_2DMap.Visible = false;
-
-                this.waveform_TOFPlot.Points = new BasicArrayPointList(new double[0], new double[0]);
-                this.waveform_MobilityPlot.Points = new BasicArrayPointList(new double[0], new double[0]);
-
-                this.frameControlVm.MinimumFrameNumber = 0;
-                this.frameControlVm.MaximumFrameNumber = 0;
-
-                return;
-            }
-            else
-            {
-                this.pnl_2DMap.Visible = true;
-                this.hsb_2DMap.Visible = this.vsb_2DMap.Visible = true;
-
-                this.pnl_2DMap.Visible = true;
-
-                this.frameControlVm.CurrentFrameNumber = 0;
-                this.frameControlVm.MinimumFrameNumber = 0;
-                this.frameControlVm.MaximumFrameNumber = frame_count - 1;
-
-                this.elementHost_FrameControl.Refresh();
-            }
-        }
-
         #region m/z Range Selection controls
 
-        private void cb_EnableMZRange_CheckedChanged(object sender, EventArgs e)
+        private void MzRangeCheckedChanged(object sender, EventArgs e)
         {
-            this.flag_chromatograph_collected_COMPLETE = false;
-            this.flag_chromatograph_collected_PARTIAL = false;
+            completeChromatogramCollected = false;
+            partialChromatogramCollected = false;
 
-            this.chromatogramControlVm.NoChromatogramChecked = true;
+            chromatogramControlVm.NoChromatogramChecked = true;
 
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
         }
 
-        private void num_MZ_ValueChanged(object sender, EventArgs e)
+        private void MzRangeMzChanged(object sender, EventArgs e)
         {
-            this.flag_chromatograph_collected_COMPLETE = false;
-            this.flag_chromatograph_collected_PARTIAL = false;
+            completeChromatogramCollected = false;
+            partialChromatogramCollected = false;
 
-            this.chromatogramControlVm.NoChromatogramChecked = true;
+            chromatogramControlVm.NoChromatogramChecked = true;
 
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
         }
 
-        private void num_PPM_ValueChanged(object sender, EventArgs e)
+        private void MzRangePpmChanged(object sender, EventArgs e)
         {
-            this.flag_chromatograph_collected_COMPLETE = false;
-            this.flag_chromatograph_collected_PARTIAL = false;
+            completeChromatogramCollected = false;
+            partialChromatogramCollected = false;
 
-            this.chromatogramControlVm.NoChromatogramChecked = true;
+            chromatogramControlVm.NoChromatogramChecked = true;
 
-            this.flag_update2DGraph = true;
+            needToUpdate2DPlot = true;
         }
 
         #endregion
