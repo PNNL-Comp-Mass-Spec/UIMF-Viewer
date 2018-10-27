@@ -2230,22 +2230,6 @@ namespace UIMF_File
 
         #region Chromatogram
 
-        private void lbl_FramesShown_Click(object sender, EventArgs e)
-        {
-            // TODO: was wired up, but this check blocked all usage.
-            if (this.frameControlVm.SummedFrames > 1)
-                return;
-
-            this.frameControlVm.ShowTICItems = true;
-        }
-
-        private void btn_TIC_Click(object sender, EventArgs e)
-        {
-            this.frameControlVm.ShowTICItems = false;
-
-            this.calc_TIC();
-        }
-
         // TODO: Was not wired up before removal of NI Libraries.
         private void btn_ShowChromatogram_Click(object sender, EventArgs e)
         {

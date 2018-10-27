@@ -36,7 +36,6 @@ namespace UIMFViewer
                     if (!string.IsNullOrWhiteSpace(uimf))
                     {
                         var dataViewer = new UIMF_File.DataViewer(uimf, true);
-                        dataViewer.frameControlVm.TICThreshold = 300;
                         dataViewer.Closed += DataViewer_Closed;
 
                         dataViewer.Show();

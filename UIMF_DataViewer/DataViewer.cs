@@ -424,7 +424,6 @@ namespace UIMF_File
                 this.frameControlVm.PlayLeft += this.pb_PlayLeftOut_Click;
                 this.frameControlVm.PlayRight += this.pb_PlayRightOut_Click;
                 this.frameControlVm.StopCinema += this.pb_StopPlaying_Click;
-                this.frameControlVm.CalculateTIC += this.btn_TIC_Click;
 
                 this.frameControlVm.PropertyChanged += FrameControlVmOnPropertyChanged;
 
@@ -1271,69 +1270,6 @@ namespace UIMF_File
             }
         }
 
-        private void calc_TIC()
-        {
-#if false
-            if (this.num_FrameRange.Value > 1)
-                return;
-
-            long[] bins = new long[current_maxBin - current_minBin];
-            long TIC_Count = 0;
-            int y_pos = 0;
-            int i;
-            int threshold = Convert.ToInt32(this.num_TICThreshold.Value);
-
-            for (i = 0; i < bins.Length; i++)
-                bins[i] = 0;
-
-            for (int x_pos = current_minMobility; x_pos < current_maxMobility; x_pos++)
-            {
-                sumDrift = 0;
-
-                // Bin the spectra.
-                int minIndex = 0;
-                int maxIndex = 0;
-                int indexX = x_pos - current_minMobility;
-
-                this.frame_Data.SpectraBounds(x_pos, current_minBin, current_maxBin, out minIndex, out maxIndex);
-
-                // If minIndex < 0 there is no data in this spectrum
-                if (minIndex < 0)
-                    continue;
-
-                try
-                {
-                    for (y_pos = minIndex; y_pos < maxIndex; y_pos++)
-                    {
-                        if ((current_minBin > this.frame_Data.TOFValues[y_pos]) || (current_maxBin < this.frame_Data.TOFValues[y_pos]))
-                            continue;
-
-                        bins[this.frame_Data.TOFValues[y_pos] - current_minBin] += this.frame_Data.Intensities[y_pos];
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.ToString() + "\n\n" + current_minBin.ToString() + " < " + (this.frame_Data.TOFValues[y_pos] - current_minBin).ToString() + " < " + current_maxBin.ToString());
-                }
-            }
-
-            int bins_count = 0;
-            string test = "";
-            for (y_pos = 0; y_pos < current_maxBin - current_minBin; y_pos++)
-                if (bins[y_pos] > threshold)
-                {
-                    bins_count++;
-                    TIC_Count += bins[y_pos];
-                    if (bins_count < 100)
-                        test += y_pos.ToString() + " " + bins[y_pos].ToString() + ", ";
-                }
-
-            //
-            this.frameControlVm.TICValue = TIC_Count;
-            this.frameControlVm.ShowTICValue = true;
-#endif
-        }
-
         private void Generate2DIntensityArray_Chromatogram()
         {
             int i;
@@ -1979,8 +1915,6 @@ namespace UIMF_File
 
                 this.elementHost_PlotAreaFormatting.Invalidate();
             }
-
-            this.calc_TIC();
 
             this.flag_kill_mouse = false;
         }

@@ -46,7 +46,6 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <ComboBox Grid.Row="0" Grid.Column="0" MinWidth="100" Margin="3" VerticalAlignment="Center" ItemsSource="{Binding FrameTypes}" SelectedItem="{Binding SelectedFrameType}" FontFamily="Arial" FontWeight="Bold" FontSize="12pt">
                     <ComboBox.ItemTemplate>
@@ -130,18 +129,6 @@
                     <TextBlock Grid.Column="2" Margin="3" Text="Frame Range:" VerticalAlignment="Center" FontFamily="Arial" FontWeight="Bold" FontSize="9pt" Visibility="{Binding ShowFrameSelectControls, Converter={StaticResource BoolToVis}}" />
                     <xctk:IntegerUpDown Grid.Column="3" Margin="3" MinWidth="60" Minimum="1" Maximum="{Binding MaxSummedFrames}" Value="{Binding SummedFrames}" HorizontalContentAlignment="Center" FontFamily="Arial" FontWeight="Bold" FontSize="9pt" Visibility="{Binding ShowFrameSelectControls, Converter={StaticResource BoolToVis}}" />
                 </Grid>
-                <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" Orientation="Horizontal" Visibility="{Binding ShowTICItems, Converter={StaticResource BoolToVis}}">
-                    <!-- num_TICThreshold: positioning unknown; visibility keyed on clicking the frames shown label, but only did something when the summed frames was 1 (which means the frames shown label was hidden)... -->
-                    <TextBlock Margin="3" VerticalAlignment="Center" Text="Enter TIC Threshold:" FontFamily="Arial" FontWeight="Normal" FontSize="8.25pt" />
-                    <xctk:IntegerUpDown Margin="3" MinWidth="50" Minimum="100" Maximum="1000000" Increment="50" Value="{Binding TICThreshold}" FontFamily="Arial" FontWeight="Bold" FontSize="8.25pt" />
-                    <Button Margin="3" MinWidth="32" Content="OK" Background="Salmon" FontFamily="Sans Serif" FontWeight="Bold" FontSize="8.25pt" Command="{Binding CalculateTICCommand}" />
-                </StackPanel>
-                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" Margin="3" VerticalAlignment="Center" FontFamily="Arial" FontWeight="Normal" FontSize="8.25pt" Visibility="{Binding ShowTICValue, Converter={StaticResource BoolToVis}}">
-                    <Run Text="(TIC Count > " />
-                    <Run Text="{Binding TICThreshold}" />
-                    <Run Text=") = " />
-                    <Run Text="{Binding TICValue}" />
-                </TextBlock>
             </Grid>
         </Grid>
     </Border>

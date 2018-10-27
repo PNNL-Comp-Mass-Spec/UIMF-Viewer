@@ -24,10 +24,6 @@ namespace UIMF_DataViewer.FrameControl
         private bool playingFramesBackward;
         private bool playingFramesForward;
         private readonly ObservableAsPropertyHelper<int> maxSummedFrames;
-        private int ticThreshold;
-        private bool showTicItems;
-        private long ticValue;
-        private bool showTicValue;
 
         public ReactiveList<UIMFDataWrapper.ReadFrameType> FrameTypes { get; }
 
@@ -116,34 +112,9 @@ namespace UIMF_DataViewer.FrameControl
 
         public int MaxSummedFrames => maxSummedFrames.Value;
 
-        public bool ShowTICItems
-        {
-            get => showTicItems;
-            set => this.RaiseAndSetIfChanged(ref showTicItems, value);
-        }
-
-        public int TICThreshold
-        {
-            get => ticThreshold;
-            set => this.RaiseAndSetIfChanged(ref ticThreshold, value);
-        }
-
-        public long TICValue
-        {
-            get => ticValue;
-            set => this.RaiseAndSetIfChanged(ref ticValue, value);
-        }
-
-        public bool ShowTICValue
-        {
-            get => showTicValue;
-            set => this.RaiseAndSetIfChanged(ref showTicValue, value);
-        }
-
         public ReactiveCommand<Unit, Unit> PlayFramesForwardCommand { get; }
         public ReactiveCommand<Unit, Unit> PlayFramesBackwardCommand { get; }
         public ReactiveCommand<Unit, Unit> StopPlayingFramesCommand { get; }
-        public ReactiveCommand<Unit, Unit> CalculateTICCommand { get; }
 
         public FrameControlViewModel()
         {
@@ -158,18 +129,15 @@ namespace UIMF_DataViewer.FrameControl
             frameControlsVisible = this.WhenAnyValue(x => x.ShowChromatogramLabel).Select(x => !x).ToProperty(this, x => x.FrameControlsVisible, true);
             showFrameSelectControls = this.WhenAnyValue(x => x.MinimumFrameNumber, x => x.MaximumFrameNumber).Select(x => x.Item2 - x.Item1 > 1).ToProperty(this, x => x.ShowFrameSelectControls, true);
             maxSummedFrames = this.WhenAnyValue(x => x.MinimumFrameNumber, x => x.MaximumFrameNumber).Select(x => x.Item2 - x.Item1 + 1).ToProperty(this, x => x.MaxSummedFrames);
-            this.WhenAnyValue(x => x.SummedFrames).Subscribe(x => ShowTICValue = false);
 
             PlayFramesForwardCommand = ReactiveCommand.Create(PlayFramesForward);
             PlayFramesBackwardCommand = ReactiveCommand.Create(PlayFramesBackward);
             StopPlayingFramesCommand = ReactiveCommand.Create(StopPlayingCinema);
-            CalculateTICCommand = ReactiveCommand.Create(CalcTIC);
         }
 
         public event EventHandler PlayLeft;
         public event EventHandler StopCinema;
         public event EventHandler PlayRight;
-        public event EventHandler CalculateTIC;
 
         public void PlayFramesForward()
         {
@@ -202,11 +170,6 @@ namespace UIMF_DataViewer.FrameControl
             PlayingFramesBackward = false;
             PlayingFramesForward = false;
             StopCinema?.Invoke(this, EventArgs.Empty);
-        }
-
-        public void CalcTIC()
-        {
-            CalculateTIC?.Invoke(this, EventArgs.Empty);
         }
     }
 }
