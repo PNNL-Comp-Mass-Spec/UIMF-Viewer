@@ -1503,40 +1503,32 @@ namespace UIMF_File
                     mapped_bins[i] = 0;
 
                 // we need to do a scan at a time, map and sum bins.
-                for (exp_index = 0; exp_index < this.lb_DragDropFiles.Items.Count; exp_index++)
+                start_index = this.uimfReader.CurrentFrameIndex - (this.uimfReader.FrameWidth - 1);
+                end_index = this.uimfReader.CurrentFrameIndex;
+
+                // collect the data
+                for (frames = start_index; (frames <= end_index) && !this.flag_Closing; frames++)
                 {
-                    if (this.lb_DragDropFiles.GetSelected(exp_index))
+                    // this is in bin resolution.
+                    scan_data = this.uimfReader.GetSumScans(frames, scan, scan);
+
+                    // convert to mz resolution then map into bin resolution - sum into mapped_bins[]
+                    for (i = 0; i < scan_data.Length; i++)
                     {
-                        this.uimfReader = this.experimentsList[exp_index];
+                        new_bin = this.uimfReader.MapBinCalibration(i, mapped_slope, mapped_intercept);
 
-                        start_index = this.uimfReader.CurrentFrameIndex - (this.uimfReader.FrameWidth - 1);
-                        end_index = this.uimfReader.CurrentFrameIndex;
-
-                        // collect the data
-                        for (frames = start_index; (frames <= end_index) && !this.flag_Closing; frames++)
+                        if (new_bin < mapped_bins.Length)
                         {
-                            // this is in bin resolution.
-                            scan_data = this.uimfReader.GetSumScans(frames, scan, scan);
-
-                            // convert to mz resolution then map into bin resolution - sum into mapped_bins[]
-                            for (i = 0; i < scan_data.Length; i++)
+                            if (flag_display_as_TOF)
                             {
-                                new_bin = this.uimfReader.MapBinCalibration(i, mapped_slope, mapped_intercept);
-
-                                if (new_bin < mapped_bins.Length)
-                                {
-                                    if (flag_display_as_TOF)
-                                    {
-                                        if (this.inside_Polygon(scan, new_bin))
-                                            mapped_bins[new_bin] += scan_data[i];
-                                    }
-                                    else
-                                    {
-                                        new_mz = this.uimfReader.MzCalibration.TOFtoMZ((double)i * this.uimfReader.TenthsOfNanoSecondsPerBin);
-                                        if (this.inside_Polygon(scan, new_mz))
-                                            mapped_bins[new_bin] += scan_data[i];
-                                    }
-                                }
+                                if (this.inside_Polygon(scan, new_bin))
+                                    mapped_bins[new_bin] += scan_data[i];
+                            }
+                            else
+                            {
+                                new_mz = this.uimfReader.MzCalibration.TOFtoMZ((double)i * this.uimfReader.TenthsOfNanoSecondsPerBin);
+                                if (this.inside_Polygon(scan, new_mz))
+                                    mapped_bins[new_bin] += scan_data[i];
                             }
                         }
                     }
@@ -1815,10 +1807,6 @@ namespace UIMF_File
             else if (e.PropertyName.Equals(nameof(FrameControlViewModel.SelectedFrameType)))
             {
                 cb_FrameType_SelectedIndexChanged();
-            }
-            else if (e.PropertyName.Equals(nameof(FrameControlViewModel.SelectedUimfFile)))
-            {
-                cb_ExperimentControlled_SelectedIndexChanged();
             }
         }
 
@@ -2218,163 +2206,6 @@ namespace UIMF_File
             this.new_maxBin = this.new_minBin + diff;
 
             this.flag_update2DGraph = true;
-        }
-
-        #endregion
-
-        #region Drag Drop Files
-
-        private void pb_PlayDownOut_MOUSEDOWN(object obj, MouseEventArgs e)
-        {
-            int selected_row = (int)this.lb_DragDropFiles.SelectedIndices[0];
-            this.pb_PlayDownOut.Hide();
-        }
-
-        private void pb_PlayDownOut_MOUSEUP(object obj, MouseEventArgs e)
-        {
-            this.pb_PlayDownOut.Show();
-        }
-
-        private void pb_PlayUpOut_MOUSEDOWN(object obj, MouseEventArgs e)
-        {
-            int selected_row = (int)this.lb_DragDropFiles.SelectedIndices[0];
-            this.pb_PlayUpOut.Hide();
-
-            //MessageBox.Show("Selected Row: "+this.dg_ExperimentList.SelectedRows[0].ToString());
-            if (selected_row - 1 < 0)
-                return;
-        }
-
-        private void pb_PlayUpOut_MOUSEUP(object obj, MouseEventArgs e)
-        {
-            this.pb_PlayUpOut.Show();
-        }
-
-        // /////////////////////////////////////////////////////////////
-        // Drag-Drop IMF file onto the graph
-        //
-        private void cb_ExperimentControlled_SelectedIndexChanged()
-        {
-            if (this.flag_CinemaPlot)
-            {
-                this.flag_Closing = true; // halt cinema frame processing asap.
-                this.StopCinema();
-                Thread.Sleep(100);
-                this.flag_Closing = false; // we are not closing
-            }
-
-            this.index_CurrentExperiment = this.frameControlVm.UimfFiles.IndexOf(this.frameControlVm.SelectedUimfFile);
-            this.lb_DragDropFiles.ClearSelected();
-            this.lb_DragDropFiles.SetSelected(this.index_CurrentExperiment, true);
-
-            if (this.chromatogramControlVm.CompletePeakChromatogramChecked || this.chromatogramControlVm.PartialPeakChromatogramChecked)
-            {
-                this.Width = this.pnl_2DMap.Left + this.uimfReader.UimfFrameParams.Scans + 170;
-
-                this.chromatogramControlVm.PartialPeakChromatogramChecked = false;
-                this.chromatogramControlVm.CompletePeakChromatogramChecked = false;
-
-                this.plot_Mobility.StopAnnotating(false);
-
-                this.Chromatogram_CheckedChanged();
-
-                this.uimfReader.CurrentFrameIndex = (int)this.frameControlVm.CurrentFrameNumber;
-                this.plot_Mobility.ClearRange();
-                this.frameControlVm.SummedFrames = 1;
-
-                this.vsb_2DMap.Show();  // gets hidden with Chromatogram
-                this.hsb_2DMap.Show();
-            }
-
-            this.uimfReader = this.experimentsList[this.index_CurrentExperiment];
-
-            this.vsb_2DMap.Value = 0;
-
-            if (this.uimfReader.CurrentFrameIndex < this.uimfReader.UimfGlobalParams.NumFrames - 1)
-                this.frameControlVm.CurrentFrameNumber = 0;
-            this.frameControlVm.MaximumFrameNumber = this.uimfReader.UimfGlobalParams.NumFrames - 1;
-            this.frameControlVm.CurrentFrameNumber = this.uimfReader.CurrentFrameIndex;
-
-            if (this.frameControlVm.MaximumFrameNumber > 0)
-            {
-                this.frameControlVm.MinimumFrameNumber = 0;
-            }
-
-            this.frameControlVm.SelectedFrameType = this.uimfReader.CurrentFrameType;
-
-            this.flag_update2DGraph = true;
-        }
-
-        private void lb_DragDropFiles_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            this.StopCinema();
-
-            this.flag_update2DGraph = true;
-        }
-
-        private void DataViewer_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
-        {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            int i;
-            int j;
-            string temp;
-
-            try
-            {
-                for (i = (files.Length - 1); i >= 0; i--)
-                {
-                    for (j = 1; j <= i; j++)
-                    {
-                        if (string.Compare(files[j - 1], files[j], true) > 0)
-                        {
-                            temp = files[j - 1];
-                            files[j - 1] = files[j];
-                            files[j] = temp;
-                        }
-                    }
-                }
-
-                for (i = 0; i < files.Length; i++)
-                {
-                    if (File.Exists(files[i]) && (Path.GetExtension(files[i]).ToLower() == ".uimf"))
-                    {
-                        this.uimfReader = new UIMFDataWrapper(files[i]);
-                        this.experimentsList.Add(this.uimfReader);
-
-                        this.lb_DragDropFiles.Items.Add(files[i]);
-                        this.lb_DragDropFiles.ClearSelected();
-
-                        this.frameControlVm.UimfFiles.Add(Path.GetFileNameWithoutExtension(files[i]));
-                        this.frameControlVm.SelectedUimfFile = this.frameControlVm.UimfFiles.Last();
-
-                        this.Filter_FrameType(this.uimfReader.CurrentFrameType);
-                        this.uimfReader.CurrentFrameIndex = 0;
-                        this.uimfReader.SetCurrentFrameType(current_frame_type, true);
-
-                        Generate2DIntensityArray();
-                        this.GraphFrame(this.data_2D, true);
-
-                        this.frameControlVm.SelectedFrameType = this.uimfReader.CurrentFrameType;
-                    }
-                    else
-                        MessageBox.Show(this, "'" + Path.GetFileName(files[i]) + "' is not in correct format.\n\nOnly UIMF files can be added.");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-            }
-            this.lb_DragDropFiles.Show();
-            this.pb_PlayDownOut.Show();
-            this.pb_PlayDownIn.Show();
-            this.pb_PlayUpOut.Show();
-            this.pb_PlayUpIn.Show();
-            this.cb_Exclusive.Show();
-        }
-
-        private void DataViewer_DragEnter(object sender, System.Windows.Forms.DragEventArgs e)
-        {
-            e.Effect = DragDropEffects.Move;
         }
 
         #endregion

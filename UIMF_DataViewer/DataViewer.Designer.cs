@@ -82,12 +82,6 @@ namespace UIMF_File
         private Label label1;
         protected NumericUpDown num_MZ;
         protected CheckBox cb_EnableMZRange;
-        protected ListBox lb_DragDropFiles;
-        private PictureBox pb_PlayDownIn;
-        private PictureBox pb_PlayDownOut;
-        private PictureBox pb_PlayUpIn;
-        private PictureBox pb_PlayUpOut;
-        protected CheckBox cb_Exclusive;
 
         private PictureBox pb_Expand;
         private PictureBox pb_Shrink;
@@ -175,8 +169,6 @@ namespace UIMF_File
             this.elementHost_FrameControl = new ElementHost();
             this.frameControlView = new FrameControlView();
             this.frameControlVm = new FrameControlViewModel();
-            this.cb_Exclusive = new System.Windows.Forms.CheckBox();
-            this.lb_DragDropFiles = new System.Windows.Forms.ListBox();
             this.gb_MZRange = new System.Windows.Forms.GroupBox();
             this.lbl_PPM = new System.Windows.Forms.Label();
             this.lbl_MZ = new System.Windows.Forms.Label();
@@ -190,10 +182,6 @@ namespace UIMF_File
             this.postProcessingView = new PostProcessingView();
             this.pb_Shrink = new System.Windows.Forms.PictureBox();
             this.pb_Expand = new System.Windows.Forms.PictureBox();
-            this.pb_PlayDownIn = new System.Windows.Forms.PictureBox();
-            this.pb_PlayDownOut = new System.Windows.Forms.PictureBox();
-            this.pb_PlayUpIn = new System.Windows.Forms.PictureBox();
-            this.pb_PlayUpOut = new System.Windows.Forms.PictureBox();
             this.elementHost_FrameInfo = new ElementHost();
             this.frameInfoView = new FrameInfoView();
             this.frameInfoVm = new FrameInfoViewModel();
@@ -208,10 +196,6 @@ namespace UIMF_File
             ((System.ComponentModel.ISupportInitialize)(this.num_MZ)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Shrink)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Expand)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_PlayDownIn)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_PlayDownOut)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_PlayUpIn)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_PlayUpOut)).BeginInit();
             this.SuspendLayout();
             //
             // contextMenu_pb_2DMap
@@ -538,12 +522,6 @@ namespace UIMF_File
             this.tab_DataViewer.Controls.Add(this.pb_Shrink);
             this.tab_DataViewer.Controls.Add(this.pb_Expand);
             this.tab_DataViewer.Controls.Add(this.elementHost_FrameControl);
-            this.tab_DataViewer.Controls.Add(this.cb_Exclusive);
-            this.tab_DataViewer.Controls.Add(this.pb_PlayDownIn);
-            this.tab_DataViewer.Controls.Add(this.pb_PlayDownOut);
-            this.tab_DataViewer.Controls.Add(this.pb_PlayUpIn);
-            this.tab_DataViewer.Controls.Add(this.pb_PlayUpOut);
-            this.tab_DataViewer.Controls.Add(this.lb_DragDropFiles);
             this.tab_DataViewer.Controls.Add(this.gb_MZRange);
             this.tab_DataViewer.Controls.Add(this.cb_EnableMZRange);
             this.tab_DataViewer.Controls.Add(this.btn_Refresh);
@@ -573,30 +551,6 @@ namespace UIMF_File
             this.elementHost_FrameControl.Size = new System.Drawing.Size(700, 100);
             this.frameControlView.DataContext = this.frameControlVm;
             this.elementHost_FrameControl.Child = this.frameControlView;
-            //
-            // cb_Exclusive
-            //
-            this.cb_Exclusive.AutoSize = true;
-            this.cb_Exclusive.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.cb_Exclusive.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.cb_Exclusive.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cb_Exclusive.ForeColor = System.Drawing.Color.Blue;
-            this.cb_Exclusive.Location = new System.Drawing.Point(406, 748);
-            this.cb_Exclusive.Name = "cb_Exclusive";
-            this.cb_Exclusive.Size = new System.Drawing.Size(143, 18);
-            this.cb_Exclusive.TabIndex = 95;
-            this.cb_Exclusive.Text = "Exclusive Viewing";
-            this.cb_Exclusive.UseVisualStyleBackColor = true;
-            //
-            // lb_DragDropFiles
-            //
-            this.lb_DragDropFiles.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.lb_DragDropFiles.FormattingEnabled = true;
-            this.lb_DragDropFiles.Location = new System.Drawing.Point(278, 772);
-            this.lb_DragDropFiles.Name = "lb_DragDropFiles";
-            this.lb_DragDropFiles.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
-            this.lb_DragDropFiles.Size = new System.Drawing.Size(420, 43);
-            this.lb_DragDropFiles.TabIndex = 90;
             //
             // gb_MZRange
             //
@@ -760,50 +714,6 @@ namespace UIMF_File
             this.pb_Expand.TabIndex = 98;
             this.pb_Expand.TabStop = false;
             //
-            // pb_PlayDownIn
-            //
-            this.pb_PlayDownIn.BackColor = System.Drawing.Color.Transparent;
-            this.pb_PlayDownIn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pb_PlayDownIn.BackgroundImage")));
-            this.pb_PlayDownIn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.pb_PlayDownIn.Location = new System.Drawing.Point(356, 824);
-            this.pb_PlayDownIn.Name = "pb_PlayDownIn";
-            this.pb_PlayDownIn.Size = new System.Drawing.Size(24, 24);
-            this.pb_PlayDownIn.TabIndex = 94;
-            this.pb_PlayDownIn.TabStop = false;
-            //
-            // pb_PlayDownOut
-            //
-            this.pb_PlayDownOut.BackColor = System.Drawing.Color.Transparent;
-            this.pb_PlayDownOut.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pb_PlayDownOut.BackgroundImage")));
-            this.pb_PlayDownOut.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.pb_PlayDownOut.Location = new System.Drawing.Point(228, 816);
-            this.pb_PlayDownOut.Name = "pb_PlayDownOut";
-            this.pb_PlayDownOut.Size = new System.Drawing.Size(24, 24);
-            this.pb_PlayDownOut.TabIndex = 93;
-            this.pb_PlayDownOut.TabStop = false;
-            //
-            // pb_PlayUpIn
-            //
-            this.pb_PlayUpIn.BackColor = System.Drawing.Color.Transparent;
-            this.pb_PlayUpIn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pb_PlayUpIn.BackgroundImage")));
-            this.pb_PlayUpIn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.pb_PlayUpIn.Location = new System.Drawing.Point(254, 788);
-            this.pb_PlayUpIn.Name = "pb_PlayUpIn";
-            this.pb_PlayUpIn.Size = new System.Drawing.Size(22, 24);
-            this.pb_PlayUpIn.TabIndex = 92;
-            this.pb_PlayUpIn.TabStop = false;
-            //
-            // pb_PlayUpOut
-            //
-            this.pb_PlayUpOut.BackColor = System.Drawing.Color.Transparent;
-            this.pb_PlayUpOut.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pb_PlayUpOut.BackgroundImage")));
-            this.pb_PlayUpOut.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.pb_PlayUpOut.Location = new System.Drawing.Point(230, 788);
-            this.pb_PlayUpOut.Name = "pb_PlayUpOut";
-            this.pb_PlayUpOut.Size = new System.Drawing.Size(22, 24);
-            this.pb_PlayUpOut.TabIndex = 91;
-            this.pb_PlayUpOut.TabStop = false;
-            //
             // DataViewer
             //
             this.BackColor = System.Drawing.Color.Silver;
@@ -830,10 +740,6 @@ namespace UIMF_File
             ((System.ComponentModel.ISupportInitialize)(this.num_MZ)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Shrink)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Expand)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_PlayDownIn)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_PlayDownOut)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_PlayUpIn)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pb_PlayUpOut)).EndInit();
             this.ResumeLayout(false);
 
         }

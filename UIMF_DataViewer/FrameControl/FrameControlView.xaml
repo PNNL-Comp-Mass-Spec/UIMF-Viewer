@@ -33,7 +33,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <ComboBox Grid.Row="0" Margin="3" ItemsSource="{Binding UimfFiles}" SelectedItem="{Binding SelectedUimfFile}" FontFamily="Verdana" FontWeight="Bold" FontSize="9pt" />
+            <TextBlock Grid.Row="0" Margin="3" Text="{Binding UimfFile}" FontFamily="Verdana" FontWeight="Bold" FontSize="9pt" />
             <TextBlock Grid.Row="1" Margin="30,3,3,3" VerticalAlignment="Center" Text="Peak Chromatogram" Visibility="{Binding ShowChromatogramLabel, Converter={StaticResource BoolToVis}}" FontFamily="Verdana" FontWeight="Bold" FontSize="14.25pt" />
             <Grid Grid.Row="1" Visibility="{Binding FrameControlsVisible, Converter={StaticResource BoolToVis}}">
                 <Grid.RowDefinitions>

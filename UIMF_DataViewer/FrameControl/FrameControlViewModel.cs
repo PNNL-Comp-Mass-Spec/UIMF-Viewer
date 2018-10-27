@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ReactiveUI;
 using UIMF_File;
 
@@ -12,7 +9,7 @@ namespace UIMF_DataViewer.FrameControl
 {
     public class FrameControlViewModel : ReactiveObject
     {
-        private string selectedUimfFile;
+        private string uimfFile;
         private UIMFDataWrapper.ReadFrameType selectedFrameType;
         private int minimumFrameNumber;
         private int maximumFrameNumber;
@@ -32,13 +29,12 @@ namespace UIMF_DataViewer.FrameControl
         private long ticValue;
         private bool showTicValue;
 
-        public ReactiveList<string> UimfFiles { get; } = new ReactiveList<string>();
         public ReactiveList<UIMFDataWrapper.ReadFrameType> FrameTypes { get; }
 
-        public string SelectedUimfFile
+        public string UimfFile
         {
-            get => selectedUimfFile;
-            set => this.RaiseAndSetIfChanged(ref selectedUimfFile, value);
+            get => uimfFile;
+            set => this.RaiseAndSetIfChanged(ref uimfFile, value);
         }
 
         public UIMFDataWrapper.ReadFrameType SelectedFrameType

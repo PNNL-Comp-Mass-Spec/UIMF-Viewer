@@ -185,9 +185,7 @@ namespace UIMF_File
         private bool flag_ResizeThis = false;
         private bool flag_Resizing = false;
 
-        private List<UIMFDataWrapper> experimentsList;
         private UIMF_File.UIMFDataWrapper uimfReader;
-        private int index_CurrentExperiment = 0;
 
         private UIMFDataWrapper.ReadFrameType current_frame_type;
         private bool flag_isTIMS = false;
@@ -202,8 +200,6 @@ namespace UIMF_File
         {
             try
             {
-                this.experimentsList = new List<UIMFDataWrapper>();
-
                 this.build_Interface(true);
 
                 this.frameControlVm.SelectedFrameType = UIMFDataWrapper.ReadFrameType.AllFrames;
@@ -225,12 +221,9 @@ namespace UIMF_File
 
         public DataViewer(string uimf_file, bool flag_enablecontrols)
         {
-            this.experimentsList = new List<UIMFDataWrapper>();
-
             try
             {
                 this.uimfReader = new UIMFDataWrapper(uimf_file);
-                this.experimentsList.Add(this.uimfReader);
             }
             catch (Exception ex)
             {
@@ -255,10 +248,7 @@ namespace UIMF_File
             this.current_minBin = 0;
             this.current_maxBin = 10;
 
-            this.lb_DragDropFiles.Items.Add(this.uimfReader.UimfDataFile);
-
-            this.frameControlVm.UimfFiles.Add(Path.GetFileName(this.uimfReader.UimfDataFile));
-            this.frameControlVm.SelectedUimfFile = Path.GetFileName(this.uimfReader.UimfDataFile);
+            this.frameControlVm.UimfFile = Path.GetFileName(this.uimfReader.UimfDataFile);
 
             this.frameControlVm.SelectedFrameType = this.uimfReader.CurrentFrameType;
             this.Filter_FrameType(this.uimfReader.CurrentFrameType);
@@ -364,14 +354,6 @@ namespace UIMF_File
 
             this.tabpages_Main.Top = (this.tab_DataViewer.ClientSize.Height - this.tabpages_Main.Height)/2;
 
-            this.lb_DragDropFiles.Visible = false;
-            this.cb_Exclusive.Visible = false;
-
-            this.pb_PlayDownOut.Visible = false;
-            this.pb_PlayDownIn.Visible = false;
-            this.pb_PlayUpOut.Visible = false;
-            this.pb_PlayUpIn.Visible = false;
-
             this.pnl_postProcessing = new PostProcessingViewModel(uimfReader);
             this.pnl_postProcessing.CalibrationChanged += pnl_postProcessing_CalibrationChanged;
 
@@ -475,16 +457,6 @@ namespace UIMF_File
 
                 this.Resize += this.IonMobilityDataView_Resize;
               //  this.tabpages_Main.Resize += new EventHandler(this.tabpages_Main_Resize);
-
-                this.AllowDrop = true;
-                this.DragDrop += DataViewer_DragDrop;
-                this.DragEnter += DataViewer_DragEnter;
-                this.lb_DragDropFiles.SelectedIndexChanged += lb_DragDropFiles_SelectedIndexChanged;
-
-                this.pb_PlayDownOut.MouseDown += this.pb_PlayDownOut_MOUSEDOWN;
-                this.pb_PlayDownOut.MouseUp += this.pb_PlayDownOut_MOUSEUP;
-                this.pb_PlayUpOut.MouseDown += this.pb_PlayUpOut_MOUSEDOWN;
-                this.pb_PlayUpOut.MouseUp += this.pb_PlayUpOut_MOUSEUP;
             }
 
             this.tabpages_Main.Width = this.ClientSize.Width + ((this.tabpages_Main.Height - this.tab_DataViewer.ClientSize.Height) / 2);
@@ -768,20 +740,6 @@ namespace UIMF_File
             this.cb_EnableMZRange.Left = this.gb_MZRange.Left + 6;
             this.cb_EnableMZRange.Top = this.gb_MZRange.Top;
             this.cb_EnableMZRange.BringToFront();
-
-            // bottom drag drop items
-            this.cb_Exclusive.Top = this.num_maxMobility.Top + 8;
-            this.cb_Exclusive.Left = this.pnl_2DMap.Left + ((this.pnl_2DMap.Width - this.cb_Exclusive.Width) / 2);
-            this.cb_Exclusive.Width = this.pnl_2DMap.Width - 50;
-
-            this.lb_DragDropFiles.Top = this.cb_Exclusive.Top + this.cb_Exclusive.Height - 2;
-            this.lb_DragDropFiles.Height = this.ClientSize.Height - this.lb_DragDropFiles.Top - 6;
-            this.lb_DragDropFiles.Left = this.pnl_2DMap.Left + 30;
-            this.lb_DragDropFiles.Width = this.gb_MZRange.Left - this.lb_DragDropFiles.Left - 20;
-
-            this.pb_PlayUpIn.Top = this.pb_PlayUpOut.Top = this.lb_DragDropFiles.Top + ((this.lb_DragDropFiles.Height / 2) - this.pb_PlayUpOut.Height - 2);
-            this.pb_PlayDownIn.Top = this.pb_PlayDownOut.Top = this.lb_DragDropFiles.Top + (this.lb_DragDropFiles.Height / 2) + 2;
-            this.pb_PlayDownIn.Left = this.pb_PlayDownOut.Left = this.pb_PlayUpIn.Left = this.pb_PlayUpOut.Left = this.lb_DragDropFiles.Left - this.pb_PlayUpIn.Width - 4;
 
             // redraw
             this.flag_Resizing = false;
@@ -1154,95 +1112,84 @@ namespace UIMF_File
                 this.frameControlVm.MaximumSummedFrame = frameSelectValue;
             });
 
-            for (exp_index = 0; exp_index < this.lb_DragDropFiles.Items.Count; exp_index++)
-            {
-                if (this.lb_DragDropFiles.GetSelected(exp_index))
-                {
-                    this.uimfReader = this.experimentsList[exp_index];
+            start_index = this.uimfReader.CurrentFrameIndex - (this.uimfReader.FrameWidth - 1);
+            end_index = this.uimfReader.CurrentFrameIndex;
 
-                    start_index = this.uimfReader.CurrentFrameIndex - (this.uimfReader.FrameWidth - 1);
-                    end_index = this.uimfReader.CurrentFrameIndex;
-
-                    // collect the data
+            // collect the data
 #if OLD // TODO:
-                    for (frames = start_index; (frames <= end_index) && !this.flag_Closing; frames++)
-                    {
-                        // this.lbl_ExperimentDate.Text = "accumulate_FrameData: " + (++count_times).ToString() + "  "+start_index.ToString()+"<"+end_index.ToString();
+            for (frames = start_index; (frames <= end_index) && !this.flag_Closing; frames++)
+            {
+                // this.lbl_ExperimentDate.Text = "accumulate_FrameData: " + (++count_times).ToString() + "  "+start_index.ToString()+"<"+end_index.ToString();
 
-                        try
-                        {
-                            if (this.data_2D == null)
-                                MessageBox.Show("null");
-                            this.data_2D = this.uimfReader.AccumulateFrameData(frames, this.flag_display_as_TOF, this.current_minMobility, this.current_minBin, min_MZRange_bin, max_MZRange_bin, this.data_2D, this.current_valuesPerPixelY);
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show("accumulate_FrameData:  " + ex.ToString());
-                        }
-                    }
+                try
+                {
+                    if (this.data_2D == null)
+                        MessageBox.Show("null");
+                    this.data_2D = this.uimfReader.AccumulateFrameData(frames, this.flag_display_as_TOF, this.current_minMobility, this.current_minBin, min_MZRange_bin, max_MZRange_bin, this.data_2D, this.current_valuesPerPixelY);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("accumulate_FrameData:  " + ex.ToString());
+                }
+            }
 #endif
-                    /*/
-                    this.data_2D = this.uimfReader.AccumulateFrameData(this.uimfReader.ArrayFrameNum[start_index], this.uimfReader.ArrayFrameNum[end_index], this.flag_display_as_TOF,
-                        this.current_minMobility, this.current_minMobility + data_width, this.current_minBin, this.current_minBin + (data_height * this.current_valuesPerPixelY),
-                        this.current_valuesPerPixelY, this.data_2D, min_MZRange_bin, max_MZRange_bin);
-                    /*/
-                    this.data_2D = this.uimfReader.AccumulateFrameDataByCount(this.uimfReader.ArrayFrameNum[start_index], this.uimfReader.ArrayFrameNum[end_index], this.flag_display_as_TOF,
-                        this.current_minMobility, data_width, this.current_minBin, data_height, this.current_valuesPerPixelY, /*this.data_2D*/ null, min_MZRange_bin, max_MZRange_bin, xCompression: this.current_valuesPerPixelX);
-                    /**/
+            /*/
+            this.data_2D = this.uimfReader.AccumulateFrameData(this.uimfReader.ArrayFrameNum[start_index], this.uimfReader.ArrayFrameNum[end_index], this.flag_display_as_TOF,
+                this.current_minMobility, this.current_minMobility + data_width, this.current_minBin, this.current_minBin + (data_height * this.current_valuesPerPixelY),
+                this.current_valuesPerPixelY, this.data_2D, min_MZRange_bin, max_MZRange_bin);
+            /*/
+            this.data_2D = this.uimfReader.AccumulateFrameDataByCount(this.uimfReader.ArrayFrameNum[start_index], this.uimfReader.ArrayFrameNum[end_index], this.flag_display_as_TOF,
+                this.current_minMobility, data_width, this.current_minBin, data_height, this.current_valuesPerPixelY, /*this.data_2D*/ null, min_MZRange_bin, max_MZRange_bin, xCompression: this.current_valuesPerPixelX);
+            /**/
 
-                    try
+            try
+            {
+                int sel_min;
+                int sel_max;
+                if (this.flag_viewMobility)
+                {
+                    sel_min = (this.selection_min_drift - this.current_minMobility);
+                    sel_max = (this.selection_max_drift - this.current_minMobility);
+                }
+                else
+                {
+                    sel_min = (int)((this.selection_min_drift - (int)(this.current_minMobility * (this.mean_TOFScanTime / 1000000))));
+                    sel_max = (int)((this.selection_max_drift - (int)(this.current_minMobility * (this.mean_TOFScanTime / 1000000)))); //  * (this.mean_TOFScanTime / 100000));
+                }
+
+                int current_scan;
+                int bin_value;
+                this.data_maxIntensity = 0;
+                this.data_driftTIC = new double[data_width];
+                this.data_tofTIC = new double[data_height];
+
+                for (current_scan = 0; current_scan < data_width; current_scan++)
+                {
+                    for (bin_value = 0; bin_value < data_height; bin_value++)
                     {
-                        int sel_min;
-                        int sel_max;
-                        if (this.flag_viewMobility)
+                        if (this.inside_Polygon_Pixel(current_scan, bin_value))
                         {
-                            sel_min = (this.selection_min_drift - this.current_minMobility);
-                            sel_max = (this.selection_max_drift - this.current_minMobility);
-                        }
-                        else
-                        {
-                            sel_min = (int)((this.selection_min_drift - (int)(this.current_minMobility * (this.mean_TOFScanTime / 1000000))));
-                            sel_max = (int)((this.selection_max_drift - (int)(this.current_minMobility * (this.mean_TOFScanTime / 1000000)))); //  * (this.mean_TOFScanTime / 100000));
-                        }
+                            this.data_driftTIC[current_scan] += this.data_2D[current_scan][bin_value];
 
-                        int current_scan;
-                        int bin_value;
-                        this.data_maxIntensity = 0;
-                        this.data_driftTIC = new double[data_width];
-                        this.data_tofTIC = new double[data_height];
+                            if (!flag_selection_drift || ((current_scan >= sel_min) && (current_scan <= sel_max)))
+                                this.data_tofTIC[bin_value] += data_2D[current_scan][bin_value];
 
-                        for (current_scan = 0; current_scan < data_width; current_scan++)
-                        {
-                            for (bin_value = 0; bin_value < data_height; bin_value++)
+                            if (this.data_2D[current_scan][bin_value] > this.data_maxIntensity)
                             {
-                                if (this.inside_Polygon_Pixel(current_scan, bin_value))
-                                {
-                                    this.data_driftTIC[current_scan] += this.data_2D[current_scan][bin_value];
-
-                                    if (!flag_selection_drift || ((current_scan >= sel_min) && (current_scan <= sel_max)))
-                                        this.data_tofTIC[bin_value] += data_2D[current_scan][bin_value];
-
-                                    if (this.data_2D[current_scan][bin_value] > this.data_maxIntensity)
-                                    {
-                                        this.data_maxIntensity = this.data_2D[current_scan][bin_value];
-                                        this.posX_MaxIntensity = current_scan;
-                                        this.posY_MaxIntensity = bin_value;
-                                    }
-                                }
+                                this.data_maxIntensity = this.data_2D[current_scan][bin_value];
+                                this.posX_MaxIntensity = current_scan;
+                                this.posY_MaxIntensity = bin_value;
                             }
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.ToString());
-                    }
-
-                    this.ReloadCalibrationCoefficients();
                 }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
 
-            // point to the selected experiment whether it is enabled or not
-            this.uimfReader = this.experimentsList[this.index_CurrentExperiment];
+            this.ReloadCalibrationCoefficients();
 
             if (!this.flag_isFullscreen)
             {
