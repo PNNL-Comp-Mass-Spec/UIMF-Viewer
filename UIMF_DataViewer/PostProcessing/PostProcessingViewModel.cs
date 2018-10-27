@@ -231,8 +231,6 @@ namespace UIMF_DataViewer.PostProcessing
             CalibrationSuccessful = false;
         }
 
-        private CalibrantInfo currentCalibrant = new CalibrantInfo();
-
         private const int MinNumCalibrants = 4;
         private const double MaxErrorAcceptable = 5.0;
 
@@ -241,22 +239,18 @@ namespace UIMF_DataViewer.PostProcessing
 
         private Coefficients internalCoefficients;
 
-        //allocate memory for arrays with added zeros
-        //  double[] arrival_time2; //drift time
-        private double[] arrivalTimeTof2; //arrival time in tof
-        private double[] mz2;
-        private double[] sumIntensity2;
-
         public void CalibrateFrame(double[] summedSpectrum, double[] sumIntensities, double[] binArrivalTime, double binWidth, int totalBins, int totalScans, double mzExperimentalSlope, double mzExperimentalIntercept)
         {
             var numEnabledCalibrants = 0;
+            var k = ExperimentalSlope / 10000;
+            var t0 = ExperimentalIntercept * 10000;
+            var tenthsOfNsPerBin = tofBinWidth * 10;
             //Calibrants.ClearSelection();
 
             RxApp.MainThreadScheduler.Schedule(() =>
             {
-                for (var i = 0; i < Calibrants.Count - 1; ++i)
+                foreach (var calibrant in Calibrants.ToList())
                 {
-                    var calibrant = Calibrants[i];
                     calibrant.Bins = 0;
                     calibrant.TOFExperimental = 0;
                     calibrant.MzExperimental = 0;
@@ -265,13 +259,15 @@ namespace UIMF_DataViewer.PostProcessing
 
                     if (calibrant.Enabled)
                     {
-                        Calibrants[i].TOF = (double) ((Math.Sqrt(Calibrants[i].Mz) / ExperimentalSlope) + ExperimentalIntercept);
-                        Calibrants[i].Bins = Calibrants[i].TOF / tofBinWidth;
-
-                        numEnabledCalibrants++;
+                        // TODO: Use the MzCalibrator for this?
+                        var tof = Math.Sqrt(calibrant.Mz) / k + t0;
+                        calibrant.TOF = tof / 10000; // convert to microseconds
+                        calibrant.Bins = tof / tenthsOfNsPerBin;
                     }
                 }
             });
+
+            numEnabledCalibrants = Calibrants.Count(x => x.Enabled);
 
             while (numEnabledCalibrants >= MinNumCalibrants)
             {
@@ -279,13 +275,13 @@ namespace UIMF_DataViewer.PostProcessing
 
                 SetExperimentalCoefficients(mzExperimentalSlope, mzExperimentalIntercept);
 
-                sumIntensity2 = new double[spectraWithNonZeroEntries];
-                arrivalTimeTof2 = new double[spectraWithNonZeroEntries]; //arrival time in bins
+                var sumIntensity2 = new double[spectraWithNonZeroEntries];
+                var arrivalTimeTof2 = new double[spectraWithNonZeroEntries]; //arrival time in bins
 
                 Array.Copy(sumIntensities, sumIntensity2, sumIntensities.Length);
                 Array.Copy(binArrivalTime, arrivalTimeTof2, binArrivalTime.Length);
 
-                mz2 = new double[spectraWithNonZeroEntries];
+                var mz2 = new double[spectraWithNonZeroEntries];
                 for (var i = 0; i < spectraWithNonZeroEntries; i++)
                 {
                     // arrival_time_TOF2[i] *= bin_width;
@@ -293,7 +289,7 @@ namespace UIMF_DataViewer.PostProcessing
                 }
                 // mz_LIST2[i][k] = (float)pow((double)(arrival_time_LIST2[i][k] - *(TOF_offset_buffer + i) + TimeOffset) / 1000 - ExperimentalIntercept, 2) * (float)pow((double)ExperimentalSlope, 2);
 
-                var maxErrorIndex = InternalCalibration(CalibrationType.STANDARD, Instrument.AGILENT_TDC, totalScans, numEnabledCalibrants);
+                var maxErrorIndex = InternalCalibration(CalibrationType.STANDARD, Instrument.AGILENT_TDC, totalScans, numEnabledCalibrants, arrivalTimeTof2, sumIntensity2);
 
                 if (Math.Abs(Calibrants[maxErrorIndex].ErrorPPM) < MaxErrorAcceptable)
                 {
@@ -339,35 +335,25 @@ namespace UIMF_DataViewer.PostProcessing
 #endif
         }
 
-        public int InternalCalibration(CalibrationType calibrationType, Instrument instrumentType, int tofsPerFrame, int numEnabledCalibrants)
+        public int InternalCalibration(CalibrationType calibrationType, Instrument instrumentType, int tofsPerFrame, int numEnabledCalibrants, double[] arrivalTimeTof2, double[] sumIntensity2)
         {
             // now go to TOF spectra and find peak maxima
             var numEnabledCalibrantsCorrected = numEnabledCalibrants;
 
-            for (var i = 0; i < Calibrants.Count - 1; i++)
+            foreach (var calibrant in Calibrants.Where(x => x.Enabled && x.Mz > 0))
             {
-                var calibrant = Calibrants[i];
+                var expTof = FindMonoisotopicPeak(calibrant.Bins, Species.CALIBRANT, PeakPicking.THREE_POINT_QUADRATIC, tofsPerFrame, calibrant, arrivalTimeTof2, sumIntensity2);
 
-                if (calibrant.Enabled) //calibrant.Mz > 0)
+                RxApp.MainThreadScheduler.Schedule(() =>
                 {
-                    currentCalibrant.Name = calibrant.Name;
-                    currentCalibrant.Charge = calibrant.Charge;
-                    currentCalibrant.Mz = calibrant.Mz;
-
-                    var expTof = FindMonoisotopicPeak(calibrant.Bins, Species.CALIBRANT, PeakPicking.THREE_POINT_QUADRATIC, tofsPerFrame);
-                    var index = i;
-
-                    RxApp.MainThreadScheduler.Schedule(() =>
+                    calibrant.TOFExperimental = expTof;
+                    if (calibrant.TOFExperimental.Equals(0))
                     {
-                        calibrant.TOFExperimental = expTof;
-                        if (calibrant.TOFExperimental.Equals(0))
-                        {
-                            numEnabledCalibrantsCorrected--;
-                            calibrant.Enabled = false;
-                            calibrant.NotFound = true;
-                        }
-                    });
-                }
+                        numEnabledCalibrantsCorrected--;
+                        calibrant.Enabled = false;
+                        calibrant.NotFound = true;
+                    }
+                });
             }
 
             var maxErrorIndex = 0;
@@ -446,8 +432,10 @@ namespace UIMF_DataViewer.PostProcessing
         /// <param name="speciesId"></param>
         /// <param name="peakPicking"></param>
         /// <param name="spectraWithNonzeroEntries"></param>
+        /// <param name="arrivalTimeTof2"></param>
+        /// <param name="sumIntensity2"></param>
         /// <returns></returns>
-        private double FindMonoisotopicPeak(double tofPeptide, Species speciesId, PeakPicking peakPicking, int spectraWithNonzeroEntries)
+        private double FindMonoisotopicPeak(double tofPeptide, Species speciesId, PeakPicking peakPicking, int spectraWithNonzeroEntries, CalibrantInfo calibrant, double[] arrivalTimeTof2, double[] sumIntensity2)
         {
             /*
             int bins_per_tof = 0;
@@ -472,10 +460,10 @@ namespace UIMF_DataViewer.PostProcessing
             else if (speciesId == Species.CALIBRANT)
 #endif
             {
-                charge = currentCalibrant.Charge;
+                charge = calibrant.Charge;
 
                 //setting up TOF shifts for C12 and C13 peaks as well as signal threshold
-                tofMonoisotopeShift = (double)(1000.0 / (ExperimentalSlope * charge * 2.0 * Math.Sqrt(currentCalibrant.Mz))); //spacing between isotopes
+                tofMonoisotopeShift = (double)(1000.0 / (ExperimentalSlope * charge * 2.0 * Math.Sqrt(calibrant.Mz))); //spacing between isotopes
             }
 
             // tofCheckup = 2 * Math.Pow(2, BinResolution) / 10;
@@ -1113,8 +1101,7 @@ namespace UIMF_DataViewer.PostProcessing
             if (calibrantCountMatched > 4)
             {
                 // clear arrays
-                int i;
-                for (i = 0; i < uimfReader.UimfGlobalParams.Bins / compression; i++)
+                for (var i = 0; i < uimfReader.UimfGlobalParams.Bins / compression; i++)
                 {
                     flagAboveNoise[i] = false;
                     maxSpectrum[i] = 0;
@@ -1124,8 +1111,7 @@ namespace UIMF_DataViewer.PostProcessing
 
                 var bins = uimfReader.GetSumScans(uimfReader.ArrayFrameNum[frameIndex], 0, uimfReader.UimfFrameParams.Scans);
 
-                int j;
-                for (j = 0; j < bins.Length; j++)
+                for (var j = 0; j < bins.Length && j < uimfReader.UimfGlobalParams.Bins; j++)
                 {
                     summedSpectrum[j / compression] += bins[j];
 
@@ -1139,7 +1125,7 @@ namespace UIMF_DataViewer.PostProcessing
                 }
 
                 // determine noise level and filter summed spectrum
-                for (j = noiseRegion / 2; (j < (uimfReader.UimfGlobalParams.Bins / compression) - noiseRegion); j++)
+                for (var j = noiseRegion / 2; (j < (uimfReader.UimfGlobalParams.Bins / compression) - noiseRegion); j++)
                 {
                     // get the total intensity and divide by the number of peaks
                     var noisePeaks = 0;
@@ -1166,7 +1152,7 @@ namespace UIMF_DataViewer.PostProcessing
                 // calculate size of the array of filtered sum spectrum for calibration routine
                 var aboveNoiseBins = 0;
                 var addedZeros = 0;
-                for (i = 1; i < uimfReader.UimfGlobalParams.Bins / compression; i++)
+                for (var i = 1; i < uimfReader.UimfGlobalParams.Bins / compression; i++)
                 {
                     if (flagAboveNoise[i])
                     {
@@ -1182,7 +1168,7 @@ namespace UIMF_DataViewer.PostProcessing
                 var compressedBins = 0;
                 var nonzeroBins = new double[aboveNoiseBins + addedZeros];
                 var nonzeroIntensities = new double[aboveNoiseBins + addedZeros];
-                for (i = 0; (i < (uimfReader.UimfGlobalParams.Bins / compression) - 1) && (compressedBins < aboveNoiseBins + addedZeros); i++)
+                for (var i = 0; (i < (uimfReader.UimfGlobalParams.Bins / compression) - 1) && (compressedBins < aboveNoiseBins + addedZeros); i++)
                 {
                     if (flagAboveNoise[i])
                     {

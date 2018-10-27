@@ -312,8 +312,8 @@
                 <TextBlock Grid.Row="2" Grid.Column="0" Margin="3" VerticalAlignment="Center" Text="Ion 1" Style="{StaticResource TextBlock11Style}" FontWeight="Bold" />
                 <TextBlock Grid.Row="3" Grid.Column="0" Margin="3" VerticalAlignment="Center" Text="Ion 2" Style="{StaticResource TextBlock11Style}" FontWeight="Bold" />
                 <xctk:DoubleUpDown Grid.Row="2" Grid.Column="1" Margin="7,3" Minimum="0" Maximum="50000" Value="{Binding Ion1TOFBin}" FormatString="F3" FontWeight="Bold" FontSize="11.25pt" FontFamily="Arial" />
-                <xctk:DoubleUpDown Grid.Row="3" Grid.Column="1" Margin="7,3" Minimum="0" Maximum="50000" Value="{Binding Ion1Mz}" FormatString="F3" FontWeight="Bold" FontSize="11.25pt" FontFamily="Arial" />
-                <xctk:DoubleUpDown Grid.Row="2" Grid.Column="2" Margin="7,3" Minimum="0" Maximum="50000" Value="{Binding Ion2TOFBin}" FormatString="F4" FontWeight="Bold" FontSize="11.25pt" FontFamily="Arial" />
+                <xctk:DoubleUpDown Grid.Row="2" Grid.Column="2" Margin="7,3" Minimum="0" Maximum="50000" Value="{Binding Ion1Mz}" FormatString="F3" FontWeight="Bold" FontSize="11.25pt" FontFamily="Arial" />
+                <xctk:DoubleUpDown Grid.Row="3" Grid.Column="1" Margin="7,3" Minimum="0" Maximum="50000" Value="{Binding Ion2TOFBin}" FormatString="F4" FontWeight="Bold" FontSize="11.25pt" FontFamily="Arial" />
                 <xctk:DoubleUpDown Grid.Row="3" Grid.Column="2" Margin="7,3" Minimum="0" Maximum="50000" Value="{Binding Ion2Mz}" FormatString="F4" FontWeight="Bold" FontSize="11.25pt" FontFamily="Arial" />
                 <TextBlock Grid.Row="0" Grid.Column="4" Margin="3" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Slope" Style="{StaticResource TextBlock11Style}" FontWeight="Bold" />
                 <TextBlock Grid.Row="1" Grid.Column="4" Margin="3" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Intercept" Style="{StaticResource TextBlock11Style}" FontWeight="Bold" />
