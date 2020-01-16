@@ -114,6 +114,7 @@
     </Compile>
     <Compile Include="Utilities\Savior.cs" />
     <Compile Include="Utilities\TextExport.cs" />
+    <Compile Include="Utilities\ZoomInfo.cs" />
     <Compile Include="WpfControls\ColorMapSlider\ColorData.cs" />
     <Compile Include="WpfControls\ColorMapSlider\ColorMapSlider.cs" />
     <Compile Include="WpfControls\ColorMapSlider\ColorThumb.cs" />

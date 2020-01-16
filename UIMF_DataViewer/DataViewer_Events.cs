@@ -10,6 +10,7 @@ using UIMFLibrary;
 using UIMF_DataViewer.ChromatogramControl;
 using UIMF_DataViewer.FrameControl;
 using UIMF_DataViewer.FrameInfo;
+using UIMF_DataViewer.Utilities;
 using ZedGraph;
 
 namespace UIMF_File
