@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using DynamicData.Binding;
 using ReactiveUI;
 using UIMF_File;
 
@@ -25,7 +26,7 @@ namespace UIMF_DataViewer.FrameControl
         private bool playingFramesForward;
         private readonly ObservableAsPropertyHelper<int> maxSummedFrames;
 
-        public ReactiveList<UIMFDataWrapper.ReadFrameType> FrameTypes { get; }
+        public ObservableCollectionExtended<UIMFDataWrapper.ReadFrameType> FrameTypes { get; }
 
         public string UimfFile
         {
@@ -122,7 +123,7 @@ namespace UIMF_DataViewer.FrameControl
             MaximumFrameNumber = 5;
             SummedFrames = 1;
 
-            FrameTypes = new ReactiveList<UIMFDataWrapper.ReadFrameType>(Enum.GetValues(typeof(UIMFDataWrapper.ReadFrameType)).Cast<UIMFDataWrapper.ReadFrameType>());
+            FrameTypes = new ObservableCollectionExtended<UIMFDataWrapper.ReadFrameType>(Enum.GetValues(typeof(UIMFDataWrapper.ReadFrameType)).Cast<UIMFDataWrapper.ReadFrameType>());
             SelectedFrameType = UIMFDataWrapper.ReadFrameType.AllFrames;
 
             isSumming = this.WhenAnyValue(x => x.SummedFrames).Select(x => x > 1).ToProperty(this, x => x.IsSumming, false);

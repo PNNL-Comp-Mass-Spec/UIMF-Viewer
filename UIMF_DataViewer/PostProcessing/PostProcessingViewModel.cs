@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using DynamicData.Binding;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using ReactiveUI;
@@ -72,7 +74,8 @@ namespace UIMF_DataViewer.PostProcessing
         private double tofBinWidth = 0;
 
         // TODO: Have this information hard-coded, but also set up and use an external file (or files) specified by the user for customizing the calibrants; also support loading different sets of calibrants, rather than showing all of them in a single list
-        public IReadOnlyReactiveList<CalibrantSet> CalibrantSets { get; }
+        // TODO: This should really only be accessible as a read-only collection
+        public ObservableCollectionExtended<CalibrantSet> CalibrantSets { get; }
 
         public CalibrantSet CurrentCalibrantSet
         {
@@ -88,7 +91,7 @@ namespace UIMF_DataViewer.PostProcessing
 
         public string CustomCalibrantsFileDescription => CalibrantInfo.FileFormatDescription;
 
-        public ReactiveList<CalibrantInfo> Calibrants { get; } = new ReactiveList<CalibrantInfo>(CalibrantInfo.GetCalibrantSet(CalibrantSet.All, null));
+        public ObservableCollectionExtended<CalibrantInfo> Calibrants { get; } = new ObservableCollectionExtended<CalibrantInfo>(CalibrantInfo.GetCalibrantSet(CalibrantSet.All, null));
 
         public double Ion1TOFBin
         {
@@ -194,7 +197,7 @@ namespace UIMF_DataViewer.PostProcessing
             ShowDecode = true;
             ShowCompress = true;
 
-            CalibrantSets = new ReactiveList<CalibrantSet>(Enum.GetValues(typeof(CalibrantSet)).Cast<CalibrantSet>());
+            CalibrantSets = new ObservableCollectionExtended<CalibrantSet>(Enum.GetValues(typeof(CalibrantSet)).Cast<CalibrantSet>());
 
             BrowseForCalibrantsFileCommand = ReactiveCommand.Create(BrowseForCalibrantsFile);
             AttemptToCalibrateCommand = ReactiveCommand.CreateFromTask(async () => await Task.Run(() => CalibrateFrames()));
@@ -783,7 +786,7 @@ namespace UIMF_DataViewer.PostProcessing
         {
             RxApp.MainThreadScheduler.Schedule(() =>
             {
-                using (Calibrants.SuppressChangeNotifications())
+                using (Calibrants.SuspendNotifications())
                 {
                     Calibrants.Clear();
                     Calibrants.AddRange(CalibrantInfo.GetCalibrantSet(CurrentCalibrantSet, CustomCalibrantsFilePath));
@@ -970,7 +973,7 @@ namespace UIMF_DataViewer.PostProcessing
         {
             var calibrants = CalibrantInfo.GetCalibrantSet(calibrantSet, CustomCalibrantsFilePath);
 
-            using (Calibrants.SuppressChangeNotifications())
+            using (Calibrants.SuspendNotifications())
             {
                 Calibrants.Clear();
                 Calibrants.AddRange(calibrants);

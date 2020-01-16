@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
+using DynamicData.Binding;
 using ReactiveUI;
 using UIMF_DataViewer.WpfControls.ColorMapSlider;
 
@@ -17,9 +19,10 @@ namespace UIMF_DataViewer.PlotAreaFormatting
             { Colors.Red, Colors.Yellow, Colors.GreenYellow, Colors.Lime, Colors.SkyBlue, Colors.Blue };
 
         private bool showMaxIntensity;
-        private readonly ReactiveList<ColorData> colorPositions;
+        private readonly ObservableCollectionExtended<ColorData> colorPositions;
 
-        public IReadOnlyReactiveList<ColorData> ColorPositions => colorPositions;
+        // TODO: This should really only be accessible as a read-only collection
+        public ObservableCollectionExtended<ColorData> ColorPositions => colorPositions;
 
         public Color MinColor => Colors.Purple;
         public Color MaxColor => Colors.DarkBlue;
@@ -37,7 +40,7 @@ namespace UIMF_DataViewer.PlotAreaFormatting
 
         public ColorMapSliderViewModel()
         {
-            colorPositions = new ReactiveList<ColorData>(colors.Select((x, i) => new ColorData(x, i + 1)));
+            colorPositions = new ObservableCollectionExtended<ColorData>(colors.Select((x, i) => new ColorData(x, i + 1)));
             foreach (var item in colorPositions)
             {
                 item.PropertyChanged += ItemOnPropertyChanged;
