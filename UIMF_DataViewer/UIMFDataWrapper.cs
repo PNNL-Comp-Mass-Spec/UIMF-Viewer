@@ -72,7 +72,7 @@ namespace UIMF_File
             double mz = this.MzCalibration.TOFtoMZ(((double) currentBin) * this.TenthsOfNanoSecondsPerBin);
             double r = (Math.Sqrt(mz));
 
-            return (int)((((r / newSlope) + newIntercept) * this.m_globalParameters.BinWidth * 10000.0 / this.TenthsOfNanoSecondsPerBin) + .5); // .5 for rounding
+            return (int)((((r / newSlope) + newIntercept) * this.mGlobalParameters.BinWidth * 10000.0 / this.TenthsOfNanoSecondsPerBin) + .5); // .5 for rounding
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace UIMF_File
 
         public void ClearFrameParametersCache()
         {
-            this.m_CachedFrameParameters.Clear();
+            this.mCachedFrameParameters.Clear();
         }
 
 
@@ -365,7 +365,7 @@ namespace UIMF_File
 
             if (maxMzBin < 0)
             {
-                maxMzBin = this.m_globalParameters.Bins;
+                maxMzBin = this.mGlobalParameters.Bins;
             }
 
             if (maxMzBin < minMzBin)
@@ -413,7 +413,7 @@ namespace UIMF_File
                 // This function extracts intensities from selected scans and bins in a single frame
                 // and returns a two-dimensional array intensities[scan][bin]
                 // frameNum is mandatory and all other arguments are optional
-                using (var dbCommand = m_dbConnection.CreateCommand())
+                using (var dbCommand = mDbConnection.CreateCommand())
                 {
                     // The ScanNum cast here is required to support UIMF files that list the ScanNum field as SMALLINT yet have scan number values > 32765
                     dbCommand.CommandText = "SELECT Cast(ScanNum as Integer) AS ScanNum, Intensities " +
@@ -571,7 +571,7 @@ namespace UIMF_File
 
         public int[] GetDriftChromatogram(int frameIndex)
         {
-            return GetDriftChromatogram(frameIndex, 0, this.m_globalParameters.Bins);
+            return GetDriftChromatogram(frameIndex, 0, this.mGlobalParameters.Bins);
         }
 
         /// <summary>

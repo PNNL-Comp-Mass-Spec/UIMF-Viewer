@@ -257,7 +257,7 @@ namespace UIMF_DataViewer.PostProcessing
                 // Allow missing columns and fields
                 config.HeaderValidated = null;
                 config.MissingFieldFound = null;
-                config.PrepareHeaderForMatch = header => header?.Trim().ToLower();
+                config.PrepareHeaderForMatch = (header, index) => header?.Trim().ToLower();
                 config.AllowComments = true;
                 config.Comment = '#';
 
