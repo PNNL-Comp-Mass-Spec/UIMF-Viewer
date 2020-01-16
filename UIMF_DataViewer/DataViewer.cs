@@ -631,27 +631,6 @@ namespace UIMF_File
                 return;
             }
 
-            // --------------------------------------------------------------------------------------------------
-            // make sure the frame is on the screen.
-            if (Left + Width > Screen.PrimaryScreen.Bounds.Width)
-            {
-                if (Width > Screen.PrimaryScreen.Bounds.Width)
-                {
-                    //MessageBox.Show("moving to left = 0, width = " + Width.ToString());
-                    Left = 0;
-                }
-                else
-                    Left = (Screen.PrimaryScreen.Bounds.Width - Width) / 2;
-            }
-
-            if (Top + Height > Screen.PrimaryScreen.Bounds.Height)
-            {
-                if (Height > Screen.PrimaryScreen.Bounds.Height)
-                    Top = 0;
-                else
-                    Top = (Screen.PrimaryScreen.Bounds.Height - Height) / 2;
-            }
-
             gb_MZRange.Left = tabpages_Main.Left + tabpages_Main.Width - gb_MZRange.Width - 45;
             gb_MZRange.Top = tabpages_Main.Top + tabpages_Main.Height - gb_MZRange.Height - 15;
 
@@ -1775,19 +1754,6 @@ namespace UIMF_File
 
             if (!is2DPlotFullScreen)
             {
-                if (pnl_2DMap.Left + pnl_2DMap.Width + 170 > Width)
-                {
-                    if (InvokeRequired)
-                    {
-                        Invoke(new MethodInvoker(() => { Width = pnl_2DMap.Left + pnl_2DMap.Width + 170; }));
-                    }
-                    else
-                    {
-                        Width = pnl_2DMap.Left + pnl_2DMap.Width + 170;
-                    }
-                    viewerNeedsResizing = true;
-                }
-
                 elementHost_PlotAreaFormatting.Invalidate();
             }
 

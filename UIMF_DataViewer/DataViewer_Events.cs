@@ -21,11 +21,7 @@ namespace UIMF_File
         {
             if (tabpages_Main.SelectedTab == tab_PostProcessing)
             {
-                if (Width < elementHost_PostProcessing.Left + elementHost_PostProcessing.Width + 70)
-                {
-                    Width = elementHost_PostProcessing.Left + elementHost_PostProcessing.Width + 70;
-                    tabpages_Main.Width = Width;
-                }
+                tabpages_Main.Width = Width;
             }
         }
 
@@ -519,8 +515,6 @@ namespace UIMF_File
 
             if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
             {
-                Width = pnl_2DMap.Left + uimfReader.UimfFrameParams.Scans + 170;
-
                 chromatogramControlVm.PartialPeakChromatogramChecked = false;
                 chromatogramControlVm.CompletePeakChromatogramChecked = false;
 
