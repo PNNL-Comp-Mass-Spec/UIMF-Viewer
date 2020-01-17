@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:postProcessing="clr-namespace:UIMF_DataViewer.PostProcessing"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-             xmlns:utilities="clr-namespace:UIMF_DataViewer.Utilities"
+             xmlns:wpfControls="clr-namespace:UIMF_DataViewer.WpfControls"
              mc:Ignorable="d"
              Background="Silver"
              d:DesignHeight="847" d:DesignWidth="1072"
@@ -28,7 +28,7 @@
             <Setter Property="FontWeight" Value="Bold" />
         </Style>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
-        <utilities:EnumDescriptionConverter x:Key="EnumDesc" />
+        <wpfControls:EnumDescriptionConverter x:Key="EnumDesc" />
         <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="FontFamily" Value="Verdana" />

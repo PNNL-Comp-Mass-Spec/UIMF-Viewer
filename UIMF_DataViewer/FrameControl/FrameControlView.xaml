@@ -7,7 +7,7 @@
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:labeledSlider="clr-namespace:UIMF_DataViewer.WpfControls.LabeledSlider"
              xmlns:uimfFile="clr-namespace:UIMF_File"
-             xmlns:utilities="clr-namespace:UIMF_DataViewer.Utilities"
+             xmlns:wpfControls="clr-namespace:UIMF_DataViewer.WpfControls"
              x:Class="UIMF_DataViewer.FrameControl.FrameControlView"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance {x:Type local:FrameControlViewModel}, IsDesignTimeCreatable=True}"
@@ -21,7 +21,7 @@
                     <Geometry x:Key="PointedButtonGeometry">M 8,-8 L -8,0 L 8,8 Z</Geometry>
                     <Geometry x:Key="StopButtonGeometry">M -8,8 L -8,-8 L 8,-8 L 8,8 Z</Geometry>
                     <BooleanToVisibilityConverter x:Key="BoolToVis" />
-                    <utilities:EnumDescriptionConverter x:Key="EnumDesc" />
+                    <wpfControls:EnumDescriptionConverter x:Key="EnumDesc" />
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
