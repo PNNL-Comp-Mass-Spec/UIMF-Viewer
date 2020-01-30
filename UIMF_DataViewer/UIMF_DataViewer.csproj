@@ -119,8 +119,8 @@
     <Compile Include="WpfControls\ColorMapSlider\ColorThumbSlider.cs" />
     <Compile Include="WpfControls\GrayScaleSlider\GrayScaleSlider.cs" />
     <Compile Include="WpfControls\GrayScaleSlider\ValueThumb.cs" />
-    <Compile Include="WpfControls\LabeledSlider\SliderLabeled.cs" />
-    <Compile Include="WpfControls\LabeledSlider\TickBarLabeled.cs" />
+    <Compile Include="WpfControls\LabeledSlider\LabeledSlider.cs" />
+    <Compile Include="WpfControls\LabeledSlider\LabeledTickBar.cs" />
     <Compile Include="WpfControls\EnumDescriptionConverter.cs" />
     <Compile Include="WpfControls\WpfConversions.cs" />
   </ItemGroup>
@@ -234,7 +234,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="WpfControls\LabeledSlider\SliderLabeledStyle.xaml">
+    <Page Include="WpfControls\LabeledSlider\LabeledSliderStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

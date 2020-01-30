@@ -8,18 +8,18 @@ using System.Windows.Media;
 
 namespace UIMF_DataViewer.WpfControls.LabeledSlider
 {
-    public class SliderLabeled : Slider
+    public class LabeledSlider : Slider
     {
-        static SliderLabeled()
+        static LabeledSlider()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(SliderLabeled), new FrameworkPropertyMetadata(typeof(SliderLabeled)));
-            MinimumProperty.OverrideMetadata(typeof(SliderLabeled), new FrameworkPropertyMetadata(LogarithmicScalePropertyChangedCallback));
-            MaximumProperty.OverrideMetadata(typeof(SliderLabeled), new FrameworkPropertyMetadata(LogarithmicScalePropertyChangedCallback));
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(LabeledSlider), new FrameworkPropertyMetadata(typeof(LabeledSlider)));
+            MinimumProperty.OverrideMetadata(typeof(LabeledSlider), new FrameworkPropertyMetadata(LogarithmicScalePropertyChangedCallback));
+            MaximumProperty.OverrideMetadata(typeof(LabeledSlider), new FrameworkPropertyMetadata(LogarithmicScalePropertyChangedCallback));
         }
 
         private const string DefaultLogScaleFormatString = @"\1\e0";
 
-        public SliderLabeled()
+        public LabeledSlider()
         {
             SetWrapperBindings();
         }
@@ -146,32 +146,32 @@ namespace UIMF_DataViewer.WpfControls.LabeledSlider
         /// <summary>
         /// StringFormat
         /// </summary>
-        //public static readonly DependencyProperty StringFormatProperty = DependencyProperty.Register("StringFormat", typeof(string), typeof(SliderLabeled), new FrameworkPropertyMetadata("F0", FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.Inherits));
-        public static readonly DependencyProperty StringFormatProperty = TickBarLabeled.StringFormatProperty.AddOwner(typeof(SliderLabeled));
+        //public static readonly DependencyProperty StringFormatProperty = DependencyProperty.Register("StringFormat", typeof(string), typeof(LabeledSlider), new FrameworkPropertyMetadata("F0", FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.Inherits));
+        public static readonly DependencyProperty StringFormatProperty = LabeledTickBar.StringFormatProperty.AddOwner(typeof(LabeledSlider));
 
         /// <summary>
         /// IsLogarithmicScale: if true, use <see cref="ActualValue"/>, <see cref="ActualMinimum"/>, and <see cref="ActualMaximum"/> to access those values appropriately
         /// </summary>
         public static readonly DependencyProperty IsLogarithmicScaleProperty =
-            DependencyProperty.Register("IsLogarithmicScale", typeof(bool), typeof(SliderLabeled), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsArrange | FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender, LogarithmicScalePropertyChangedCallback));
+            DependencyProperty.Register("IsLogarithmicScale", typeof(bool), typeof(LabeledSlider), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsArrange | FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender, LogarithmicScalePropertyChangedCallback));
 
         /// <summary>
         /// ActualValue property - Value, wrapped by a ValueConverter when <see cref="IsLogarithmicScale"/> is true.
         /// </summary>
         public static readonly DependencyProperty WrappedValueProperty =
-            DependencyProperty.Register("Value", typeof(double), typeof(SliderLabeled), new FrameworkPropertyMetadata(0d, FrameworkPropertyMetadataOptions.AffectsArrange | FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, LogarithmicScalePropertyChangedCallback));
+            DependencyProperty.Register("Value", typeof(double), typeof(LabeledSlider), new FrameworkPropertyMetadata(0d, FrameworkPropertyMetadataOptions.AffectsArrange | FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, LogarithmicScalePropertyChangedCallback));
 
         /// <summary>
         /// ActualMinimum property - Minimum, wrapped by a ValueConverter when <see cref="IsLogarithmicScale"/> is true.
         /// </summary>
         public static readonly DependencyProperty WrappedMinimumProperty =
-            DependencyProperty.Register("Minimum", typeof(double), typeof(SliderLabeled), new FrameworkPropertyMetadata(0d, FrameworkPropertyMetadataOptions.AffectsArrange | FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, LogarithmicScalePropertyChangedCallback));
+            DependencyProperty.Register("Minimum", typeof(double), typeof(LabeledSlider), new FrameworkPropertyMetadata(0d, FrameworkPropertyMetadataOptions.AffectsArrange | FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, LogarithmicScalePropertyChangedCallback));
 
         /// <summary>
         /// ActualMaximum property - Maximum, wrapped by a ValueConverter when <see cref="IsLogarithmicScale"/> is true.
         /// </summary>
         public static readonly DependencyProperty WrappedMaximumProperty =
-            DependencyProperty.Register("Maximum", typeof(double), typeof(SliderLabeled), new FrameworkPropertyMetadata(0d, FrameworkPropertyMetadataOptions.AffectsArrange | FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, LogarithmicScalePropertyChangedCallback));
+            DependencyProperty.Register("Maximum", typeof(double), typeof(LabeledSlider), new FrameworkPropertyMetadata(0d, FrameworkPropertyMetadataOptions.AffectsArrange | FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, LogarithmicScalePropertyChangedCallback));
 
         //public Brush TickFill
         //{
@@ -180,11 +180,11 @@ namespace UIMF_DataViewer.WpfControls.LabeledSlider
         //}
         //
         //// Using a DependencyProperty as the backing store for TickFill.  This enables animation, styling, binding, etc...
-        //public static readonly DependencyProperty TickFillProperty = DependencyProperty.Register("TickFill", typeof(Brush), typeof(SliderLabeled), TickBar.FillProperty.DefaultMetadata);
+        //public static readonly DependencyProperty TickFillProperty = DependencyProperty.Register("TickFill", typeof(Brush), typeof(LabeledSlider), TickBar.FillProperty.DefaultMetadata);
 
         private static void LogarithmicScalePropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (!(d is SliderLabeled sl))
+            if (!(d is LabeledSlider ls))
             {
                 return;
             }
@@ -193,32 +193,32 @@ namespace UIMF_DataViewer.WpfControls.LabeledSlider
             {
                 if ((bool)e.NewValue)
                 {
-                    sl.SetWrapperBindings();
-                    sl.SetDefaultTicks(e.Property.Name);
-                    if (StringFormatProperty.DefaultMetadata.DefaultValue.Equals(sl.StringFormat))
+                    ls.SetWrapperBindings();
+                    ls.SetDefaultTicks(e.Property.Name);
+                    if (StringFormatProperty.DefaultMetadata.DefaultValue.Equals(ls.StringFormat))
                     {
-                        sl.StringFormat = DefaultLogScaleFormatString;
+                        ls.StringFormat = DefaultLogScaleFormatString;
                     }
                 }
                 else
                 {
-                    sl.SetWrapperBindings();
-                    sl.SetDefaultTicks(e.Property.Name);
-                    if (DefaultLogScaleFormatString.Equals(sl.StringFormat))
+                    ls.SetWrapperBindings();
+                    ls.SetDefaultTicks(e.Property.Name);
+                    if (DefaultLogScaleFormatString.Equals(ls.StringFormat))
                     {
-                        sl.StringFormat = (string)StringFormatProperty.DefaultMetadata.DefaultValue;
+                        ls.StringFormat = (string)StringFormatProperty.DefaultMetadata.DefaultValue;
                     }
                 }
             }
             else if (e.Property.Name.Equals(nameof(Minimum)) || e.Property.Name.Equals(nameof(Maximum)))
             {
-                sl.SetDefaultTicks(e.Property.Name);
+                ls.SetDefaultTicks(e.Property.Name);
             }
         }
 
-        /// <summary>Raises the <see cref="SliderLabeled.ValueChanged" /> routed event. </summary>
-        /// <param name="oldValue">Old value of the <see cref="SliderLabeled.Value" /> property</param>
-        /// <param name="newValue">New value of the <see cref="SliderLabeled.Value" /> property</param>
+        /// <summary>Raises the <see cref="LabeledSlider.ValueChanged" /> routed event. </summary>
+        /// <param name="oldValue">Old value of the <see cref="LabeledSlider.Value" /> property</param>
+        /// <param name="newValue">New value of the <see cref="LabeledSlider.Value" /> property</param>
         protected override void OnValueChanged(double oldValue, double newValue)
         {
             if (IsLogarithmicScale)

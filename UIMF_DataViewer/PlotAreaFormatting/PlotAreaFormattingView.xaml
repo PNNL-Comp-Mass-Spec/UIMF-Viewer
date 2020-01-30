@@ -25,7 +25,7 @@
         </Grid.ColumnDefinitions>
         <colorMapSlider:ColorMapSlider DataContext="{Binding ColorMap}" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Margin="5" Orientation="Vertical" Values="{Binding ColorPositions}" Minimum="{Binding MinPosition}" MinimumColor="{Binding MinColor}" Maximum="{Binding MaxPosition}" MaximumColor="{Binding MaxColor}" MaxMouseHovers="{Binding ShowMaxIntensity}" FontFamily="Verdana" FontSize="6.25pt" />
         <grayScaleSlider:GrayScaleSlider Grid.Row="0" Grid.Column="1" Margin="10,5" Orientation="Vertical" Value="{Binding BackgroundGrayValue}" Minimum="0" Maximum="255" StringFormat="F0" FontFamily="Arial" FontSize="9pt" FontWeight="Bold" Foreground="Black" />
-        <labeledSlider:SliderLabeled Grid.Row="1" Grid.Column="1" Margin="5" Orientation="Vertical" Value="{Binding ThresholdSliderValue}" Minimum="1" Maximum="1e7" Foreground="Black" FontFamily="Arial" FontSize="8.25pt" FontWeight="Bold" IsLogarithmicScale="True" TickPlacement="BottomRight" IsMoveToPointEnabled="True" />
+        <labeledSlider:LabeledSlider Grid.Row="1" Grid.Column="1" Margin="5" Orientation="Vertical" Value="{Binding ThresholdSliderValue}" Minimum="1" Maximum="1e7" Foreground="Black" FontFamily="Arial" FontSize="8.25pt" FontWeight="Bold" IsLogarithmicScale="True" TickPlacement="BottomRight" IsMoveToPointEnabled="True" />
         <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="3" Content="Reset" Command="{Binding ResetCommand}" FontFamily="Arial" FontSize="8.25pt" FontWeight="Bold" />
     </Grid>
 </UserControl>

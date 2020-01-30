@@ -3,6 +3,6 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/UIMF_DataViewer;component/WpfControls/ColorMapSlider/ColorMapSliderStyle.xaml" />
         <ResourceDictionary Source="/UIMF_DataViewer;component/WpfControls/GrayScaleSlider/GrayScaleSliderStyle.xaml" />
-        <ResourceDictionary Source="/UIMF_DataViewer;component/WpfControls/LabeledSlider/SliderLabeledStyle.xaml" />
+        <ResourceDictionary Source="/UIMF_DataViewer;component/WpfControls/LabeledSlider/LabeledSliderStyle.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

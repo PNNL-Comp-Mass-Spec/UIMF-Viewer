@@ -82,7 +82,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <labeledSlider:SliderLabeled Grid.Row="0" Grid.Column="3" Margin="10,-3,10,3" Minimum="{Binding MinimumFrameNumber}" Maximum="{Binding MaximumFrameNumber}" Value="{Binding CurrentFrameNumber}" SelectionStart="{Binding MinimumSummedFrame}" SelectionEnd="{Binding MaximumSummedFrame}" Foreground="Black" FontFamily="Arial" FontWeight="Bold" FontSize="9pt" TickFrequency="1" Orientation="Horizontal" TickPlacement="TopLeft" IsSnapToTickEnabled="True" IsSelectionRangeEnabled="True" IsMoveToPointEnabled="True" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="0" Visibility="{Binding ShowFrameSelectControls, Converter={StaticResource BoolToVis}}" />
+                <labeledSlider:LabeledSlider Grid.Row="0" Grid.Column="3" Margin="10,-3,10,3" Minimum="{Binding MinimumFrameNumber}" Maximum="{Binding MaximumFrameNumber}" Value="{Binding CurrentFrameNumber}" SelectionStart="{Binding MinimumSummedFrame}" SelectionEnd="{Binding MaximumSummedFrame}" Foreground="Black" FontFamily="Arial" FontWeight="Bold" FontSize="9pt" TickFrequency="1" Orientation="Horizontal" TickPlacement="TopLeft" IsSnapToTickEnabled="True" IsSelectionRangeEnabled="True" IsMoveToPointEnabled="True" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="0" Visibility="{Binding ShowFrameSelectControls, Converter={StaticResource BoolToVis}}" />
                 <!--<Image Grid.Row="0" Grid.Column="2" Margin="3" Source="../Images/triangle_right_out.png"/>-->
                 <Button Grid.Row="0" Grid.Column="4" Height="22" Width="22" Margin="3" Visibility="{Binding ShowFrameSelectControls, Converter={StaticResource BoolToVis}}">
                     <Button.Style>
