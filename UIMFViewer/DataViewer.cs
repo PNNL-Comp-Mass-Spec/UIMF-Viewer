@@ -6,8 +6,8 @@ using System.Windows.Forms;
 using System.Threading;
 using System.IO;
 using System.Runtime.InteropServices;
-using UIMFLibrary;
 using System.Linq;
+using UIMFLibrary;
 using UIMFViewer.PostProcessing;
 using UIMFViewer.Utilities;
 using ZedGraph;
@@ -1296,9 +1296,9 @@ namespace UIMFViewer
             else
                 dataHeight = pnl_2DMap.Height;
 
-            data_2D = new int[dataWidth][];
+            var newData_2D = new int[dataWidth][];
             for (int n = 0; n < dataWidth; n++)
-                data_2D[n] = new int[dataHeight];
+                newData_2D[n] = new int[dataHeight];
 
             //-----------------------------------------------------------------------------------------
             // collect the data for viewing.
@@ -1334,11 +1334,11 @@ namespace UIMFViewer
                 {
                     for (var mobilityIndex = 0; mobilityIndex < dataHeight; mobilityIndex++)
                     {
-                        data_2D[frameIndex][mobilityIndex] += chromatogramData[frameIndex + chromatogramMinFrame][mobilityIndex];
+                        newData_2D[frameIndex][mobilityIndex] += chromatogramData[frameIndex + chromatogramMinFrame][mobilityIndex];
 
-                        if (data_2D[frameIndex][mobilityIndex] > current2DPlotMaxIntensity)
+                        if (newData_2D[frameIndex][mobilityIndex] > current2DPlotMaxIntensity)
                         {
-                            chromatogramMax = data_2D[frameIndex][mobilityIndex];
+                            chromatogramMax = newData_2D[frameIndex][mobilityIndex];
 
                             plot2DMaxIntensityX = frameIndex;
                             plot2DMaxIntensityY = mobilityIndex;
@@ -1354,11 +1354,11 @@ namespace UIMFViewer
                 for (var frameIndex = 0; (frameIndex < dataWidth); frameIndex++)
                     for (var mobilityIndex = 0; mobilityIndex < dataHeight; mobilityIndex++)
                     {
-                        data_2D[frameIndex][mobilityIndex] = chromatogramData[frameIndex + chromatogramMinFrame][mobilityIndex];
+                        newData_2D[frameIndex][mobilityIndex] = chromatogramData[frameIndex + chromatogramMinFrame][mobilityIndex];
 
-                        if (data_2D[frameIndex][mobilityIndex] > chromatogramMax)
+                        if (newData_2D[frameIndex][mobilityIndex] > chromatogramMax)
                         {
-                            chromatogramMax = data_2D[frameIndex][mobilityIndex];
+                            chromatogramMax = newData_2D[frameIndex][mobilityIndex];
                             plot2DMaxIntensityX = frameIndex;
                             plot2DMaxIntensityY = mobilityIndex;
                         }
@@ -1378,13 +1378,13 @@ namespace UIMFViewer
                 for (var mobilityIndex = 0; mobilityIndex < dataHeight; mobilityIndex++)
                 {
                     // peak chromatogram
-                    if (data_2D[frameIndex][mobilityIndex] > chromatogramMobilityTicData[frameIndex])
-                        chromatogramMobilityTicData[frameIndex] = data_2D[frameIndex][mobilityIndex];
+                    if (newData_2D[frameIndex][mobilityIndex] > chromatogramMobilityTicData[frameIndex])
+                        chromatogramMobilityTicData[frameIndex] = newData_2D[frameIndex][mobilityIndex];
 
-                    chromatogramTofTicData[mobilityIndex] += data_2D[frameIndex][mobilityIndex];
-                    if (data_2D[frameIndex][mobilityIndex] > current2DPlotMaxIntensity)
+                    chromatogramTofTicData[mobilityIndex] += newData_2D[frameIndex][mobilityIndex];
+                    if (newData_2D[frameIndex][mobilityIndex] > current2DPlotMaxIntensity)
                     {
-                        current2DPlotMaxIntensity = data_2D[frameIndex][mobilityIndex];
+                        current2DPlotMaxIntensity = newData_2D[frameIndex][mobilityIndex];
                         plot2DMaxIntensityX = frameIndex;
                         plot2DMaxIntensityY = mobilityIndex;
                     }
@@ -1434,6 +1434,7 @@ namespace UIMFViewer
 
             hsb_2DMap.Width = pnl_2DMap.Width;
             vsb_2DMap.Left = pnl_2DMap.Left + pnl_2DMap.Width;
+            data_2D = newData_2D;
             ResizeThis();
 
             currentlyReadingData = false;
@@ -1752,7 +1753,7 @@ namespace UIMFViewer
         #region Drawing
 
         // Create an image out of the data array
-        private unsafe void DrawBitmap(int[][] newData2D, int newMaxIntensity)
+        private unsafe void DrawBitmap(IReadOnlyList<IReadOnlyList<int>> newData2D, int newMaxIntensity)
         {
             if (currentlyReadingData)
             {
@@ -1760,10 +1761,10 @@ namespace UIMFViewer
             }
 
             int perPixelX; // current_valuesPerPixelX;
-            if (newData2D.Length > pnl_2DMap.Width)
+            if (newData2D.Count > pnl_2DMap.Width)
                 perPixelX = 1;
             else
-                perPixelX = -(pnl_2DMap.Width / newData2D.Length);
+                perPixelX = -(pnl_2DMap.Width / newData2D.Count);
 
             int perPixelY; // current_valuesPerPixelY;
             if (currentValuesPerPixelY >= 0)
@@ -1786,7 +1787,7 @@ namespace UIMFViewer
             try
             {
                 // MessageBox.Show("data2d: " + new_data2D[0].Length.ToString());
-                var yMax = newData2D[0].Length;
+                var yMax = newData2D[0].Count;
 
                 for (var y = 0; (y < yMax); y++)
                 {
@@ -1797,7 +1798,7 @@ namespace UIMFViewer
                     // Important to ensure each scan line begins at a pixel, not halfway into a pixel, e.g.
                     var pPixel = (perPixelY > 0) ? PixelAt(pBase, pixelWidth, 0, yMax - y - 1) : PixelAt(pBase, pixelWidth, 0, ((yMax - y) * -perPixelY) - 1);
                     var posX = 0;
-                    for (var x = 0; (x < newData2D.Length) && (posX - perPixelX < pnl_2DMap.Width); x++)
+                    for (var x = 0; (x < newData2D.Count) && (posX - perPixelX < pnl_2DMap.Width); x++)
                     {
                         try
                         {
@@ -1876,7 +1877,7 @@ namespace UIMFViewer
                                     return;
                                 }
 
-                                var verticalThickness = newData2D.Length * Math.Abs(perPixelX);
+                                var verticalThickness = newData2D.Count * Math.Abs(perPixelX);
                                 for (int x = 0; x < verticalThickness; x++)
                                 {
                                     pPixel->Blue = copyPixel->Blue;

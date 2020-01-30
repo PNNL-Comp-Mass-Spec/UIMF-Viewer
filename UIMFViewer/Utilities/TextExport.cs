@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace UIMFViewer.Utilities
@@ -12,7 +13,7 @@ namespace UIMFViewer.Utilities
         {
         }
 
-        public void Export(string file_path, string col_header, int[][] Array2D, double[] drift_axis, double[] tof_axis)
+        public void Export(string file_path, string col_header, IReadOnlyList<IReadOnlyList<int>> Array2D, double[] drift_axis, double[] tof_axis)
         {
             int i;
             int j;
@@ -56,7 +57,7 @@ namespace UIMFViewer.Utilities
             }
         }
 
-        public void Export(string file_path, string col_header, double[][] Array2D, double[] drift_axis, double[] tof_axis)
+        public void Export(string file_path, string col_header, IReadOnlyList<IReadOnlyList<double>> Array2D, double[] drift_axis, double[] tof_axis)
         {
             int i;
             int j;
