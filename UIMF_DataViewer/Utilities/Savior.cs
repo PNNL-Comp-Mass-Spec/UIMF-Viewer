@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 // =====================================================================
 //
 // Savior - Simplify Saving and Restoring Application Settings
