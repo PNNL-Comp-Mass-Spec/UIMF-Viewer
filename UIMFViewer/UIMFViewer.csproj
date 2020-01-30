@@ -8,7 +8,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <OutputType>WinExe</OutputType>
     <RootNamespace>UIMFViewer</RootNamespace>
-    <AssemblyName>UIMF_Viewer</AssemblyName>
+    <AssemblyName>UIMFViewer</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <WarningLevel>4</WarningLevel>
@@ -92,6 +92,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Images\App.ico" />
+    <Resource Include="Images\HeatMap.ico" />
+    <Resource Include="Images\logo_two-color_positive.png" />
+    <Resource Include="Images\PNNL_Color_Logo_Horizontal.png" />
+    <Resource Include="Images\ripple21.gif" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\UIMF_DataViewer\UIMF_DataViewer.csproj">
       <Project>{0ACEC402-1936-4664-9524-100052613ECE}</Project>
       <Name>UIMF_DataViewer</Name>
@@ -116,13 +123,6 @@
     <PackageReference Include="ZedGraph">
       <Version>5.1.7</Version>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\App.ico" />
-    <Resource Include="Images\HeatMap.ico" />
-    <Resource Include="Images\logo_two-color_positive.png" />
-    <Resource Include="Images\PNNL_Color_Logo_Horizontal.png" />
-    <Resource Include="Images\ripple21.gif" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
