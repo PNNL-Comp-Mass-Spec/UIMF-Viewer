@@ -2357,28 +2357,22 @@ namespace UIMFViewer
 
         #region m/z Range Selection controls
 
-        private void MzRangeCheckedChanged(object sender, EventArgs e)
+        private void MzRangeChanged(object sender, PropertyChangedEventArgs e)
         {
-            completeChromatogramCollected = false;
-            partialChromatogramCollected = false;
+            var enabledChanged = e.PropertyName.Equals(nameof(mzRangeVm.RangeEnabled));
+            var isEnabled = mzRangeVm.RangeEnabled;
+            var isOtherMonitoredProperty = e.PropertyName.Equals(nameof(mzRangeVm.Mz)) ||
+                                           e.PropertyName.Equals(nameof(mzRangeVm.Tolerance)) ||
+                                           e.PropertyName.Equals(nameof(mzRangeVm.ToleranceType));
+            // Logic: Only trigger view updates if "RangeEnabled" changed, or if 'RangeEnabled" is true and one of the relevant properties changed.
+            if (!enabledChanged)
+            {
+                if (!isEnabled || !isOtherMonitoredProperty)
+                {
+                    return;
+                }
+            }
 
-            chromatogramControlVm.NoChromatogramChecked = true;
-
-            needToUpdate2DPlot = true;
-        }
-
-        private void MzRangeMzChanged(object sender, EventArgs e)
-        {
-            completeChromatogramCollected = false;
-            partialChromatogramCollected = false;
-
-            chromatogramControlVm.NoChromatogramChecked = true;
-
-            needToUpdate2DPlot = true;
-        }
-
-        private void MzRangePpmChanged(object sender, EventArgs e)
-        {
             completeChromatogramCollected = false;
             partialChromatogramCollected = false;
 

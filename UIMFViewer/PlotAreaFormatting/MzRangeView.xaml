@@ -1,0 +1,42 @@
+﻿<UserControl x:Class="UIMFViewer.PlotAreaFormatting.MzRangeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:UIMFViewer.PlotAreaFormatting"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:wpfControls="clr-namespace:UIMFViewer.WpfControls"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance {x:Type local:MzRangeViewModel}, IsDesignTimeCreatable=True}"
+             d:DesignHeight="100" d:DesignWidth="230">
+    <UserControl.Resources>
+        <wpfControls:EnumDescriptionConverter x:Key="EnumDesc" />
+    </UserControl.Resources>
+    <GroupBox FontFamily="Verdana" FontSize="9pt">
+        <GroupBox.Header>
+            <CheckBox Margin="3,0" Content="Enable m/z Range" IsChecked="{Binding RangeEnabled}" VerticalContentAlignment="Center" FontWeight="Bold" />
+        </GroupBox.Header>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" Margin="3" HorizontalAlignment="Right" VerticalAlignment="Center" Text="M/Z:" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Margin="3" HorizontalAlignment="Right" VerticalAlignment="Center" Text="Range:" />
+            <xctk:DoubleUpDown Grid.Row="0" Grid.Column="1" Margin="3" Minimum="0" Maximum="10000" Value="{Binding Mz}" Increment="0.2" FormatString="F4" FontWeight="Bold" />
+            <xctk:DoubleUpDown Grid.Row="1" Grid.Column="1" Margin="3" Minimum="{Binding ToleranceMinimum}" Maximum="10000" Value="{Binding Tolerance}" Increment="{Binding ToleranceIncrement}" FormatString="F4" FontWeight="Bold" />
+            <ComboBox Grid.Row="1" Grid.Column="2" Margin="3" MinWidth="50" ItemsSource="{Binding ToleranceUnits}" SelectedItem="{Binding ToleranceType}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:ToleranceUnit}">
+                        <TextBlock Text="{Binding Converter={StaticResource EnumDesc}}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </Grid>
+    </GroupBox>
+</UserControl>

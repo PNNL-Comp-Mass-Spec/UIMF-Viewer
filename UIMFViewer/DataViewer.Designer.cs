@@ -74,13 +74,6 @@ namespace UIMFViewer
         protected TabControl tabpages_Main;
         protected TabPage tab_DataViewer;
         protected TabPage tab_PostProcessing;
-        protected GroupBox gb_MZRange;
-        private Label lbl_PPM;
-        private Label lbl_MZ;
-        protected NumericUpDown num_PPM;
-        private Label label1;
-        protected NumericUpDown num_MZ;
-        protected CheckBox cb_EnableMZRange;
 
         private PictureBox pb_Expand;
         private PictureBox pb_Shrink;
@@ -92,6 +85,7 @@ namespace UIMFViewer
         private ElementHost elementHost_PostProcessing;
         private ElementHost elementHost_FrameControl;
         private ElementHost elementHost_FrameInfo;
+        private ElementHost elementHost_MzRange;
         #endregion
 
         #region WPF SubItems
@@ -108,6 +102,9 @@ namespace UIMFViewer
 
         private FrameInfoView frameInfoView;
         private FrameInfoViewModel frameInfoVm;
+
+        private MzRangeView mzRangeView;
+        private MzRangeViewModel mzRangeVm;
         #endregion
 
         #region Windows Form Designer generated code
@@ -168,13 +165,9 @@ namespace UIMFViewer
             this.elementHost_FrameControl = new ElementHost();
             this.frameControlView = new FrameControlView();
             this.frameControlVm = new FrameControlViewModel();
-            this.gb_MZRange = new System.Windows.Forms.GroupBox();
-            this.lbl_PPM = new System.Windows.Forms.Label();
-            this.lbl_MZ = new System.Windows.Forms.Label();
-            this.num_PPM = new System.Windows.Forms.NumericUpDown();
-            this.label1 = new System.Windows.Forms.Label();
-            this.num_MZ = new System.Windows.Forms.NumericUpDown();
-            this.cb_EnableMZRange = new System.Windows.Forms.CheckBox();
+            this.elementHost_MzRange = new ElementHost();
+            this.mzRangeView = new MzRangeView();
+            this.mzRangeVm = new MzRangeViewModel();
             this.pnl_2DMap = new System.Windows.Forms.Panel();
             this.tab_PostProcessing = new System.Windows.Forms.TabPage();
             this.elementHost_PostProcessing = new ElementHost();
@@ -190,9 +183,6 @@ namespace UIMFViewer
             ((System.ComponentModel.ISupportInitialize)(this.num_minBin)).BeginInit();
             this.tabpages_Main.SuspendLayout();
             this.tab_DataViewer.SuspendLayout();
-            this.gb_MZRange.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.num_PPM)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.num_MZ)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Shrink)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Expand)).BeginInit();
             this.SuspendLayout();
@@ -515,8 +505,7 @@ namespace UIMFViewer
             this.tab_DataViewer.Controls.Add(this.pb_Shrink);
             this.tab_DataViewer.Controls.Add(this.pb_Expand);
             this.tab_DataViewer.Controls.Add(this.elementHost_FrameControl);
-            this.tab_DataViewer.Controls.Add(this.gb_MZRange);
-            this.tab_DataViewer.Controls.Add(this.cb_EnableMZRange);
+            this.tab_DataViewer.Controls.Add(this.elementHost_MzRange);
             this.tab_DataViewer.Controls.Add(this.btn_Refresh);
             this.tab_DataViewer.Controls.Add(this.elementHost_ChromatogramControls);
             this.tab_DataViewer.Controls.Add(this.pnl_2DMap);
@@ -545,118 +534,12 @@ namespace UIMFViewer
             this.frameControlView.DataContext = this.frameControlVm;
             this.elementHost_FrameControl.Child = this.frameControlView;
             //
-            // gb_MZRange
+            // elementHost_MzRange
             //
-            this.gb_MZRange.BackColor = System.Drawing.Color.Transparent;
-            this.gb_MZRange.Controls.Add(this.lbl_PPM);
-            this.gb_MZRange.Controls.Add(this.lbl_MZ);
-            this.gb_MZRange.Controls.Add(this.num_PPM);
-            this.gb_MZRange.Controls.Add(this.label1);
-            this.gb_MZRange.Controls.Add(this.num_MZ);
-            this.gb_MZRange.Location = new System.Drawing.Point(746, 784);
-            this.gb_MZRange.Name = "gb_MZRange";
-            this.gb_MZRange.Size = new System.Drawing.Size(220, 76);
-            this.gb_MZRange.TabIndex = 88;
-            this.gb_MZRange.TabStop = false;
-            //
-            // lbl_PPM
-            //
-            this.lbl_PPM.BackColor = System.Drawing.Color.Transparent;
-            this.lbl_PPM.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_PPM.Location = new System.Drawing.Point(8, 48);
-            this.lbl_PPM.Name = "lbl_PPM";
-            this.lbl_PPM.Size = new System.Drawing.Size(56, 20);
-            this.lbl_PPM.TabIndex = 81;
-            this.lbl_PPM.Text = "Range:";
-            this.lbl_PPM.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            //
-            // lbl_MZ
-            //
-            this.lbl_MZ.BackColor = System.Drawing.Color.Transparent;
-            this.lbl_MZ.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_MZ.Location = new System.Drawing.Point(8, 24);
-            this.lbl_MZ.Name = "lbl_MZ";
-            this.lbl_MZ.Size = new System.Drawing.Size(56, 20);
-            this.lbl_MZ.TabIndex = 80;
-            this.lbl_MZ.Text = "M/Z:";
-            this.lbl_MZ.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            //
-            // num_PPM
-            //
-            this.num_PPM.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.num_PPM.Increment = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.num_PPM.Location = new System.Drawing.Point(64, 48);
-            this.num_PPM.Maximum = new decimal(new int[] {
-            10000,
-            0,
-            0,
-            0});
-            this.num_PPM.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.num_PPM.Name = "num_PPM";
-            this.num_PPM.Size = new System.Drawing.Size(112, 22);
-            this.num_PPM.TabIndex = 84;
-            this.num_PPM.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.num_PPM.Value = new decimal(new int[] {
-            150,
-            0,
-            0,
-            0});
-            //
-            // label1
-            //
-            this.label1.BackColor = System.Drawing.Color.Transparent;
-            this.label1.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(176, 48);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(36, 20);
-            this.label1.TabIndex = 82;
-            this.label1.Text = "PPM";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            //
-            // num_MZ
-            //
-            this.num_MZ.DecimalPlaces = 4;
-            this.num_MZ.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.num_MZ.Increment = new decimal(new int[] {
-            2,
-            0,
-            0,
-            65536});
-            this.num_MZ.Location = new System.Drawing.Point(64, 24);
-            this.num_MZ.Maximum = new decimal(new int[] {
-            10000,
-            0,
-            0,
-            0});
-            this.num_MZ.Name = "num_MZ";
-            this.num_MZ.Size = new System.Drawing.Size(112, 22);
-            this.num_MZ.TabIndex = 83;
-            this.num_MZ.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.num_MZ.Value = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            //
-            // cb_EnableMZRange
-            //
-            this.cb_EnableMZRange.AutoSize = true;
-            this.cb_EnableMZRange.BackColor = System.Drawing.Color.Silver;
-            this.cb_EnableMZRange.Font = new System.Drawing.Font("Verdana", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cb_EnableMZRange.Location = new System.Drawing.Point(818, 764);
-            this.cb_EnableMZRange.Name = "cb_EnableMZRange";
-            this.cb_EnableMZRange.Size = new System.Drawing.Size(138, 18);
-            this.cb_EnableMZRange.TabIndex = 87;
-            this.cb_EnableMZRange.Text = "Enable MZ Range";
-            this.cb_EnableMZRange.UseVisualStyleBackColor = false;
+            this.elementHost_MzRange.Location = new System.Drawing.Point(726, 784);
+            this.elementHost_MzRange.Size = new System.Drawing.Size(240, 76);
+            this.mzRangeView.DataContext = this.mzRangeVm;
+            this.elementHost_MzRange.Child = this.mzRangeView;
             //
             // pnl_2DMap
             //
@@ -728,9 +611,6 @@ namespace UIMFViewer
             this.tabpages_Main.ResumeLayout(false);
             this.tab_DataViewer.ResumeLayout(false);
             this.tab_DataViewer.PerformLayout();
-            this.gb_MZRange.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.num_PPM)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.num_MZ)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Shrink)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_Expand)).EndInit();
             this.ResumeLayout(false);

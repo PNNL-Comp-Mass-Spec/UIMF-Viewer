@@ -341,9 +341,7 @@ namespace UIMFViewer
 
             frameControlVm.PropertyChanged += FrameControlVmOnPropertyChanged;
 
-            cb_EnableMZRange.CheckedChanged += MzRangeCheckedChanged;
-            num_MZ.ValueChanged += MzRangeMzChanged;
-            num_PPM.ValueChanged += MzRangePpmChanged;
+            mzRangeVm.PropertyChanged += MzRangeChanged;
             frameInfoVm.SetCalDefaults += SetCalDefaultsClick;
             frameInfoVm.RevertCalDefaults += RevertCalDefaultsClick;
 
@@ -620,12 +618,8 @@ namespace UIMFViewer
                 return;
             }
 
-            gb_MZRange.Left = tabpages_Main.Left + tabpages_Main.Width - gb_MZRange.Width - 45;
-            gb_MZRange.Top = tabpages_Main.Top + tabpages_Main.Height - gb_MZRange.Height - 15;
-
-            cb_EnableMZRange.Left = gb_MZRange.Left + 6;
-            cb_EnableMZRange.Top = gb_MZRange.Top;
-            cb_EnableMZRange.BringToFront();
+            elementHost_MzRange.Left = tabpages_Main.Left + tabpages_Main.Width - elementHost_MzRange.Width - 45;
+            elementHost_MzRange.Top = tabpages_Main.Top + tabpages_Main.Height - elementHost_MzRange.Height - 15;
 
             // redraw
             viewerIsResizing = false;
@@ -763,10 +757,10 @@ namespace UIMFViewer
 
             int maxMzRangeBin;
             int minMzRangeBin;
-            var selectMz = Convert.ToDouble(num_MZ.Value);
-            var selectPpm = selectMz * Convert.ToDouble(num_PPM.Value) / 1000000.0;
-            if (cb_EnableMZRange.Checked)
+            if (mzRangeVm.RangeEnabled)
             {
+                var selectMz = mzRangeVm.Mz;
+                var selectPpm = mzRangeVm.ComputedTolerance;
                 minMzRangeBin = (int)(uimfReader.MzCalibration.MZtoTOF(selectMz - selectPpm) / uimfReader.TenthsOfNanoSecondsPerBin);
                 maxMzRangeBin = (int)(uimfReader.MzCalibration.MZtoTOF(selectMz + selectPpm) / uimfReader.TenthsOfNanoSecondsPerBin);
 
@@ -1143,11 +1137,10 @@ namespace UIMFViewer
 
             int maxMzRangeBin;
             int minMzRangeBin;
-            var selectMz = Convert.ToDouble(num_MZ.Value);
-            var selectPpm = (selectMz * Convert.ToDouble(num_PPM.Value) / 1000000.0);
-
-            if (cb_EnableMZRange.Checked)
+            if (mzRangeVm.RangeEnabled)
             {
+                var selectMz = mzRangeVm.Mz;
+                var selectPpm = mzRangeVm.ComputedTolerance;
                 minMzRangeBin = (int) (uimfReader.MzCalibration.MZtoTOF(selectMz - selectPpm) / uimfReader.TenthsOfNanoSecondsPerBin);
                 maxMzRangeBin = (int) (uimfReader.MzCalibration.MZtoTOF(selectMz + selectPpm) / uimfReader.TenthsOfNanoSecondsPerBin);
             }
