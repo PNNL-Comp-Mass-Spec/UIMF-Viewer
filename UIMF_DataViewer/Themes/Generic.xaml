@@ -1,8 +1,0 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="/UIMF_DataViewer;component/WpfControls/ColorMapSlider/ColorMapSliderStyle.xaml" />
-        <ResourceDictionary Source="/UIMF_DataViewer;component/WpfControls/GrayScaleSlider/GrayScaleSliderStyle.xaml" />
-        <ResourceDictionary Source="/UIMF_DataViewer;component/WpfControls/LabeledSlider/LabeledSliderStyle.xaml" />
-    </ResourceDictionary.MergedDictionaries>
-</ResourceDictionary>

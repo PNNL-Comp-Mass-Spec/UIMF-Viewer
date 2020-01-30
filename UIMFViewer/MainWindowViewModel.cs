@@ -6,7 +6,6 @@ using System.Reactive;
 using System.Windows;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using ReactiveUI;
-using UIMF_File;
 
 namespace UIMFViewer
 {

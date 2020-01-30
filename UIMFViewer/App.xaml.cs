@@ -35,7 +35,7 @@ namespace UIMFViewer
                     var uimf = MainWindowViewModel.GetUimfFileInPath(path);
                     if (!string.IsNullOrWhiteSpace(uimf))
                     {
-                        var dataViewer = new UIMF_File.DataViewer(uimf);
+                        var dataViewer = new DataViewer(uimf);
                         dataViewer.Closed += DataViewer_Closed;
 
                         dataViewer.Show();

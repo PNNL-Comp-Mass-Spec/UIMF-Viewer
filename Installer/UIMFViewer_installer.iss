@@ -53,7 +53,6 @@ Name: {app}\Tools; Type: filesandordirs
 ; Application files
 Source: UIMFViewer\bin\Release\UIMFViewer.exe;                             DestDir: {app}
 Source: UIMFViewer\bin\Release\UIMFViewer.exe.config;                      DestDir: {app}   
-Source: UIMFViewer\bin\Release\UIMF_DataViewer.dll;                        DestDir: {app}
 
 ; Nuget-Installed libraries
 Source: UIMFViewer\bin\Release\CsvHelper.dll;                              DestDir: {app}

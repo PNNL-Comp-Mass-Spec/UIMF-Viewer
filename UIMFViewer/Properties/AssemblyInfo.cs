@@ -10,7 +10,7 @@ using System.Windows;
 [assembly: AssemblyTitle("UIMF_Viewer")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("PNNL")]
 [assembly: AssemblyProduct("UIMF_Viewer")]
 [assembly: AssemblyCopyright("Copyright © PNNL 2010")]
 [assembly: AssemblyTrademark("")]

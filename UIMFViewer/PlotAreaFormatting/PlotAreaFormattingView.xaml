@@ -1,0 +1,31 @@
+﻿<UserControl x:Class="UIMFViewer.PlotAreaFormatting.PlotAreaFormattingView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:UIMFViewer.PlotAreaFormatting"
+             xmlns:colorMapSlider="clr-namespace:UIMFViewer.WpfControls.ColorMapSlider"
+             xmlns:grayScaleSlider="clr-namespace:UIMFViewer.WpfControls.GrayScaleSlider"
+             xmlns:labeledSlider="clr-namespace:UIMFViewer.WpfControls.LabeledSlider"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance {x:Type local:PlotAreaFormattingViewModel}, IsDesignTimeCreatable=True}"
+             d:DesignHeight="400" Width="90">
+    <UserControl.Resources>
+        <ResourceDictionary Source="/UIMFViewer;component/Themes/Generic.xaml" />
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <colorMapSlider:ColorMapSlider DataContext="{Binding ColorMap}" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Margin="5" Orientation="Vertical" Values="{Binding ColorPositions}" Minimum="{Binding MinPosition}" MinimumColor="{Binding MinColor}" Maximum="{Binding MaxPosition}" MaximumColor="{Binding MaxColor}" MaxMouseHovers="{Binding ShowMaxIntensity}" FontFamily="Verdana" FontSize="6.25pt" />
+        <grayScaleSlider:GrayScaleSlider Grid.Row="0" Grid.Column="1" Margin="10,5" Orientation="Vertical" Value="{Binding BackgroundGrayValue}" Minimum="0" Maximum="255" StringFormat="F0" FontFamily="Arial" FontSize="9pt" FontWeight="Bold" Foreground="Black" />
+        <labeledSlider:LabeledSlider Grid.Row="1" Grid.Column="1" Margin="5" Orientation="Vertical" Value="{Binding ThresholdSliderValue}" Minimum="1" Maximum="1e7" Foreground="Black" FontFamily="Arial" FontSize="8.25pt" FontWeight="Bold" IsLogarithmicScale="True" TickPlacement="BottomRight" IsMoveToPointEnabled="True" />
+        <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="3" Content="Reset" Command="{Binding ResetCommand}" FontFamily="Arial" FontSize="8.25pt" FontWeight="Bold" />
+    </Grid>
+</UserControl>
