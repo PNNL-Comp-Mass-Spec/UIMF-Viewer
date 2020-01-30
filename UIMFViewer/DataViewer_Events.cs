@@ -867,7 +867,6 @@ namespace UIMFViewer
         {
             var saveDialog = new SaveFileDialog
             {
-                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
                 Title = "Select a file to export data to...",
                 Filter = "Comma-separated variables (*.csv)|*.csv",
                 FilterIndex = 1
@@ -907,12 +906,10 @@ namespace UIMFViewer
             {
                 var saveDialog = new SaveFileDialog
                 {
-                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
                     Title = "Select a file to export data to...",
                     Filter = "Comma-separated values (*.csv)|*.csv|Text files (*.txt)|*.txt|All files (*.*)|*.*",
                     FilterIndex = 1
                 };
-
 
                 if (saveDialog.ShowDialog(this) == DialogResult.OK)
                 {
@@ -932,7 +929,7 @@ namespace UIMFViewer
         {
             if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
             {
-                MessageBox.Show(this, "This viewer is not prepared to export the chromatogram.  Please request it.");
+                MessageBox.Show(this, "This viewer currently does not support exporting the complete chromatogram.  Please request it.");
                 return;
             }
 
@@ -940,12 +937,10 @@ namespace UIMFViewer
             {
                 var saveDialog = new SaveFileDialog
                 {
-                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
                     Title = "Select a file to export data to...",
                     Filter = "Comma-separated values (*.csv)|*.csv|Text files (*.txt)|*.txt|All files (*.*)|*.*",
                     FilterIndex = 1
                 };
-
 
                 if (saveDialog.ShowDialog(this) == DialogResult.OK)
                 {
@@ -1150,7 +1145,6 @@ namespace UIMFViewer
         {
             SaveFileDialog saveDialog = new SaveFileDialog
             {
-                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
                 Title = "Select a file to export data to...",
                 Filter = "Comma-separated variables (*.csv)|*.csv",
                 FilterIndex = 1
@@ -1213,7 +1207,6 @@ namespace UIMFViewer
         {
             var saveDialog = new SaveFileDialog
             {
-                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
                 CheckFileExists = false,
                 Title = "Save merged frame to UIMF file...",
                 Filter = "Comma-separated variables (*.uimf)|*.uimf",
