@@ -171,7 +171,7 @@ namespace UIMFViewer
             }
 
             frameControlVm.MinimumFrameIndex = 0;
-            frameControlVm.MaximumFrameIndex = uimfReader.UimfGlobalParams.NumFrames;
+            frameControlVm.MaximumFrameIndex = uimfReader.UimfGlobalParams.NumFrames - 1;
 
             currentMinTofBin = 0;
             currentMaxTofBin = 10;
