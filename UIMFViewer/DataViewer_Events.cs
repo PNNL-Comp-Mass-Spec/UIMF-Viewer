@@ -364,7 +364,7 @@ namespace UIMFViewer
                         maxFrameDataNumber = uimfReader.UimfGlobalParams.NumFrames;
 
                     frameControlView.Dispatcher.Invoke(() => {
-                        frameControlVm.CurrentFrameNumber = maxFrameDataNumber;
+                        frameControlVm.CurrentFrameIndex = maxFrameDataNumber;
                     });
 
                     plot_Mobility.StopAnnotating(false);
@@ -425,7 +425,7 @@ namespace UIMFViewer
 
                     AutoScrollPosition = new Point(0, 0);
                     hsb_2DMap.Value = 0;
-                    uimfReader.CurrentFrameIndex = frameControlVm.CurrentFrameNumber;
+                    uimfReader.CurrentFrameIndex = frameControlVm.CurrentFrameIndex;
 
                     ChromatogramCheckedChanged();
                 }
@@ -529,9 +529,9 @@ namespace UIMFViewer
                 if (frameNumber > uimfReader.GetNumberOfFrames(currentFrameType))
                     frameNumber = uimfReader.GetNumberOfFrames(currentFrameType) - 1;
 
-                frameControlView.Dispatcher.Invoke(() => frameControlVm.CurrentFrameNumber = frameNumber);
+                frameControlView.Dispatcher.Invoke(() => frameControlVm.CurrentFrameIndex = frameNumber);
 
-                uimfReader.CurrentFrameIndex = frameControlVm.CurrentFrameNumber;
+                uimfReader.CurrentFrameIndex = frameControlVm.CurrentFrameIndex;
                 plot_Mobility.ClearRange();
 
                 vsb_2DMap.Show();  // gets hidden with Chromatogram
@@ -1632,7 +1632,7 @@ namespace UIMFViewer
 
         private void FrameControlVmOnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName.Equals(nameof(FrameControlViewModel.CurrentFrameNumber)))
+            if (e.PropertyName.Equals(nameof(FrameControlViewModel.CurrentFrameIndex)))
             {
                 SelectedFrameChanged();
             }
@@ -1651,16 +1651,16 @@ namespace UIMFViewer
         //
         private void FrameSumRangeChanged()
         {
-            if ((double)frameControlVm.SummedFrames > frameControlVm.MaximumFrameNumber + 1)
+            if ((double)frameControlVm.SummedFrames > frameControlVm.MaximumFrameIndex + 1)
             {
-                frameControlVm.SummedFrames = (int)Convert.ToDecimal(frameControlVm.MaximumFrameNumber + 1);
+                frameControlVm.SummedFrames = (int)Convert.ToDecimal(frameControlVm.MaximumFrameIndex + 1);
                 return;
             }
             uimfReader.FrameWidth = Convert.ToInt32(frameControlVm.SummedFrames);
 
-            if (frameControlVm.CurrentFrameNumber < Convert.ToDouble(frameControlVm.SummedFrames))
+            if (frameControlVm.CurrentFrameIndex < Convert.ToDouble(frameControlVm.SummedFrames))
             {
-                frameControlVm.CurrentFrameNumber = (int)(Convert.ToDouble(frameControlVm.SummedFrames) - 1);
+                frameControlVm.CurrentFrameIndex = (int)(Convert.ToDouble(frameControlVm.SummedFrames) - 1);
             }
 
             if (frameControlVm.SummedFrames > 1)
@@ -1715,8 +1715,8 @@ namespace UIMFViewer
                     waveform_TOFPlot.Points = new BasicArrayPointList(new double[0], new double[0]);
                     waveform_MobilityPlot.Points = new BasicArrayPointList(new double[0], new double[0]);
 
-                    frameControlVm.MinimumFrameNumber = 0;
-                    frameControlVm.MaximumFrameNumber = 0;
+                    frameControlVm.MinimumFrameIndex = 0;
+                    frameControlVm.MaximumFrameIndex = 0;
                 }
                 else
                 {
@@ -1725,9 +1725,9 @@ namespace UIMFViewer
 
                     pnl_2DMap.Visible = true;
 
-                    frameControlVm.CurrentFrameNumber = 0;
-                    frameControlVm.MinimumFrameNumber = 0;
-                    frameControlVm.MaximumFrameNumber = frameCount2 - 1;
+                    frameControlVm.CurrentFrameIndex = 0;
+                    frameControlVm.MinimumFrameIndex = 0;
+                    frameControlVm.MaximumFrameIndex = frameCount2 - 1;
 
                     elementHost_FrameControl.Refresh();
                 }
@@ -1758,8 +1758,8 @@ namespace UIMFViewer
             plot_Mobility.ClearRange();
 
             frameControlVm.SummedFrames = 1;
-            frameControlVm.MaximumFrameNumber = frameCount - 1;
-            frameControlVm.CurrentFrameNumber = 0;
+            frameControlVm.MaximumFrameIndex = frameCount - 1;
+            frameControlVm.CurrentFrameIndex = 0;
 
             // MessageBox.Show(array_FrameNum.Length.ToString());
 
@@ -1981,29 +1981,29 @@ namespace UIMFViewer
 
         private void FramesPlayLeftClick(object sender, EventArgs e)
         {
-            if (frameControlVm.CurrentFrameNumber <= frameControlVm.MinimumFrameNumber) // frame index starts at 0
+            if (frameControlVm.CurrentFrameIndex <= frameControlVm.MinimumFrameIndex) // frame index starts at 0
                 return;
 
             playingCinemaPlot = true;
             frameCinemaDataInterval = -(Convert.ToInt32(frameControlVm.SummedFrames) / 3) - 1;
-            frameControlVm.CurrentFrameNumber += frameCinemaDataInterval;
+            frameControlVm.CurrentFrameIndex += frameCinemaDataInterval;
         }
 
         private void FramesPlayRightClick(object sender, EventArgs e)
         {
-            if (frameControlVm.CurrentFrameNumber >= frameControlVm.MaximumFrameNumber)
+            if (frameControlVm.CurrentFrameIndex >= frameControlVm.MaximumFrameIndex)
                 return;
 
             playingCinemaPlot = true;
             frameCinemaDataInterval = (Convert.ToInt32(frameControlVm.SummedFrames) / 3) + 1;
-            if (frameControlVm.CurrentFrameNumber + frameCinemaDataInterval > Convert.ToInt32(frameControlVm.MaximumFrameNumber))
-                frameControlVm.CurrentFrameNumber = frameControlVm.MaximumFrameNumber - Convert.ToInt32(frameControlVm.SummedFrames);
+            if (frameControlVm.CurrentFrameIndex + frameCinemaDataInterval > Convert.ToInt32(frameControlVm.MaximumFrameIndex))
+                frameControlVm.CurrentFrameIndex = frameControlVm.MaximumFrameIndex - Convert.ToInt32(frameControlVm.SummedFrames);
             else
             {
-                if (frameControlVm.CurrentFrameNumber + frameCinemaDataInterval > frameControlVm.MaximumFrameNumber)
-                    frameControlVm.CurrentFrameNumber = frameControlVm.MaximumFrameNumber - frameCinemaDataInterval;
+                if (frameControlVm.CurrentFrameIndex + frameCinemaDataInterval > frameControlVm.MaximumFrameIndex)
+                    frameControlVm.CurrentFrameIndex = frameControlVm.MaximumFrameIndex - frameCinemaDataInterval;
                 else
-                    frameControlVm.CurrentFrameNumber += frameCinemaDataInterval;
+                    frameControlVm.CurrentFrameIndex += frameCinemaDataInterval;
 
             }
         }
@@ -2185,7 +2185,7 @@ namespace UIMFViewer
 
                 hsb_2DMap.Value = 0;
 
-                uimfReader.CurrentFrameIndex = frameControlVm.CurrentFrameNumber;
+                uimfReader.CurrentFrameIndex = frameControlVm.CurrentFrameIndex;
                 plot_Mobility.StopAnnotating(true);
 
                 selectingMobilityRange = false;

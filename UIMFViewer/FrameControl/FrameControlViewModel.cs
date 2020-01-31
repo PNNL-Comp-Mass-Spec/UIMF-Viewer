@@ -11,9 +11,9 @@ namespace UIMFViewer.FrameControl
     {
         private string uimfFile;
         private UIMFDataWrapper.ReadFrameType selectedFrameType;
-        private int minimumFrameNumber;
-        private int maximumFrameNumber;
-        private int currentFrameNumber;
+        private int minimumFrameIndex;
+        private int maximumFrameIndex;
+        private int currentFrameIndex;
         private int summedFrames;
         private int minimumSummedFrame;
         private int maximumSummedFrame;
@@ -39,33 +39,33 @@ namespace UIMFViewer.FrameControl
             set => this.RaiseAndSetIfChanged(ref selectedFrameType, value);
         }
 
-        public int MinimumFrameNumber
+        public int MinimumFrameIndex
         {
-            get => minimumFrameNumber;
-            set => this.RaiseAndSetIfChanged(ref minimumFrameNumber, value);
+            get => minimumFrameIndex;
+            set => this.RaiseAndSetIfChanged(ref minimumFrameIndex, value);
         }
 
-        public int MaximumFrameNumber
+        public int MaximumFrameIndex
         {
-            get => maximumFrameNumber;
-            set => this.RaiseAndSetIfChanged(ref maximumFrameNumber, value);
+            get => maximumFrameIndex;
+            set => this.RaiseAndSetIfChanged(ref maximumFrameIndex, value);
         }
 
-        public int CurrentFrameNumber
+        public int CurrentFrameIndex
         {
-            get => currentFrameNumber;
+            get => currentFrameIndex;
             set
             {
-                if (value - MinimumFrameNumber + 1 < SummedFrames)
+                if (value - MinimumFrameIndex + 1 < SummedFrames)
                 {
-                    value = MinimumFrameNumber + SummedFrames - 1;
-                    if (value == currentFrameNumber)
+                    value = MinimumFrameIndex + SummedFrames - 1;
+                    if (value == currentFrameIndex)
                     {
                         this.RaisePropertyChanged();
                         return;
                     }
                 }
-                this.RaiseAndSetIfChanged(ref currentFrameNumber, value);
+                this.RaiseAndSetIfChanged(ref currentFrameIndex, value);
             }
         }
 
@@ -118,8 +118,8 @@ namespace UIMFViewer.FrameControl
 
         public FrameControlViewModel()
         {
-            MinimumFrameNumber = 0;
-            MaximumFrameNumber = 5;
+            MinimumFrameIndex = 0;
+            MaximumFrameIndex = 5;
             SummedFrames = 1;
 
             FrameTypes = new ObservableCollectionExtended<UIMFDataWrapper.ReadFrameType>(Enum.GetValues(typeof(UIMFDataWrapper.ReadFrameType)).Cast<UIMFDataWrapper.ReadFrameType>());
@@ -127,8 +127,8 @@ namespace UIMFViewer.FrameControl
 
             isSumming = this.WhenAnyValue(x => x.SummedFrames).Select(x => x > 1).ToProperty(this, x => x.IsSumming, false);
             frameControlsVisible = this.WhenAnyValue(x => x.ShowChromatogramLabel).Select(x => !x).ToProperty(this, x => x.FrameControlsVisible, true);
-            showFrameSelectControls = this.WhenAnyValue(x => x.MinimumFrameNumber, x => x.MaximumFrameNumber).Select(x => x.Item2 - x.Item1 > 1).ToProperty(this, x => x.ShowFrameSelectControls, true);
-            maxSummedFrames = this.WhenAnyValue(x => x.MinimumFrameNumber, x => x.MaximumFrameNumber).Select(x => x.Item2 - x.Item1 + 1).ToProperty(this, x => x.MaxSummedFrames);
+            showFrameSelectControls = this.WhenAnyValue(x => x.MinimumFrameIndex, x => x.MaximumFrameIndex).Select(x => x.Item2 - x.Item1 > 1).ToProperty(this, x => x.ShowFrameSelectControls, true);
+            maxSummedFrames = this.WhenAnyValue(x => x.MinimumFrameIndex, x => x.MaximumFrameIndex).Select(x => x.Item2 - x.Item1 + 1).ToProperty(this, x => x.MaxSummedFrames);
 
             PlayFramesForwardCommand = ReactiveCommand.Create(PlayFramesForward);
             PlayFramesBackwardCommand = ReactiveCommand.Create(PlayFramesBackward);

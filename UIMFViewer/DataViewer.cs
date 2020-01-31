@@ -131,8 +131,8 @@ namespace UIMFViewer
                 frameControlVm.SelectedFrameType = UIMFDataWrapper.ReadFrameType.AllFrames;
 
                 hsb_2DMap.Visible = vsb_2DMap.Visible = false;
-                frameControlVm.MinimumFrameNumber = 0;
-                frameControlVm.MaximumFrameNumber = 0;
+                frameControlVm.MinimumFrameIndex = 0;
+                frameControlVm.MaximumFrameIndex = 0;
 
                 // TODO: //plot_TOF.ClearData();
                 // TODO: //plot_Mobility.ClearData();
@@ -170,8 +170,8 @@ namespace UIMFViewer
                 MessageBox.Show("failed to build interface()\n\n" + ex);
             }
 
-            frameControlVm.MinimumFrameNumber = 0;
-            frameControlVm.MaximumFrameNumber = uimfReader.UimfGlobalParams.NumFrames;
+            frameControlVm.MinimumFrameIndex = 0;
+            frameControlVm.MaximumFrameIndex = uimfReader.UimfGlobalParams.NumFrames;
 
             currentMinTofBin = 0;
             currentMaxTofBin = 10;
@@ -292,7 +292,7 @@ namespace UIMFViewer
             menuItem_ScanTime.Checked = false;
 
             // start the heartbeat
-            frameControlVm.CurrentFrameNumber = 0;
+            frameControlVm.CurrentFrameIndex = 0;
 
             // default values in the calibration require no interface
             frameInfoVm.HideCalibrationButtons();
@@ -714,7 +714,7 @@ namespace UIMFViewer
                 return;
             }
 
-            var frameSelectValue = frameControlVm.CurrentFrameNumber;
+            var frameSelectValue = frameControlVm.CurrentFrameIndex;
 
             // Determine the frame size
             if (uimfReader.CurrentFrameIndex != frameSelectValue)
@@ -1016,7 +1016,7 @@ namespace UIMFViewer
 #endif
 
             // show frame range
-            var frameSelectValue = frameControlVm.CurrentFrameNumber;
+            var frameSelectValue = frameControlVm.CurrentFrameIndex;
             frameControlView.Dispatcher.Invoke(() =>
             {
                 if ((frameSelectValue - frameControlVm.SummedFrames + 1) < 0)
@@ -1495,7 +1495,7 @@ namespace UIMFViewer
         {
             // Initial values
             var newFrameNumber = 0;
-            frameControlView.Dispatcher.Invoke(() => frameControlVm.CurrentFrameNumber = 0);
+            frameControlView.Dispatcher.Invoke(() => frameControlVm.CurrentFrameIndex = 0);
 
             // Run in a loop until flag_Alive is false
             while (viewerKeepAlive)
@@ -1606,22 +1606,22 @@ namespace UIMFViewer
                             {
                                 frameControlView.Dispatcher.Invoke(() =>
                                 {
-                                    if ((frameControlVm.CurrentFrameNumber + frameCinemaDataInterval >= 0) &&
-                                        (frameControlVm.CurrentFrameNumber + frameCinemaDataInterval <= frameControlVm.MaximumFrameNumber))
+                                    if ((frameControlVm.CurrentFrameIndex + frameCinemaDataInterval >= 0) &&
+                                        (frameControlVm.CurrentFrameIndex + frameCinemaDataInterval <= frameControlVm.MaximumFrameIndex))
                                     {
-                                        frameControlVm.CurrentFrameNumber += frameCinemaDataInterval;
+                                        frameControlVm.CurrentFrameIndex += frameCinemaDataInterval;
                                     }
                                     else
                                     {
                                         if (frameCinemaDataInterval > 0)
                                         {
                                             StopCinema();
-                                            frameControlVm.CurrentFrameNumber = frameControlVm.MaximumFrameNumber;
+                                            frameControlVm.CurrentFrameIndex = frameControlVm.MaximumFrameIndex;
                                         }
                                         else
                                         {
                                             StopCinema();
-                                            frameControlVm.CurrentFrameNumber = frameControlVm.CurrentFrameNumber - 1;
+                                            frameControlVm.CurrentFrameIndex = frameControlVm.CurrentFrameIndex - 1;
                                         }
                                     }
                                 });
@@ -2132,7 +2132,7 @@ namespace UIMFViewer
 
                             applyingMobilityRangeChange = true;
 #if !NEEDS_WORK
-                            chromatogramMaxFrame = uimfReader.LoadFrame(frameControlVm.MaximumFrameNumber);
+                            chromatogramMaxFrame = uimfReader.LoadFrame(frameControlVm.MaximumFrameIndex);
                             num_maxMobility.Value = num_maxMobility.Maximum = chromatogramMaxFrame;
 #else // needs work
                             if (minFrame_Chromatogram < 0)
