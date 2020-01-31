@@ -1083,6 +1083,17 @@ namespace UIMFViewer
                     minTofBin = yPos;
             }
 
+            if (mzRangeVm.RangeEnabled)
+            {
+                var selectMz = mzRangeVm.Mz;
+                var selectPpm = mzRangeVm.ComputedTolerance;
+                var minMzRangeBin = (int)(uimfReader.MzCalibration.MZtoTOF(selectMz - selectPpm) / uimfReader.TenthsOfNanoSecondsPerBin);
+                var maxMzRangeBin = (int)(uimfReader.MzCalibration.MZtoTOF(selectMz + selectPpm) / uimfReader.TenthsOfNanoSecondsPerBin);
+
+                minTofBin = Math.Max(minMzRangeBin - 1, minTofBin);
+                maxTofBin = Math.Min(maxMzRangeBin + 1, maxTofBin);
+            }
+
             var totalScans = maxMobility - minMobility + 1;
             var totalBins = maxTofBin - minTofBin + 1;
             var driftAxis = new double[totalScans];
