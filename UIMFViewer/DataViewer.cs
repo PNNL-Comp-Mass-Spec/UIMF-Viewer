@@ -757,15 +757,18 @@ namespace UIMFViewer
 
             int maxMzRangeBin;
             int minMzRangeBin;
+            var usingMzRange = false;
             if (mzRangeVm.RangeEnabled)
             {
+                usingMzRange = true;
                 var selectMz = mzRangeVm.Mz;
                 var selectPpm = mzRangeVm.ComputedTolerance;
                 minMzRangeBin = (int)(uimfReader.MzCalibration.MZtoTOF(selectMz - selectPpm) / uimfReader.TenthsOfNanoSecondsPerBin);
                 maxMzRangeBin = (int)(uimfReader.MzCalibration.MZtoTOF(selectMz + selectPpm) / uimfReader.TenthsOfNanoSecondsPerBin);
 
-                currentMinTofBin = (int)(uimfReader.MzCalibration.MZtoTOF(selectMz - (selectPpm * 1.5)) / uimfReader.TenthsOfNanoSecondsPerBin);
-                currentMaxTofBin = (int)(uimfReader.MzCalibration.MZtoTOF(selectMz + (selectPpm * 1.5)) / uimfReader.TenthsOfNanoSecondsPerBin);
+                var visibleTolerance = selectPpm * 1.5;
+                currentMinTofBin = (int)(uimfReader.MzCalibration.MZtoTOF(selectMz - visibleTolerance) / uimfReader.TenthsOfNanoSecondsPerBin);
+                currentMaxTofBin = (int)(uimfReader.MzCalibration.MZtoTOF(selectMz + visibleTolerance) / uimfReader.TenthsOfNanoSecondsPerBin);
             }
             else
             {
@@ -781,6 +784,7 @@ namespace UIMFViewer
                 currentMinTofBin = currentMaxTofBin;
                 currentMaxTofBin = temp;
             }
+
             var totalBins = (currentMaxTofBin - currentMinTofBin) + 1;
 
             if (currentMaxMobility < currentMinMobility)
@@ -792,9 +796,33 @@ namespace UIMFViewer
             var totalMobility = (currentMaxMobility - currentMinMobility) + 1;
 
             // resize data to fit screen
-            if (max2DPlotHeight < totalBins)
+            if (totalBins > max2DPlotHeight)
             {
-                currentValuesPerPixelY = (totalBins / max2DPlotHeight);
+                currentValuesPerPixelY = totalBins / max2DPlotHeight;
+
+                if (usingMzRange)
+                {
+                    var minDisplayBins = maxMzRangeBin - minMzRangeBin + 1;
+                    var minValuesPerYPixel = (double) minDisplayBins / max2DPlotHeight;
+                    var adjustedValuesPerYPixel = currentValuesPerPixelY;
+                    if (minValuesPerYPixel < currentValuesPerPixelY)
+                    {
+                        // Adjust the padding area to center the data
+                    }
+                    else
+                    {
+                        // increase the values per YPixel to increase totalBins, and add enough padding to center it.
+                        adjustedValuesPerYPixel++;
+                    }
+
+                    var binCount = max2DPlotHeight * adjustedValuesPerYPixel;
+                    var diff = totalBins - binCount;
+                    var half = diff / 2;
+                    totalBins = binCount;
+                    currentMinTofBin += half;
+                    currentMaxTofBin -= half;
+                    currentValuesPerPixelY = adjustedValuesPerYPixel;
+                }
 
                 currentMaxTofBin = currentMinTofBin + (currentValuesPerPixelY * max2DPlotHeight);
 
@@ -817,6 +845,32 @@ namespace UIMFViewer
                 currentValuesPerPixelY = -(max2DPlotHeight / totalBins);
                 if (currentValuesPerPixelY >= 0)
                     currentValuesPerPixelY = -1;
+
+                if (usingMzRange)
+                {
+                    var minDisplayBins = maxMzRangeBin - minMzRangeBin + 1;
+                    var maxYPixelsPerValue = -(max2DPlotHeight / (double) minDisplayBins);
+                    var adjustedValuesPerYPixel = currentValuesPerPixelY;
+                    if (maxYPixelsPerValue > currentValuesPerPixelY)
+                    {
+                        // Adjust the padding area to center the data
+                    }
+                    else
+                    {
+                        // increase the values per YPixel to increase totalBins, and add enough padding to center it.
+                        adjustedValuesPerYPixel--;
+                        if (adjustedValuesPerYPixel >= 0)
+                            adjustedValuesPerYPixel = -1;
+                    }
+
+                    var binCount = max2DPlotHeight / -adjustedValuesPerYPixel;
+                    var diff = totalBins - binCount;
+                    var half = diff / 2;
+                    totalBins = binCount;
+                    currentMinTofBin += half;
+                    currentMaxTofBin -= half;
+                    currentValuesPerPixelY = adjustedValuesPerYPixel;
+                }
 
                 // create calibration table
                 currentMaxTofBin = currentMinTofBin + (max2DPlotHeight / -currentValuesPerPixelY);
