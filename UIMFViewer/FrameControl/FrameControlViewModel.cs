@@ -119,8 +119,10 @@ namespace UIMFViewer.FrameControl
         public FrameControlViewModel()
         {
             MinimumFrameIndex = 0;
-            MaximumFrameIndex = 5;
+            MaximumFrameIndex = 4;
             SummedFrames = 1;
+            MinimumSummedFrame = 0;
+            MaximumSummedFrame = 0;
 
             FrameTypes = new ObservableCollectionExtended<UIMFDataWrapper.ReadFrameType>(Enum.GetValues(typeof(UIMFDataWrapper.ReadFrameType)).Cast<UIMFDataWrapper.ReadFrameType>());
             SelectedFrameType = UIMFDataWrapper.ReadFrameType.AllFrames;

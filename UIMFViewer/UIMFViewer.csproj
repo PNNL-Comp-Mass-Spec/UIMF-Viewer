@@ -76,6 +76,7 @@
       <DependentUpon>DataViewer.cs</DependentUpon>
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="FrameControl\IndexBase1Converter.cs" />
     <Compile Include="PlotAreaFormatting\MzRangeView.xaml.cs">
       <DependentUpon>MzRangeView.xaml</DependentUpon>
     </Compile>

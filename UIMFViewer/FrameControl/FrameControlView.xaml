@@ -21,6 +21,7 @@
                     <Geometry x:Key="StopButtonGeometry">M -8,8 L -8,-8 L 8,-8 L 8,8 Z</Geometry>
                     <BooleanToVisibilityConverter x:Key="BoolToVis" />
                     <wpfControls:EnumDescriptionConverter x:Key="EnumDesc" />
+                    <local:IndexBase1Converter x:Key="Base1Converter" />
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
@@ -53,7 +54,7 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-                <xctk:IntegerUpDown Grid.Row="0" Grid.Column="1" MinWidth="70" Margin="3" VerticalAlignment="Center" Minimum="{Binding MinimumFrameIndex}" Maximum="{Binding MaximumFrameIndex}" Value="{Binding CurrentFrameIndex}" FontFamily="Arial" FontWeight="Bold" FontSize="12pt" />
+                <xctk:IntegerUpDown Grid.Row="0" Grid.Column="1" MinWidth="70" Margin="3" VerticalAlignment="Center" Minimum="{Binding MinimumFrameIndex, Mode=OneWay, Converter={StaticResource Base1Converter}}" Maximum="{Binding MaximumFrameIndex, Mode=OneWay, Converter={StaticResource Base1Converter}}" Value="{Binding CurrentFrameIndex, Converter={StaticResource Base1Converter}}" FontFamily="Arial" FontWeight="Bold" FontSize="12pt" />
                 <!--<Image Grid.Row="0" Grid.Column="2" Margin="3" Source="../Images/triangle_left_out.png"/>-->
                 <Button Grid.Row="0" Grid.Column="2" Height="22" Width="22" Margin="3" Visibility="{Binding ShowFrameSelectControls, Converter={StaticResource BoolToVis}}">
                     <Button.Style>
@@ -81,7 +82,7 @@
                         </Style>
                     </Button.Style>
                 </Button>
-                <labeledSlider:LabeledSlider Grid.Row="0" Grid.Column="3" Margin="10,-3,10,3" Minimum="{Binding MinimumFrameIndex}" Maximum="{Binding MaximumFrameIndex}" Value="{Binding CurrentFrameIndex}" SelectionStart="{Binding MinimumSummedFrame}" SelectionEnd="{Binding MaximumSummedFrame}" Foreground="Black" FontFamily="Arial" FontWeight="Bold" FontSize="9pt" TickFrequency="1" Orientation="Horizontal" TickPlacement="TopLeft" IsSnapToTickEnabled="True" IsSelectionRangeEnabled="True" IsMoveToPointEnabled="True" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="0" Visibility="{Binding ShowFrameSelectControls, Converter={StaticResource BoolToVis}}" />
+                <labeledSlider:LabeledSlider Grid.Row="0" Grid.Column="3" Margin="10,-3,10,3" Minimum="{Binding MinimumFrameIndex, Mode=OneWay, Converter={StaticResource Base1Converter}}" Maximum="{Binding MaximumFrameIndex, Mode=OneWay, Converter={StaticResource Base1Converter}}" Value="{Binding CurrentFrameIndex, Converter={StaticResource Base1Converter}}" SelectionStart="{Binding MinimumSummedFrame, Mode=OneWay, Converter={StaticResource Base1Converter}}" SelectionEnd="{Binding MaximumSummedFrame, Mode=OneWay, Converter={StaticResource Base1Converter}}" Foreground="Black" FontFamily="Arial" FontWeight="Bold" FontSize="9pt" TickFrequency="1" Orientation="Horizontal" TickPlacement="TopLeft" IsSnapToTickEnabled="True" IsSelectionRangeEnabled="True" IsMoveToPointEnabled="True" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="0" Visibility="{Binding ShowFrameSelectControls, Converter={StaticResource BoolToVis}}" />
                 <!--<Image Grid.Row="0" Grid.Column="2" Margin="3" Source="../Images/triangle_right_out.png"/>-->
                 <Button Grid.Row="0" Grid.Column="4" Height="22" Width="22" Margin="3" Visibility="{Binding ShowFrameSelectControls, Converter={StaticResource BoolToVis}}">
                     <Button.Style>
@@ -121,9 +122,9 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Margin="3" VerticalAlignment="Center" FontFamily="Arial" FontWeight="Normal" FontSize="8.25pt" Visibility="{Binding IsSumming, Converter={StaticResource BoolToVis}}">
                         <Run Text="Showing Frames: " />
-                        <Run Text="{Binding MinimumSummedFrame}" />
+                        <Run Text="{Binding MinimumSummedFrame, Mode=OneWay, Converter={StaticResource Base1Converter}}" />
                         <Run Text=" to " />
-                        <Run Text="{Binding MaximumSummedFrame}" />
+                        <Run Text="{Binding MaximumSummedFrame, Mode=OneWay, Converter={StaticResource Base1Converter}}" />
                     </TextBlock>
                     <TextBlock Grid.Column="2" Margin="3" Text="Frame Range:" VerticalAlignment="Center" FontFamily="Arial" FontWeight="Bold" FontSize="9pt" Visibility="{Binding ShowFrameSelectControls, Converter={StaticResource BoolToVis}}" />
                     <xctk:IntegerUpDown Grid.Column="3" Margin="3" MinWidth="60" Minimum="1" Maximum="{Binding MaxSummedFrames}" Value="{Binding SummedFrames}" HorizontalContentAlignment="Center" FontFamily="Arial" FontWeight="Bold" FontSize="9pt" Visibility="{Binding ShowFrameSelectControls, Converter={StaticResource BoolToVis}}" />
