@@ -424,7 +424,6 @@ namespace UIMFViewer
 
                     using (var reader = dbCommand.ExecuteReader())
                     {
-
                         // accumulate the data into the plot_data
                         if (yCompression <= 1)
                         {
@@ -504,7 +503,7 @@ namespace UIMFViewer
                     compressedScan = currentScan / xCompression;
                 }
 
-                var pixelY = 1;
+                var pixelY = 0;
 
                 var binIntensities = IntensityConverterCLZF.Decompress(compressedBinIntensity, out int _);
 
@@ -522,13 +521,20 @@ namespace UIMFViewer
 
                     double calibratedBin = binIndex;
 
-                    for (var j = pixelY; j < height; j++)
+                    if (height == 1)
                     {
-                        if (calibrationTable[j] > calibratedBin)
+                        frameData[compressedScan][0] += binIntensity.Item2;
+                    }
+                    else
+                    {
+                        for (var j = pixelY; j < height; j++)
                         {
-                            pixelY = j;
-                            frameData[compressedScan][pixelY] += binIntensity.Item2;
-                            break;
+                            if (calibrationTable[j] > calibratedBin)
+                            {
+                                pixelY = j;
+                                frameData[compressedScan][pixelY] += binIntensity.Item2;
+                                break;
+                            }
                         }
                     }
                 }

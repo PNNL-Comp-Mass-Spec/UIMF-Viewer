@@ -31,7 +31,8 @@ namespace UIMFViewer
         private System.Windows.Forms.MenuItem menuItem_Frame_driftTIC;
         private System.Windows.Forms.MenuItem menuItem_Time_driftTIC;
         private System.Windows.Forms.MenuItem menuItem9;
-        private System.Windows.Forms.MenuItem menuItem_Exportnew_driftTIC;
+        private System.Windows.Forms.MenuItem menuItem_ExportDriftTIC_Displayed;
+        private System.Windows.Forms.MenuItem menuItem_ExportDriftTIC_Complete;
         private System.Windows.Forms.MenuItem menuItem_ExportCompressed;
         private System.Windows.Forms.MenuItem menuItem_ExportComplete;
         private System.Windows.Forms.MenuItem menuItem_CopyToClipboard;
@@ -139,7 +140,8 @@ namespace UIMFViewer
             this.menuItem_Frame_driftTIC = new System.Windows.Forms.MenuItem();
             this.menuItem_Time_driftTIC = new System.Windows.Forms.MenuItem();
             this.menuItem6 = new System.Windows.Forms.MenuItem();
-            this.menuItem_Exportnew_driftTIC = new System.Windows.Forms.MenuItem();
+            this.menuItem_ExportDriftTIC_Displayed = new System.Windows.Forms.MenuItem();
+            this.menuItem_ExportDriftTIC_Complete = new System.Windows.Forms.MenuItem();
             this.menuItem9 = new System.Windows.Forms.MenuItem();
             this.menuItem8 = new System.Windows.Forms.MenuItem();
             this.contextMenu_TOF = new System.Windows.Forms.ContextMenu();
@@ -305,7 +307,8 @@ namespace UIMFViewer
             this.menuItem_Frame_driftTIC,
             this.menuItem_Time_driftTIC,
             this.menuItem6,
-            this.menuItem_Exportnew_driftTIC,
+            this.menuItem_ExportDriftTIC_Displayed,
+            this.menuItem_ExportDriftTIC_Complete,
             this.menuItem9,
             this.menuItem8});
             //
@@ -324,19 +327,24 @@ namespace UIMFViewer
             this.menuItem6.Index = 2;
             this.menuItem6.Text = "-";
             //
-            // menuItem_Exportnew_driftTIC
+            // menuItem_ExportDriftTIC_Displayed
             //
-            this.menuItem_Exportnew_driftTIC.Index = 3;
-            this.menuItem_Exportnew_driftTIC.Text = "Export Data to File...";
+            this.menuItem_ExportDriftTIC_Displayed.Index = 3;
+            this.menuItem_ExportDriftTIC_Displayed.Text = "Export Data to File (as shown)...";
+            //
+            // menuItem_ExportDriftTIC_Complete
+            //
+            this.menuItem_ExportDriftTIC_Complete.Index = 4;
+            this.menuItem_ExportDriftTIC_Complete.Text = "Export Data to File (uncompressed)...";
             //
             // menuItem9
             //
-            this.menuItem9.Index = 4;
+            this.menuItem9.Index = 5;
             this.menuItem9.Text = "Copy Current TIC Image to Clipboard";
             //
             // menuItem8
             //
-            this.menuItem8.Index = 5;
+            this.menuItem8.Index = 6;
             this.menuItem8.Text = "Copy Full TIC Image to Clipboard";
             //
             // contextMenu_TOF

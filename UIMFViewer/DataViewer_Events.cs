@@ -818,7 +818,7 @@ namespace UIMFViewer
         {
             var folder = Path.GetDirectoryName(uimfReader.UimfDataFile);
             var expName = Path.GetFileNameWithoutExtension(uimfReader.UimfDataFile);
-            var filename = folder + "\\" + expName + ".Frame_" + uimfReader.CurrentFrameIndex.ToString("0000") + ".BMP";
+            var filename = folder + "\\" + expName + ".Frame_" + (uimfReader.CurrentFrameIndex + 1).ToString("0000") + ".BMP";
             SaveExperimentGui(filename);
 
             MessageBox.Show(this, "Image capture for Frame saved to Desktop in file: \n" + filename);
@@ -863,7 +863,7 @@ namespace UIMFViewer
             showMobilityChromatogramFrameNumber = false;
         }
 
-        private void ExportDriftTicClick(object sender, EventArgs e)
+        private void ExportDriftTicDisplayedClick(object sender, EventArgs e)
         {
             var saveDialog = new SaveFileDialog
             {
@@ -893,6 +893,105 @@ namespace UIMFViewer
                         for (var i = 0; i < mobilityPlotData.Length; i++)
                         {
                             writer.WriteLine("{0},{1}", (i * incrementMobilityValue * xCompressionMultiplier) + minMobilityValue, mobilityPlotData[i]);
+                        }
+                    }
+                    writer.Close();
+                }
+            }
+        }
+
+        private void ExportDriftTicCompleteClick(object sender, EventArgs e)
+        {
+            var saveDialog = new SaveFileDialog
+            {
+                Title = "Select a file to export data to...",
+                Filter = "Comma-separated variables (*.csv)|*.csv",
+                FilterIndex = 1
+            };
+
+            if (saveDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                using (var writer = new StreamWriter(saveDialog.FileName))
+                {
+                    if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
+                    {
+                        // TODO: How to implement this? This is still the compressed data version
+                        var incrementMobilityValue = averageDriftScanDuration * (frameMaximumMobility + 1) * uimfReader.UimfFrameParams.GetValueInt32(FrameParamKeyType.Accumulations) / 1000000.0 / 1000.0;
+                        for (var i = 0; i < mobilityPlotData.Length; i++)
+                        {
+                            writer.WriteLine("{0},{1}", (i * incrementMobilityValue) + chromatogramMinFrame, mobilityPlotData[i]);
+                        }
+                    }
+                    else
+                    {
+                        var minTofBin = currentMinTofBin;
+                        var maxTofBin = currentMaxTofBin;
+                        var minMobility = currentMinMobility;
+                        var maxMobility = currentMaxMobility;
+
+                        if (menuItem_SelectionCorners.Checked)
+                        {
+                            var largestX = plot2DSelectionCorners[0].X;
+                            var largestY = pnl_2DMap.Height - plot2DSelectionCorners[0].Y;
+                            var smallestX = plot2DSelectionCorners[0].X;
+                            var smallestY = pnl_2DMap.Height - plot2DSelectionCorners[0].Y;
+                            for (var i = 1; i < 4; i++)
+                            {
+                                if (largestX < plot2DSelectionCorners[i].X)
+                                    largestX = plot2DSelectionCorners[i].X;
+                                if (largestY < pnl_2DMap.Height - plot2DSelectionCorners[i].Y)
+                                    largestY = pnl_2DMap.Height - plot2DSelectionCorners[i].Y;
+
+                                if (smallestX > plot2DSelectionCorners[i].X)
+                                    smallestX = plot2DSelectionCorners[i].X;
+                                if (smallestY > pnl_2DMap.Height - plot2DSelectionCorners[i].Y)
+                                    smallestY = pnl_2DMap.Height - plot2DSelectionCorners[i].Y;
+                            }
+
+                            var xPos = currentMinMobility + (largestX * (currentMaxMobility - currentMinMobility) / pnl_2DMap.Width) + 1;
+                            var yPos = currentMinTofBin + (largestY * (currentMaxTofBin - currentMinTofBin) / pnl_2DMap.Height);
+                            if (xPos < maxMobility)
+                                maxMobility = xPos;
+                            if (yPos < maxTofBin)
+                                maxTofBin = yPos;
+
+                            xPos = currentMinMobility + (smallestX * (currentMaxMobility - currentMinMobility) / pnl_2DMap.Width) + 1;
+                            yPos = currentMinTofBin + (smallestY * (currentMaxTofBin - currentMinTofBin) / pnl_2DMap.Height);
+                            if (xPos > minMobility)
+                                minMobility = xPos;
+                            if (yPos > minTofBin)
+                                minTofBin = yPos;
+                        }
+
+                        if (mzRangeVm.RangeEnabled)
+                        {
+                            var selectMz = mzRangeVm.Mz;
+                            var selectPpm = mzRangeVm.ComputedTolerance;
+                            var minMzRangeBin = (int)(uimfReader.MzCalibration.MZtoTOF(selectMz - selectPpm) / uimfReader.TenthsOfNanoSecondsPerBin);
+                            var maxMzRangeBin = (int)(uimfReader.MzCalibration.MZtoTOF(selectMz + selectPpm) / uimfReader.TenthsOfNanoSecondsPerBin);
+
+                            minTofBin = Math.Max(minMzRangeBin - 1, minTofBin);
+                            maxTofBin = Math.Min(maxMzRangeBin + 1, maxTofBin);
+                        }
+
+                        var totalScans = maxMobility - minMobility + 1;
+                        var driftAxis = new double[totalScans];
+
+                        var increment = (uimfReader.UimfFrameParams.Scans * averageDriftScanDuration) / uimfReader.UimfFrameParams.Scans / 1000000.0;
+
+                        driftAxis[0] = minMobility * increment;
+
+                        for (var i = 1; i < totalScans; i++)
+                            driftAxis[i] = (driftAxis[i - 1] + increment);
+
+                        // minimize data allocation, tell AccumulateFrameData that we should only have one y-axis bin.
+                        var yCompression = maxTofBin - minTofBin + 1;
+
+                        var exportData = uimfReader.AccumulateFrameData(uimfReader.CurrentFrameNum, uimfReader.CurrentFrameNum, displayTofValues, minMobility, maxMobility, minTofBin, maxTofBin, yCompression);
+
+                        for (var i = 0; i < totalScans; i++)
+                        {
+                            writer.WriteLine("{0:0.00####},{1}", driftAxis[i], exportData[i].Sum());
                         }
                     }
                     writer.Close();
@@ -1048,6 +1147,7 @@ namespace UIMFViewer
             var minMobility = currentMinMobility;
             var maxMobility = currentMaxMobility;
 
+            // TODO: is this really needed?
             Generate2DIntensityArray();
             if (menuItem_SelectionCorners.Checked)
             {
@@ -1125,20 +1225,20 @@ namespace UIMFViewer
 
             var exportData = uimfReader.AccumulateFrameData(uimfReader.CurrentFrameNum, uimfReader.CurrentFrameNum, displayTofValues, minMobility, maxMobility, minTofBin, maxTofBin);
 
-            // if masking, clear everything outside of mask to zero.
-            if (menuItem_SelectionCorners.Checked)
-            {
-                var tic = 0;
-                for (var i = 0; i < totalScans; i++)
-                {
-                    for (var j = 0; j < totalBins; j++)
-                    {
-                        tic += exportData[i][j];
-                        //if (!inside_Polygon((minMobility + i) * pnl_2DMap.Width / (current_maxMobility - current_minMobility), (minTofBin + j) * pnl_2DMap.Height / (current_maxBin - current_minBin)))
-                        //    exportData[i][j] = 0;
-                    }
-                }
-            }
+            //// if masking, clear everything outside of mask to zero.
+            //if (menuItem_SelectionCorners.Checked)
+            //{
+            //    var tic = 0;
+            //    for (var i = 0; i < totalScans; i++)
+            //    {
+            //        for (var j = 0; j < totalBins; j++)
+            //        {
+            //            tic += exportData[i][j];
+            //            //if (!inside_Polygon((minMobility + i) * pnl_2DMap.Width / (current_maxMobility - current_minMobility), (minTofBin + j) * pnl_2DMap.Height / (current_maxBin - current_minBin)))
+            //            //    exportData[i][j] = 0;
+            //        }
+            //    }
+            //}
 
             var tex = new Utilities.TextExport();
             if (displayTofValues)

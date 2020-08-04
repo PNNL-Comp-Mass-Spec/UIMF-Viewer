@@ -314,7 +314,8 @@ namespace UIMFViewer
             menuItem_CopyToClipboard.Click += CopyImageToClipboard;
             menuItem_CaptureExperimentFrame.Click += SaveExperimentGuiClick;
             menuItem_WriteUIMF.Click += WriteUimfClick;
-            menuItem_Exportnew_driftTIC.Click += ExportDriftTicClick;
+            menuItem_ExportDriftTIC_Displayed.Click += ExportDriftTicDisplayedClick;
+            menuItem_ExportDriftTIC_Complete.Click += ExportDriftTicCompleteClick;
             menuItem_Frame_driftTIC.Click += MobilityChromatogramPlotShowFrameClick;
             menuItem_Time_driftTIC.Click += MobilityChromatogramPlotShowTimeClick;
             menuItem_TOFExport.Click += TofExportDataClick;
