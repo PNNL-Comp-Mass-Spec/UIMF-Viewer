@@ -987,11 +987,22 @@ namespace UIMFViewer
                         // minimize data allocation, tell AccumulateFrameData that we should only have one y-axis bin.
                         var yCompression = maxTofBin - minTofBin + 1;
 
-                        var exportData = uimfReader.AccumulateFrameData(uimfReader.CurrentFrameNum, uimfReader.CurrentFrameNum, displayTofValues, minMobility, maxMobility, minTofBin, maxTofBin, yCompression);
+                        var minFrame = uimfReader.ArrayFrameNum[frameControlVm.MinimumSummedFrame];
+                        var maxFrame = uimfReader.ArrayFrameNum[frameControlVm.MaximumSummedFrame];
+
+                        // Problem: Does not filter by frame type.
+                        //var exportData = uimfReader.AccumulateFrameData(minFrame, maxFrame, displayTofValues, minMobility, maxMobility, minTofBin, maxTofBin, yCompression, isForDataExportOnly: true);
+                        //
+                        //for (var i = 0; i < totalScans; i++)
+                        //{
+                        //    writer.WriteLine("{0:0.00####},{1}", driftAxis[i], exportData[i].Sum());
+                        //}
+
+                        var exportData = uimfReader.GetDriftChromatogramNew(minFrame, maxFrame, minMobility, maxMobility, minTofBin, maxTofBin);
 
                         for (var i = 0; i < totalScans; i++)
                         {
-                            writer.WriteLine("{0:0.00####},{1}", driftAxis[i], exportData[i].Sum());
+                            writer.WriteLine("{0:0.00####},{1}", driftAxis[i], exportData[i]);
                         }
                     }
                     writer.Close();
@@ -1223,7 +1234,10 @@ namespace UIMFViewer
                 }
             }
 
-            var exportData = uimfReader.AccumulateFrameData(uimfReader.CurrentFrameNum, uimfReader.CurrentFrameNum, displayTofValues, minMobility, maxMobility, minTofBin, maxTofBin);
+            var minFrame = uimfReader.ArrayFrameNum[frameControlVm.MinimumSummedFrame];
+            var maxFrame = uimfReader.ArrayFrameNum[frameControlVm.MaximumSummedFrame];
+
+            var exportData = uimfReader.AccumulateFrameData(minFrame, maxFrame, displayTofValues, minMobility, maxMobility, minTofBin, maxTofBin, isForDataExportOnly: true);
 
             //// if masking, clear everything outside of mask to zero.
             //if (menuItem_SelectionCorners.Checked)

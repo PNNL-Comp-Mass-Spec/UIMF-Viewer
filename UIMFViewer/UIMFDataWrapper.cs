@@ -598,6 +598,50 @@ namespace UIMFViewer
             return driftChromatogram;
         }
 
+        /// <summary>
+        /// Gets a summed chromatogram for all frames from startFrameNum to endFrameNum, inclusive, that match endFrameNum's frameType. Does not update currentFrame.
+        /// </summary>
+        /// <param name="startFrameNum"></param>
+        /// <param name="endFrameNum"></param>
+        /// <param name="minScan"></param>
+        /// <param name="maxScan"></param>
+        /// <param name="minTofBin"></param>
+        /// <param name="maxTofBin"></param>
+        /// <returns></returns>
+        public int[] GetDriftChromatogramNew(int startFrameNum, int endFrameNum, int minScan = -1, int maxScan = int.MaxValue, int minTofBin = -1, int maxTofBin = int.MaxValue)
+        {
+            var driftChromatogram = new int[maxScan - minScan + 1];
+            var frameType = GetFrameTypeForFrame(endFrameNum);
+
+            if (maxScan < 0)
+            {
+                maxScan = int.MaxValue;
+            }
+
+            if (maxTofBin < 0)
+            {
+                maxScan = int.MaxValue;
+            }
+
+            for (var frameNum = startFrameNum; frameNum <= endFrameNum; frameNum++)
+            {
+                if (GetFrameTypeForFrame(frameNum) != frameType)
+                {
+                    continue;
+                }
+
+                for (var scanNum = minScan; scanNum <= maxScan; scanNum++)
+                {
+                    foreach (var tofIntensity in GetSpectrumAsBinsNz(frameNum, frameType, scanNum, out _).Where(x => x.Item1 >= minTofBin && x.Item1 <= maxTofBin))
+                    {
+                        driftChromatogram[scanNum - minScan] += tofIntensity.Item2;
+                    }
+                }
+            }
+
+            return driftChromatogram;
+        }
+
         public class IntSafeArray : IEnumerable<int>
         {
             private int[] backingArray;
