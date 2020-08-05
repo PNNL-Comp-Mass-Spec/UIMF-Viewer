@@ -1020,10 +1020,7 @@ namespace UIMFViewer
             var frameSelectValue = frameControlVm.CurrentFrameIndex;
             frameControlView.Dispatcher.Invoke(() =>
             {
-                if ((frameSelectValue - frameControlVm.SummedFrames + 1) < 0)
-                    frameControlVm.MinimumSummedFrame = 0;
-                else
-                    frameControlVm.MinimumSummedFrame = (((frameSelectValue - frameControlVm.SummedFrames + 1)));
+                frameControlVm.MinimumSummedFrame = Math.Max(frameSelectValue - frameControlVm.SummedFrames + 1, 0);
                 frameControlVm.MaximumSummedFrame = frameSelectValue;
             });
 

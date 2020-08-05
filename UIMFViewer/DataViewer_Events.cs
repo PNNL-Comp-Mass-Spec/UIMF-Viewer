@@ -1148,7 +1148,7 @@ namespace UIMFViewer
             var maxMobility = currentMaxMobility;
 
             // TODO: is this really needed?
-            Generate2DIntensityArray();
+            //Generate2DIntensityArray();
             if (menuItem_SelectionCorners.Checked)
             {
                 var largestX = plot2DSelectionCorners[0].X;

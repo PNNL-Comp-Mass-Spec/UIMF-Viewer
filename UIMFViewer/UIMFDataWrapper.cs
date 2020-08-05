@@ -229,34 +229,22 @@ namespace UIMFViewer
         /// <summary>
         /// Retrieves a given frame (or frames) and sums them in order to be viewed on a heatmap view or other 2D representation visually.
         /// </summary>
-        /// <param name="startFrameNumber">
-        /// </param>
-        /// <param name="endFrameNumber">
-        /// </param>
-        /// <param name="flagTOF">
-        /// </param>
-        /// <param name="startScan">
-        /// </param>
-        /// <param name="scanCount">
-        /// </param>
-        /// <param name="startBin">
-        /// </param>
-        /// <param name="binCount">
-        /// </param>
-        /// <param name="yCompression">
-        /// </param>
+        /// <param name="startFrameNumber"></param>
+        /// <param name="endFrameNumber"></param>
+        /// <param name="flagTOF"></param>
+        /// <param name="startScan"></param>
+        /// <param name="scanCount"></param>
+        /// <param name="startBin"></param>
+        /// <param name="binCount"></param>
+        /// <param name="yCompression"></param>
         /// <param name="frameData"></param>
         /// <param name="maxMzBin"></param>
         /// <param name="zeroOutData"></param>
-        /// <param name="xCompression">
-        /// </param>
+        /// <param name="xCompression"></param>
         /// <param name="minMzBin"></param>
-        /// <returns>
-        /// Frame data to be utilized in visualization as a multidimensional array
-        /// </returns>
-        /// <remarks>
-        /// This function is used by the UIMF Viewer and by Atreyu
-        /// </remarks>
+        /// <param name="isForDataExportOnly">True if the data read is only for data export</param>
+        /// <returns>Frame data to be utilized in visualization as a multidimensional array</returns>
+        /// <remarks>This function is used by the UIMF Viewer and by Atreyu</remarks>
         public int[][] AccumulateFrameDataByCount(int startFrameNumber, int endFrameNumber, bool flagTOF, int startScan, int scanCount, int startBin, int binCount,
             int yCompression = -1, int[][] frameData = null, int minMzBin = -1, int maxMzBin = -1, bool zeroOutData = true, int xCompression = -1)
         {
@@ -278,34 +266,22 @@ namespace UIMFViewer
         /// <summary>
         /// Retrieves a given frame (or frames) and sums them in order to be viewed on a heatmap view or other 2D representation visually.
         /// </summary>
-        /// <param name="startFrameNumber">
-        /// </param>
-        /// <param name="endFrameNumber">
-        /// </param>
-        /// <param name="flagTOF">
-        /// </param>
-        /// <param name="startScan">
-        /// </param>
-        /// <param name="endScan">
-        /// </param>
-        /// <param name="startBin">
-        /// </param>
-        /// <param name="endBin">
-        /// </param>
-        /// <param name="yCompression">
-        /// </param>
+        /// <param name="startFrameNumber"></param>
+        /// <param name="endFrameNumber"></param>
+        /// <param name="flagTOF"></param>
+        /// <param name="startScan"></param>
+        /// <param name="endScan"></param>
+        /// <param name="startBin"></param>
+        /// <param name="endBin"></param>
+        /// <param name="yCompression"></param>
         /// <param name="frameData"></param>
         /// <param name="maxMzBin"></param>
         /// <param name="zeroOutData"></param>
-        /// <param name="xCompression">
-        /// </param>
+        /// <param name="xCompression"></param>
         /// <param name="minMzBin"></param>
-        /// <returns>
-        /// Frame data to be utilized in visualization as a multidimensional array
-        /// </returns>
-        /// <remarks>
-        /// This function is used by the UIMF Viewer and by Atreyu
-        /// </remarks>
+        /// <param name="isForDataExportOnly">True if the data read is only for data export</param>
+        /// <returns>Frame data to be utilized in visualization as a multidimensional array</returns>
+        /// <remarks>This function is used by the UIMF Viewer and by Atreyu </remarks>
         public int[][] AccumulateFrameData(int startFrameNumber, int endFrameNumber, bool flagTOF, int startScan, int endScan, int startBin, int endBin,
             int yCompression = -1, int[][] frameData = null, int minMzBin = -1, int maxMzBin = -1, bool zeroOutData = true, int xCompression = -1)
         {
@@ -464,17 +440,17 @@ namespace UIMFViewer
 
                 var binIntensities = IntensityConverterCLZF.Decompress(compressedBinIntensity, out int _);
 
-                foreach (var binIntensity in binIntensities)
+                foreach (var binIntensity in binIntensities.Where(x => x.Item1 >= startBin && x.Item1 >= minMzBin && x.Item1 <= endBin && x.Item1 <= maxMzBin))
                 {
                     var binIndex = binIntensity.Item1;
-                    if (binIndex < startBin || binIndex < minMzBin)
-                    {
-                        continue;
-                    }
-                    if (binIndex > endBin || binIndex > maxMzBin)
-                    {
-                        break;
-                    }
+                    //if (binIndex < startBin || binIndex < minMzBin)
+                    //{
+                    //    continue;
+                    //}
+                    //if (binIndex > endBin || binIndex > maxMzBin)
+                    //{
+                    //    break;
+                    //}
                     frameData[compressedScan][binIndex - startBin] += binIntensity.Item2;
                 }
             }
@@ -575,13 +551,18 @@ namespace UIMFViewer
             return tofArray;
         }
 
+        /// <summary>
+        /// Get the drift chromatogram for the specified frame. Updates currentFrame.
+        /// </summary>
+        /// <param name="frameIndex"></param>
+        /// <returns></returns>
         public int[] GetDriftChromatogram(int frameIndex)
         {
             return GetDriftChromatogram(frameIndex, 0, this.mGlobalParameters.Bins);
         }
 
         /// <summary>
-        /// Get the drift chromatogram for the specified frame, but only for bins between minBin and maxBin, inclusive.
+        /// Get the drift chromatogram for the specified frame, but only for bins between minBin and maxBin, inclusive. Updates currentFrame.
         /// </summary>
         /// <param name="frameIndex"></param>
         /// <param name="minBin"></param>
