@@ -246,7 +246,7 @@ namespace UIMFViewer
         /// <returns>Frame data to be utilized in visualization as a multidimensional array</returns>
         /// <remarks>This function is used by the UIMF Viewer and by Atreyu</remarks>
         public int[][] AccumulateFrameDataByCount(int startFrameNumber, int endFrameNumber, bool flagTOF, int startScan, int scanCount, int startBin, int binCount,
-            int yCompression = -1, int[][] frameData = null, int minMzBin = -1, int maxMzBin = -1, bool zeroOutData = true, int xCompression = -1)
+            int yCompression = -1, int[][] frameData = null, int minMzBin = -1, int maxMzBin = -1, bool zeroOutData = true, int xCompression = -1, bool isForDataExportOnly = false)
         {
             var endScan = startScan + scanCount - 1;
             var endBin = startBin + binCount - 1;
@@ -260,7 +260,7 @@ namespace UIMFViewer
                 endScan = startScan - 1 + scanCount * xCompression;
             }
             return AccumulateFrameData(startFrameNumber, endFrameNumber, flagTOF, startScan, endScan, startBin, endBin, yCompression, frameData,
-                minMzBin, maxMzBin, zeroOutData, xCompression);
+                minMzBin, maxMzBin, zeroOutData, xCompression, isForDataExportOnly);
         }
 
         /// <summary>
@@ -283,7 +283,7 @@ namespace UIMFViewer
         /// <returns>Frame data to be utilized in visualization as a multidimensional array</returns>
         /// <remarks>This function is used by the UIMF Viewer and by Atreyu </remarks>
         public int[][] AccumulateFrameData(int startFrameNumber, int endFrameNumber, bool flagTOF, int startScan, int endScan, int startBin, int endBin,
-            int yCompression = -1, int[][] frameData = null, int minMzBin = -1, int maxMzBin = -1, bool zeroOutData = true, int xCompression = -1)
+            int yCompression = -1, int[][] frameData = null, int minMzBin = -1, int maxMzBin = -1, bool zeroOutData = true, int xCompression = -1, bool isForDataExportOnly = false)
         {
             if (endFrameNumber - startFrameNumber < 0)
             {
@@ -350,23 +350,29 @@ namespace UIMFViewer
             }
 
             // ensure the correct Frame parameters are set
-            if (endFrameNumber != this.CurrentFrameNum)
+            if (endFrameNumber != this.CurrentFrameNum && !isForDataExportOnly)
             {
                 this.CurrentFrameNum = endFrameNumber;
                 this.UimfFrameParams = this.GetFrameParams(endFrameNumber);
                 this.MzCalibration = this.GetMzCalibrator(this.UimfFrameParams);
             }
 
+            var endFrameType = GetFrameTypeForFrame(endFrameNumber);
+
             for (var currentFrameNumber = startFrameNumber; currentFrameNumber <= endFrameNumber; currentFrameNumber++)
             {
+                if (GetFrameTypeForFrame(currentFrameNumber) != endFrameType)
+                {
+                    continue;
+                }
 
                 // Create a calibration lookup table -- for speed
-                calibrationTable = new double[height];
+                var calibTable = new double[height];
                 if (flagTOF)
                 {
                     for (var i = 0; i < height; i++)
                     {
-                        calibrationTable[i] = startBin + (i * (double)(endBin - startBin) / height);
+                        calibTable[i] = startBin + (i * (double)(endBin - startBin) / height);
                     }
                 }
                 else
@@ -382,7 +388,7 @@ namespace UIMFViewer
 
                     for (var i = 0; i < height; i++)
                     {
-                        calibrationTable[i] = mzCalibrator.MZtoBin(mzMin + (i * (mzMax - mzMin) / height));
+                        calibTable[i] = mzCalibrator.MZtoBin(mzMin + (i * (mzMax - mzMin) / height));
                     }
                 }
 
@@ -407,9 +413,15 @@ namespace UIMFViewer
                         }
                         else
                         {
-                            AccumulateFrameDataWithYCompression(reader, width, height, startScan, startBin, endBin, ref frameData, minMzBin, maxMzBin, xCompression);
+                            AccumulateFrameDataWithYCompression(reader, width, height, startScan, startBin, endBin, ref frameData, minMzBin, maxMzBin, xCompression, calibTable);
                         }
                     }
+                }
+
+                if (!isForDataExportOnly)
+                {
+                    // Don't update the calibrationTable if the read was only for data export.
+                    calibrationTable = calibTable;
                 }
             }
 
@@ -457,7 +469,7 @@ namespace UIMFViewer
         }
 
         private void AccumulateFrameDataWithYCompression(IDataReader reader, int width, int height, int startScan, int startBin,
-            int endBin, ref int[][] frameData, int minMzBin, int maxMzBin, int xCompression)
+            int endBin, ref int[][] frameData, int minMzBin, int maxMzBin, int xCompression, double[] calibTable)
         {
             // each pixel accumulates more than 1 bin of data
             for (var scansData = 0; scansData / xCompression < width && reader.Read(); scansData++)
@@ -505,7 +517,7 @@ namespace UIMFViewer
                     {
                         for (var j = pixelY; j < height; j++)
                         {
-                            if (calibrationTable[j] > calibratedBin)
+                            if (calibTable[j] > calibratedBin)
                             {
                                 pixelY = j;
                                 frameData[compressedScan][pixelY] += binIntensity.Item2;

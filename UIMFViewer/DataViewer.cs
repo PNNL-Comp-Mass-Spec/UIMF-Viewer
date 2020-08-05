@@ -1051,7 +1051,7 @@ namespace UIMFViewer
                 current_valuesPerPixelY, data_2D, min_MZRange_bin, max_MZRange_bin);
             /*/
             data_2D = uimfReader.AccumulateFrameDataByCount(uimfReader.ArrayFrameNum[startIndex], uimfReader.ArrayFrameNum[endIndex], displayTofValues,
-                currentMinMobility, dataWidth, currentMinTofBin, dataHeight, currentValuesPerPixelY, /*data_2D*/ null, minMzRangeBin, maxMzRangeBin, xCompression: currentValuesPerPixelX);
+                currentMinMobility, dataWidth, currentMinTofBin, dataHeight, currentValuesPerPixelY, /*data_2D*/ null, minMzRangeBin, maxMzRangeBin, xCompression: currentValuesPerPixelX, isForDataExportOnly: false);
             /**/
 
             try
