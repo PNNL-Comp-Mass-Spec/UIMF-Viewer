@@ -998,7 +998,7 @@ namespace UIMFViewer
                         //    writer.WriteLine("{0:0.00####},{1}", driftAxis[i], exportData[i].Sum());
                         //}
 
-                        var exportData = uimfReader.GetDriftChromatogramNew(minFrame, maxFrame, minMobility, maxMobility, minTofBin, maxTofBin);
+                        var exportData = uimfReader.GetDriftChromatogramNew(minFrame, maxFrame, minMobility, maxMobility, minTofBin, maxTofBin, mobilityTICShowsBPI);
 
                         for (var i = 0; i < totalScans; i++)
                         {

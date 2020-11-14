@@ -607,8 +607,9 @@ namespace UIMFViewer
         /// <param name="maxScan"></param>
         /// <param name="minTofBin"></param>
         /// <param name="maxTofBin"></param>
+        /// <param name="exportBPI"></param>
         /// <returns></returns>
-        public int[] GetDriftChromatogramNew(int startFrameNum, int endFrameNum, int minScan = -1, int maxScan = int.MaxValue, int minTofBin = -1, int maxTofBin = int.MaxValue)
+        public int[] GetDriftChromatogramNew(int startFrameNum, int endFrameNum, int minScan = -1, int maxScan = int.MaxValue, int minTofBin = -1, int maxTofBin = int.MaxValue, bool exportBPI = false)
         {
             var driftChromatogram = new int[maxScan - minScan + 1];
             var frameType = GetFrameTypeForFrame(endFrameNum);
@@ -634,7 +635,14 @@ namespace UIMFViewer
                 {
                     foreach (var tofIntensity in GetSpectrumAsBinsNz(frameNum, frameType, scanNum, out _).Where(x => x.Item1 >= minTofBin && x.Item1 <= maxTofBin))
                     {
-                        driftChromatogram[scanNum - minScan] += tofIntensity.Item2;
+                        if (!exportBPI)
+                        {
+                            driftChromatogram[scanNum - minScan] += tofIntensity.Item2;
+                        }
+                        else if (tofIntensity.Item2 > driftChromatogram[scanNum - minScan])
+                        {
+                            driftChromatogram[scanNum - minScan] = tofIntensity.Item2;
+                        }
                     }
                 }
             }
