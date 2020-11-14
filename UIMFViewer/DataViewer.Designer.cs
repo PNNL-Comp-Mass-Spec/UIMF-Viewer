@@ -28,6 +28,8 @@ namespace UIMFViewer
         private System.Windows.Forms.ContextMenu contextMenu_driftTIC;
         private System.Windows.Forms.MenuItem menuItem6;
         private System.Windows.Forms.MenuItem menuItem8;
+        private System.Windows.Forms.MenuItem menuItem_driftTIC_ShowBPI;
+        private System.Windows.Forms.MenuItem menuItem_driftTIC_Sep1;
         private System.Windows.Forms.MenuItem menuItem_Frame_driftTIC;
         private System.Windows.Forms.MenuItem menuItem_Time_driftTIC;
         private System.Windows.Forms.MenuItem menuItem9;
@@ -137,6 +139,8 @@ namespace UIMFViewer
             this.menuItem_CaptureExperimentFrame = new System.Windows.Forms.MenuItem();
             this.menuItem_WriteUIMF = new System.Windows.Forms.MenuItem();
             this.contextMenu_driftTIC = new System.Windows.Forms.ContextMenu();
+            this.menuItem_driftTIC_ShowBPI = new System.Windows.Forms.MenuItem();
+            this.menuItem_driftTIC_Sep1 = new System.Windows.Forms.MenuItem();
             this.menuItem_Frame_driftTIC = new System.Windows.Forms.MenuItem();
             this.menuItem_Time_driftTIC = new System.Windows.Forms.MenuItem();
             this.menuItem6 = new System.Windows.Forms.MenuItem();
@@ -304,6 +308,8 @@ namespace UIMFViewer
             // contextMenu_driftTIC
             //
             this.contextMenu_driftTIC.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.menuItem_driftTIC_ShowBPI,
+            this.menuItem_driftTIC_Sep1,
             this.menuItem_Frame_driftTIC,
             this.menuItem_Time_driftTIC,
             this.menuItem6,
@@ -312,39 +318,49 @@ namespace UIMFViewer
             this.menuItem9,
             this.menuItem8});
             //
+            // menuItem_driftTIC_ShowBPI
+            //
+            this.menuItem_driftTIC_ShowBPI.Index = 0;
+            this.menuItem_driftTIC_ShowBPI.Text = "Show BPI";
+            //
+            // menuItem_driftTIC_Sep1
+            //
+            this.menuItem_driftTIC_Sep1.Index = 1;
+            this.menuItem_driftTIC_Sep1.Text = "-";
+            //
             // menuItem_Frame_driftTIC
             //
-            this.menuItem_Frame_driftTIC.Index = 0;
+            this.menuItem_Frame_driftTIC.Index = 2;
             this.menuItem_Frame_driftTIC.Text = "Chromatogram units - Frames";
             //
             // menuItem_Time_driftTIC
             //
-            this.menuItem_Time_driftTIC.Index = 1;
+            this.menuItem_Time_driftTIC.Index = 3;
             this.menuItem_Time_driftTIC.Text = "Chromatogram units - Time";
             //
             // menuItem6
             //
-            this.menuItem6.Index = 2;
+            this.menuItem6.Index = 4;
             this.menuItem6.Text = "-";
             //
             // menuItem_ExportDriftTIC_Displayed
             //
-            this.menuItem_ExportDriftTIC_Displayed.Index = 3;
+            this.menuItem_ExportDriftTIC_Displayed.Index = 5;
             this.menuItem_ExportDriftTIC_Displayed.Text = "Export Data to File (as shown)...";
             //
             // menuItem_ExportDriftTIC_Complete
             //
-            this.menuItem_ExportDriftTIC_Complete.Index = 4;
+            this.menuItem_ExportDriftTIC_Complete.Index = 6;
             this.menuItem_ExportDriftTIC_Complete.Text = "Export Data to File (uncompressed)...";
             //
             // menuItem9
             //
-            this.menuItem9.Index = 5;
+            this.menuItem9.Index = 7;
             this.menuItem9.Text = "Copy Current TIC Image to Clipboard";
             //
             // menuItem8
             //
-            this.menuItem8.Index = 6;
+            this.menuItem8.Index = 8;
             this.menuItem8.Text = "Copy Full TIC Image to Clipboard";
             //
             // contextMenu_TOF

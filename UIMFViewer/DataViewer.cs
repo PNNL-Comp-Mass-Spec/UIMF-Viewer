@@ -105,6 +105,7 @@ namespace UIMFViewer
         private bool viewerNeedsResizing;
         private bool viewerIsResizing;
         private bool is2DPlotFullScreen;
+        private bool mobilityTICShowsBPI;
         private readonly bool isTImsData;
 
         // Save previous zoom points
@@ -305,6 +306,7 @@ namespace UIMFViewer
 
             menuItem_Time_driftTIC.Checked = true;
             menuItem_Frame_driftTIC.Checked = false;
+            menuItem_driftTIC_ShowBPI.Checked = false;
 
             menuItem_SelectionCorners.Click += SelectionCornersClick;
             menuItem_ScanTime.Click += MobilityShowScanTimeClick;
@@ -316,6 +318,7 @@ namespace UIMFViewer
             menuItem_WriteUIMF.Click += WriteUimfClick;
             menuItem_ExportDriftTIC_Displayed.Click += ExportDriftTicDisplayedClick;
             menuItem_ExportDriftTIC_Complete.Click += ExportDriftTicCompleteClick;
+            menuItem_driftTIC_ShowBPI.Click += MobilityPlotToggleBPIClick;
             menuItem_Frame_driftTIC.Click += MobilityChromatogramPlotShowFrameClick;
             menuItem_Time_driftTIC.Click += MobilityChromatogramPlotShowTimeClick;
             menuItem_TOFExport.Click += TofExportDataClick;
@@ -1079,7 +1082,14 @@ namespace UIMFViewer
                     {
                         if (InsidePolygonPixel(currentScan, binValue))
                         {
-                            mobilityTicData[currentScan] += data_2D[currentScan][binValue];
+                            if (!mobilityTICShowsBPI)
+                            {
+                                mobilityTicData[currentScan] += data_2D[currentScan][binValue];
+                            }
+                            else if (data_2D[currentScan][binValue] > mobilityTicData[currentScan])
+                            {
+                                mobilityTicData[currentScan] = data_2D[currentScan][binValue];
+                            }
 
                             if (!selectingMobilityRange || ((currentScan >= selMin) && (currentScan <= selMax)))
                                 tofTicData[binValue] += data_2D[currentScan][binValue];

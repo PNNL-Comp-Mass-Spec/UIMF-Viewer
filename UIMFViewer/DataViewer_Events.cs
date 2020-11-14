@@ -1545,6 +1545,16 @@ namespace UIMFViewer
         #endregion
 
         #region Mobility Plot and Controls
+        private void MobilityPlotToggleBPIClick(object sender, EventArgs e)
+        {
+            if (chromatogramControlVm.CompletePeakChromatogramChecked || chromatogramControlVm.PartialPeakChromatogramChecked)
+                return;
+
+            mobilityTICShowsBPI = !mobilityTICShowsBPI;
+            menuItem_driftTIC_ShowBPI.Checked = mobilityTICShowsBPI;
+
+            needToUpdate2DPlot = true;
+        }
 
         private void MobilityPlotSelectionRangeChanged(object sender, Utilities.RangeEventArgs e)
         {
